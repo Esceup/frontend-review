@@ -1,3 +1,5 @@
+// src/components/SectionDetail.jsx
+
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import {
@@ -5,7 +7,7 @@ import {
   allQuestions,
   getSection,
   getTopic,
-  DATA
+  DATA,
 } from "../data/questions/index";
 import { useProgress, formatNext } from "../context/ProgressContext";
 import Answer from "./Answer";
@@ -22,7 +24,6 @@ function QuestionRow({ q, accent }) {
   const [open, setOpen] = useState(false);
   const st = statusOf(q.id);
   const card = cards[q.id];
-
   return (
     <div
       className={`card overflow-hidden transition-colors ${
@@ -60,7 +61,6 @@ function QuestionRow({ q, accent }) {
           ▾
         </span>
       </button>
-
       {open && (
         <div className="space-y-4 border-t border-dashed border-ink-600 px-4 pb-4 pt-3">
           <Answer text={q.a} />
@@ -75,9 +75,7 @@ export default function SectionDetail() {
   const { section: sectionId, topic: topicId } = useParams();
   const { stats } = useProgress();
   const data = DATA.sections.find((s) => s.id === sectionId);
-
   if (!data) return <Navigate to="/" replace />;
-
   const sStats = stats.sections.find((s) => s.id === sectionId);
   const activeTopic = topicId
     ? data.topics.find((t) => t.id === topicId)
@@ -106,7 +104,6 @@ export default function SectionDetail() {
             ▶ Учить тему
           </Link>
         </div>
-
         <div className="space-y-2.5">
           {activeTopic.questions.map((q) => (
             <QuestionRow key={q.id} q={q} accent={data.accent} />
@@ -140,7 +137,6 @@ export default function SectionDetail() {
           🔁 Повторять раздел
         </Link>
       </div>
-
       {data.topics.length === 0 ? (
         <p className="card p-6 text-center font-mono text-sm text-mist-500">
           Раздел в разработке — вопросы появятся позже
@@ -150,9 +146,9 @@ export default function SectionDetail() {
           {data.topics.map((t) => {
             const ts = sStats.topics.find((x) => x.id === t.id);
             const seen = ts.due + ts.learned;
-            const percent = t.questions.length
-              ? Math.round((seen / t.questions.length) * 100)
-              : 0;
+            const total = t.questions.length;
+            const percent = total ? Math.round((seen / total) * 100) : 0;
+            const allDone = seen === total && total > 0;
             return (
               <Link
                 key={t.id}
@@ -170,18 +166,35 @@ export default function SectionDetail() {
                     </span>
                   )}
                 </div>
+
+                {/* Прогресс-бар */}
                 <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-ink-700">
                   <div
                     className="h-full rounded-full"
                     style={{ width: `${percent}%`, background: data.accent }}
                   />
                 </div>
-                <p className="font-mono text-[11px] text-mist-500">
-                  {t.questions.length} вопросов
-                  {ts.hot > 0 && (
-                    <span className="text-lvl-1"> · 🔥 {ts.hot}</span>
-                  )}
-                </p>
+
+                {/* Строка с результатом: 3/4 вопросов */}
+                <div className="flex items-center justify-between">
+                  <p className="font-mono text-[11px] text-mist-500">
+                    {total} вопросов
+                    {ts.hot > 0 && (
+                      <span className="text-lvl-1"> · 🔥 {ts.hot}</span>
+                    )}
+                  </p>
+                  <span
+                    className={`font-mono text-xs font-bold ${
+                      allDone
+                        ? "text-lvl-3"
+                        : seen > 0
+                          ? "text-mist-300"
+                          : "text-mist-500"
+                    }`}
+                  >
+                    {allDone ? "✅" : ""} {seen}/{total}
+                  </span>
+                </div>
               </Link>
             );
           })}
