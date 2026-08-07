@@ -40,120 +40,462 @@ Total Duration: ${c-l}ms`),q.resolve({didRun:!0,sequenceNumbersCollected:r,targe
   `+e.join(`  
 `)+`
 )`}copy(t,n){let r=new e;return r.comparator=this.comparator,r.keyedMap=t,r.sortedSet=n,r}},zS=class{constructor(){this.au=new ep(G.comparator)}track(e){let t=e.doc.key,n=this.au.get(t);n?e.type!==0&&n.type===3?this.au=this.au.insert(t,e):e.type===3&&n.type!==1?this.au=this.au.insert(t,{type:n.type,doc:e.doc}):e.type===2&&n.type===2?this.au=this.au.insert(t,{type:2,doc:e.doc}):e.type===2&&n.type===0?this.au=this.au.insert(t,{type:0,doc:e.doc}):e.type===1&&n.type===0?this.au=this.au.remove(t):e.type===1&&n.type===2?this.au=this.au.insert(t,{type:1,doc:n.doc}):e.type===0&&n.type===1?this.au=this.au.insert(t,{type:2,doc:e.doc}):z(63341,{ft:e,uu:n}):this.au=this.au.insert(t,e)}cu(){let e=[];return this.au.inorderTraversal(((t,n)=>{e.push(n)})),e}},BS=class e{constructor(e,t,n,r,i,a,o,s,c){this.query=e,this.docs=t,this.oldDocs=n,this.docChanges=r,this.mutatedKeys=i,this.fromCache=a,this.syncStateChanged=o,this.excludesMetadataChanges=s,this.hasCachedResults=c}static fromInitialDocuments(t,n,r,i,a){let o=[];return n.forEach((e=>{o.push({type:0,doc:e})})),new e(t,n,RS.emptySet(n),o,r,i,!0,!1,a)}get hasPendingWrites(){return!this.mutatedKeys.isEmpty()}isEqual(e){if(!(this.fromCache===e.fromCache&&this.hasCachedResults===e.hasCachedResults&&this.syncStateChanged===e.syncStateChanged&&this.mutatedKeys.isEqual(e.mutatedKeys)&&tx(this.query,e.query)&&this.docs.isEqual(e.docs)&&this.oldDocs.isEqual(e.oldDocs)))return!1;let t=this.docChanges,n=e.docChanges;if(t.length!==n.length)return!1;for(let e=0;e<t.length;e++)if(t[e].type!==n[e].type||!t[e].doc.isEqual(n[e].doc))return!1;return!0}},VS=class{constructor(){this.lu=void 0,this.Eu=[]}hu(){return this.Eu.some((e=>e.Tu()))}},HS=class{constructor(){this.queries=US(),this.onlineState=`Unknown`,this.Pu=new Set}terminate(){(function(e,t){let n=V(e),r=n.queries;n.queries=US(),r.forEach(((e,n)=>{for(let e of n.Eu)e.onError(t)}))})(this,new U(H.ABORTED,`Firestore shutting down`))}};function US(){return new Fh((e=>ex(e)),tx)}async function WS(e,t){let n=V(e),r=3,i=t.query,a=n.queries.get(i);a?!a.hu()&&t.Tu()&&(r=2):(a=new VS,r=+!t.Tu());try{switch(r){case 0:a.lu=await n.onListen(i,!0);break;case 1:a.lu=await n.onListen(i,!1);break;case 2:await n.onFirstRemoteStoreListen(i)}}catch(e){let n=LS(e,`Initialization of query '${Qb(t.query)?Xb(t.query):Eh(t.query)}' failed`);t.onError(n);return}n.queries.set(i,a),a.Eu.push(t),t.Ru(n.onlineState),a.lu&&t.Iu(a.lu)&&JS(n)}async function GS(e,t){let n=V(e),r=t.query,i=3,a=n.queries.get(r);if(a){let e=a.Eu.indexOf(t);e>=0&&(a.Eu.splice(e,1),a.Eu.length===0?i=+!t.Tu():!a.hu()&&t.Tu()&&(i=2))}switch(i){case 0:return n.queries.delete(r),n.onUnlisten(r,!0);case 1:return n.queries.delete(r),n.onUnlisten(r,!1);case 2:return n.onLastRemoteStoreUnlisten(r);default:return}}function KS(e,t){let n=V(e),r=!1;for(let e of t){let t=e.query,i=n.queries.get(t);if(i){for(let t of i.Eu)t.Iu(e)&&(r=!0);i.lu=e}}r&&JS(n)}function qS(e,t,n){let r=V(e),i=r.queries.get(t);if(i)for(let e of i.Eu)e.onError(n);r.queries.delete(t)}function JS(e){e.Pu.forEach((e=>{e.next()}))}var YS;(function(e){e.Default=`default`,e.Cache=`cache`})(YS||={});var XS=class{constructor(e,t,n){this.query=e,this.Au=t,this.Vu=!1,this.du=null,this.onlineState=`Unknown`,this.options=n||{}}Iu(e){if(!this.options.includeMetadataChanges){let t=[];for(let n of e.docChanges)n.type!==3&&t.push(n);e=new BS(e.query,e.docs,e.oldDocs,t,e.mutatedKeys,e.fromCache,e.syncStateChanged,!0,e.hasCachedResults)}let t=!1;return this.Vu?this.fu(e)&&(this.Au.next(e),t=!0):this.mu(e,this.onlineState)&&(this.pu(e),t=!0),this.du=e,t}onError(e){this.Au.error(e)}Ru(e){this.onlineState=e;let t=!1;return this.du&&!this.Vu&&this.mu(this.du,e)&&(this.pu(this.du),t=!0),t}mu(e,t){if(!e.fromCache||!this.Tu())return!0;let n=t!==`Offline`;return(!this.options.waitForSyncWhenOnline||!n)&&(!e.docs.isEmpty()||e.hasCachedResults||t===`Offline`)}fu(e){if(e.docChanges.length>0)return!0;let t=this.du&&this.du.hasPendingWrites!==e.hasPendingWrites;return!(!e.syncStateChanged&&!t)&&!0===this.options.includeMetadataChanges}pu(e){e=BS.fromInitialDocuments(e.query,e.docs,e.mutatedKeys,e.fromCache,e.hasCachedResults),this.Vu=!0,this.Au.next(e)}Tu(){return this.options.source!==YS.Cache}},ZS=class{constructor(e){this.key=e}},QS=class{constructor(e){this.key=e}},$S=class{constructor(e,t){this.query=e,this.Ou=t,this.Mu=null,this.hasCachedResults=!1,this.current=!1,this.Nu=J(),this.mutatedKeys=J(),this.Lu=Qb(e)?vx(e):Oh(e),this.Bu=new RS(this.Lu)}get Uu(){return this.Ou}ku(e,t){let n=t?t.qu:new zS,r=t?t.Bu:this.Bu,i=t?t.mutatedKeys:this.mutatedKeys,a=r,o=!1,[s,c]=this.$u(this.query,r);e.inorderTraversal(((e,t)=>{let l=r.get(e),u=gx(this.query,t)?t:null,d=!!l&&this.mutatedKeys.has(l.key),f=!!u&&(u.hasLocalMutations||this.mutatedKeys.has(u.key)&&u.hasCommittedMutations),p=!1;l&&u?l.data.isEqual(u.data)?d!==f&&(n.track({type:3,doc:u}),p=!0):this.Ku(l,u)||(n.track({type:2,doc:u}),p=!0,(s&&this.Lu(u,s)>0||c&&this.Lu(u,c)<0)&&(o=!0)):!l&&u?(n.track({type:0,doc:u}),p=!0):l&&!u&&(n.track({type:1,doc:l}),p=!0,(s||c)&&(o=!0)),p&&(u?(a=a.add(u),i=f?i.add(e):i.delete(e)):(a=a.delete(e),i=i.delete(e)))}));let l=this.Wu(this.query);if(l)if(Qb(this.query)){let e=[];a.forEach((t=>e.push(t)));let t=mx(this.query,e),r=new RS(vx(this.query));for(let e of t)r=r.add(e);a.forEach((e=>{r.has(e.key)||(i=i.delete(e.key),n.track({type:1,doc:e}))})),a=r}else{let e=this.Qu(this.query);for(;a.size>l;){let t=e===`F`?a.last():a.first();a=a.delete(t.key),i=i.delete(t.key),n.track({type:1,doc:t})}}return{Bu:a,qu:n,Uo:o,mutatedKeys:i}}Wu(e){return Qb(e)?yx(e)?.limit:e.limit||void 0}Qu(e){if(Qb(e)){let t=yx(e);return t&&t.limit<0?`L`:`F`}return e.limitType}$u(e,t){if(Qb(e)){let n=yx(e)?.limit;return[t.size===n?t.last():null,null]}return[e.limitType===`F`&&t.size===this.Wu(this.query)?t.last():null,e.limitType===`L`&&t.size===this.Wu(this.query)?t.first():null]}Ku(e,t){return e.hasLocalMutations&&t.hasCommittedMutations&&!t.hasLocalMutations}applyChanges(e,t,n,r){let i=this.Bu;this.Bu=e.Bu,this.mutatedKeys=e.mutatedKeys;let a=e.qu.cu();a.sort(((e,t)=>function(e,t){let n=e=>{switch(e){case 0:return 1;case 2:case 3:return 2;case 1:return 0;default:return z(20277,{ft:e})}};return n(e)-n(t)}(e.type,t.type)||this.Lu(e.doc,t.doc))),this.Gu(n),r??=!1;let o=t&&!r?this.zu():[],s=this.Nu.size===0&&this.current&&!r?1:0,c=s!==this.Mu;return this.Mu=s,a.length!==0||c?{snapshot:new BS(this.query,e.Bu,i,a,e.mutatedKeys,s===0,c,!1,!!n&&n.resumeToken.approximateByteSize()>0),ju:o}:{ju:o}}Ru(e){return this.current&&e===`Offline`?(this.current=!1,this.applyChanges({Bu:this.Bu,qu:new zS,mutatedKeys:this.mutatedKeys,Uo:!1},!1)):{ju:[]}}Hu(e){return!this.Ou.has(e)&&!!this.Bu.has(e)&&!this.Bu.get(e).hasLocalMutations}Gu(e){e&&(e.addedDocuments.forEach((e=>this.Ou=this.Ou.add(e))),e.modifiedDocuments.forEach((e=>{})),e.removedDocuments.forEach((e=>this.Ou=this.Ou.delete(e))),this.current=e.current)}zu(){if(!this.current)return[];let e=this.Nu;this.Nu=J(),this.Bu.forEach((e=>{this.Hu(e.key)&&(this.Nu=this.Nu.add(e.key))}));let t=[];return e.forEach((e=>{this.Nu.has(e)||t.push(new QS(e))})),this.Nu.forEach((n=>{e.has(n)||t.push(new ZS(n))})),t}Ju(e){this.Ou=e.Jo,this.Nu=J();let t=this.ku(e.documents);return this.applyChanges(t,!0)}Yu(){return BS.fromInitialDocuments(this.query,this.Bu,this.mutatedKeys,this.Mu===0,this.hasCachedResults)}},eC=`SyncEngine`,tC=class{constructor(e,t,n){this.query=e,this.targetId=t,this.view=n}},nC=class{constructor(e){this.key=e,this.Zu=!1}},rC=class{constructor(e,t,n,r,i,a){this.localStore=e,this.remoteStore=t,this.eventManager=n,this.sharedClientState=r,this.currentUser=i,this.maxConcurrentLimboResolutions=a,this.Xu={},this.ec=new Fh((e=>ex(e)),tx),this.tc=new Map,this.nc=new Set,this.rc=new ep(G.comparator),this.sc=new Map,this._c=new Ex,this.oc={},this.ac=new Map,this.uc=px.Cs(),this.onlineState=`Unknown`,this.cc=void 0}get isPrimaryClient(){return!0===this.cc}};async function iC(e,t,n=!0){let r=EC(e),i,a=r.ec.get(t);return a?(r.sharedClientState.addLocalQueryTarget(a.targetId),i=a.view.Yu()):i=await oC(r,t,n,!0),i}async function aC(e,t){await oC(EC(e),t,!0,!1)}async function oC(e,t,n,r){let i=await Xx(e.localStore,Qb(t)?t:Sh(t)),a=i.targetId,o=e.sharedClientState.addLocalQueryTarget(a,n),s;return r&&(s=await sC(e,t,a,o===`current`,i.resumeToken)),e.isPrimaryClient&&n&&lS(e.remoteStore,i),s}async function sC(e,t,n,r,i){e.lc=(t,n,r)=>async function(e,t,n,r){let i=t.view.ku(n);i.Uo&&(i=await Qx(e.localStore,t.query,!1).then((({documents:e})=>t.view.ku(e,i))));let a=r&&r.targetChanges.get(t.targetId),o=r&&r.targetMismatches.get(t.targetId)!=null,s=t.view.applyChanges(i,e.isPrimaryClient,a,o);return bC(e,t.targetId,s.ju),s.snapshot}(e,t,n,r);let a=await Qx(e.localStore,t,!0),o=new $S(t,a.Jo),s=o.ku(a.documents),c=ng.createSynthesizedTargetChangeForCurrentChange(n,r&&e.onlineState!==`Offline`,i),l=o.applyChanges(s,e.isPrimaryClient,c);bC(e,n,l.ju);let u=new tC(t,n,o);return e.ec.set(t,u),e.tc.has(n)?e.tc.get(n).push(t):e.tc.set(n,[t]),l.snapshot}async function cC(e,t,n){let r=V(e),i=r.ec.get(t),a=r.tc.get(i.targetId);if(a.length>1)return r.tc.set(i.targetId,a.filter((e=>!tx(e,t)))),void r.ec.delete(t);r.isPrimaryClient?(r.sharedClientState.removeLocalQueryTarget(i.targetId),r.sharedClientState.isActiveQueryTarget(i.targetId)||await Zx(r.localStore,i.targetId,!1).then((()=>{r.sharedClientState.clearQueryState(i.targetId),n&&uS(r.remoteStore,i.targetId),vC(r,i.targetId)})).catch(Vf)):(vC(r,i.targetId),await Zx(r.localStore,i.targetId,!0))}async function lC(e,t){let n=V(e),r=n.ec.get(t),i=n.tc.get(r.targetId);n.isPrimaryClient&&i.length===1&&(n.sharedClientState.removeLocalQueryTarget(r.targetId),uS(n.remoteStore,r.targetId))}async function uC(e,t,n){let r=DC(e);try{let e=await function(e,t){let n=V(e),r=Mf.now(),i=t.reduce(((e,t)=>e.add(t.key)),J()),a,o;return n.persistence.runTransaction(`Locally write mutations`,`readwrite`,(e=>{let s=Lh(),c=J();return n.Qo.getEntries(e,i).next((e=>{s=e,s.forEach(((e,t)=>{t.isValidDocument()||(c=c.add(e))}))})).next((()=>n.localDocuments.getOverlayedDocuments(e,s))).next((i=>{a=i;let o=[];for(let e of t){let t=jm(e,a.get(e.key).overlayedDocument);t!=null&&o.push(new Pm(e.key,t,nm(t.value.mapValue),Tm.exists(!0)))}return n.mutationQueue.addMutationBatch(e,r,o,t)})).next((t=>{o=t;let r=t.applyToLocalDocumentSet(a,c);return n.documentOverlayCache.saveOverlays(e,t.batchId,r)}))})).then((()=>({batchId:o.batchId,changes:Bh(a)})))}(r.localStore,t);r.sharedClientState.addPendingMutation(e.batchId),function(e,t,n){let r=e.oc[e.currentUser.toKey()];r||=new ep(W),r=r.insert(t,n),e.oc[e.currentUser.toKey()]=r}(r,e.batchId,n),await CC(r,e.changes),await CS(r.remoteStore)}catch(e){let t=LS(e,`Failed to persist write`);n.reject(t)}}async function dC(e,t){let n=V(e);try{let e=await qx(n.localStore,t);t.targetChanges.forEach(((e,t)=>{let r=n.sc.get(t);r&&(B(e.addedDocuments.size+e.modifiedDocuments.size+e.removedDocuments.size<=1,22616),e.addedDocuments.size>0?r.Zu=!0:e.modifiedDocuments.size>0?B(r.Zu,14607):e.removedDocuments.size>0&&(B(r.Zu,42227),r.Zu=!1))})),await CC(n,e,t)}catch(e){await Vf(e)}}function fC(e,t,n){let r=V(e);if(r.isPrimaryClient&&n===0||!r.isPrimaryClient&&n===1){let e=[];r.ec.forEach(((n,r)=>{let i=r.view.Ru(t);i.snapshot&&e.push(i.snapshot)})),function(e,t){let n=V(e);n.onlineState=t;let r=!1;n.queries.forEach(((e,n)=>{for(let e of n.Eu)e.Ru(t)&&(r=!0)})),r&&JS(n)}(r.eventManager,t),e.length&&r.Xu.zn(e),r.onlineState=t,r.isPrimaryClient&&r.sharedClientState.setOnlineState(t)}}async function pC(e,t,n){let r=V(e);r.sharedClientState.updateQueryState(t,`rejected`,n);let i=r.sc.get(t),a=i&&i.key;if(a){let e=new ep(G.comparator);e=e.insert(a,ch.newNoDocument(a,K.min()));let n=J().add(a);await dC(r,new tg(K.min(),new Map,new ep(W),e,Lh(),n)),r.rc=r.rc.remove(a),r.sc.delete(t),SC(r)}else await Zx(r.localStore,t,!1).then((()=>vC(r,t,n))).catch(Vf)}async function mC(e,t){let n=V(e),r=t.batch.batchId;try{let e=await Gx(n.localStore,t);_C(n,r,null),gC(n,r),n.sharedClientState.updateMutationState(r,`acknowledged`),await CC(n,e)}catch(e){await Vf(e)}}async function hC(e,t,n){let r=V(e);try{let e=await function(e,t){let n=V(e);return n.persistence.runTransaction(`Reject batch`,`readwrite-primary`,(e=>{let r;return n.mutationQueue.lookupMutationBatch(e,t).next((t=>(B(t!==null,37113),r=t.keys(),n.mutationQueue.removeMutationBatch(e,t)))).next((()=>n.mutationQueue.performConsistencyCheck(e))).next((()=>n.documentOverlayCache.removeOverlaysForBatchId(e,r,t))).next((()=>n.localDocuments.recalculateAndSaveOverlaysForDocumentKeys(e,r))).next((()=>n.localDocuments.getDocuments(e,r)))}))}(r.localStore,t);_C(r,t,n),gC(r,t),r.sharedClientState.updateMutationState(t,`rejected`,n),await CC(r,e)}catch(e){await Vf(e)}}function gC(e,t){(e.ac.get(t)||[]).forEach((e=>{e.resolve()})),e.ac.delete(t)}function _C(e,t,n){let r=V(e),i=r.oc[r.currentUser.toKey()];if(i){let e=i.get(t);e&&(n?e.reject(n):e.resolve(),i=i.remove(t)),r.oc[r.currentUser.toKey()]=i}}function vC(e,t,n=null){e.sharedClientState.removeLocalQueryTarget(t);for(let r of e.tc.get(t))e.ec.delete(r),n&&e.Xu.Ec(r,n);e.tc.delete(t),e.isPrimaryClient&&e._c.s_(t).forEach((t=>{e._c.containsKey(t)||yC(e,t)}))}function yC(e,t){e.nc.delete(t.path.canonicalString());let n=e.rc.get(t);n!==null&&(uS(e.remoteStore,n),e.rc=e.rc.remove(t),e.sc.delete(n),SC(e))}function bC(e,t,n){for(let r of n)r instanceof ZS?(e._c.addReference(r.key,t),xC(e,r)):r instanceof QS?(R(eC,`Document no longer in limbo: `+r.key),e._c.removeReference(r.key,t),e._c.containsKey(r.key)||yC(e,r.key)):z(19791,{hc:r})}function xC(e,t){let n=t.key,r=n.path.canonicalString();e.rc.get(n)||e.nc.has(r)||(R(eC,`New document in limbo: `+n),e.nc.add(r),SC(e))}function SC(e){for(;e.nc.size>0&&e.rc.size<e.maxConcurrentLimboResolutions;){let t=e.nc.values().next().value;e.nc.delete(t);let n=new G(yf.fromString(t)),r=e.uc.next();e.sc.set(r,new nC(n)),e.rc=e.rc.insert(n,r),lS(e.remoteStore,new sx(Sh(_h(n.path)),r,`TargetPurposeLimboResolution`,Wf.ce))}}async function CC(e,t,n){let r=V(e),i=[],a=[],o=[];r.ec.isEmpty()||(r.ec.forEach(((e,s)=>{o.push(r.lc(s,t,n).then((e=>{if((e||n)&&r.isPrimaryClient){let t=e?!e.fromCache:n?.targetChanges.get(s.targetId)?.current;r.sharedClientState.updateQueryState(s.targetId,t?`current`:`not-current`)}if(e){i.push(e);let t=Ix.vo(s.targetId,e);a.push(t)}})))})),await Promise.all(o),r.Xu.zn(i),await async function(e,t){let n=V(e);try{await n.persistence.runTransaction(`notifyLocalViewChanges`,`readwrite`,(e=>q.forEach(t,(t=>q.forEach(t.wo,(r=>n.persistence.referenceDelegate.addReference(e,t.targetId,r))).next((()=>q.forEach(t.bo,(r=>n.persistence.referenceDelegate.removeReference(e,t.targetId,r)))))))))}catch(e){if(!Uf(e))throw e;R(Bx,`Failed to update sequence numbers: `+e)}for(let e of t){let t=e.targetId;if(!e.fromCache){let e=n.$o.get(t),r=e.snapshotVersion,i=e.withLastLimboFreeSnapshotVersion(r);n.$o=n.$o.insert(t,i)}}}(r.localStore,a))}async function wC(e,t){let n=V(e);if(!n.currentUser.isEqual(t)){R(eC,`User change. New user:`,t.toKey());let e=await Wx(n.localStore,t);n.currentUser=t,function(e,t){e.ac.forEach((e=>{e.forEach((e=>{e.reject(new U(H.CANCELLED,t))}))})),e.ac.clear()}(n,`'waitForPendingWrites' promise is rejected due to a user change.`),n.sharedClientState.handleUserChange(t,e.removedBatchIds,e.addedBatchIds),await CC(n,e.zo)}}function TC(e,t){let n=V(e),r=n.sc.get(t);if(r&&r.Zu)return J().add(r.key);{let e=J(),r=n.tc.get(t);if(!r)return e;for(let t of r??[]){let r=n.ec.get(t);e=e.unionWith(r.view.Uu)}return e}}function EC(e){let t=V(e);return t.remoteStore.remoteSyncer.applyRemoteEvent=dC.bind(null,t),t.remoteStore.remoteSyncer.getRemoteKeysForTarget=TC.bind(null,t),t.remoteStore.remoteSyncer.rejectListen=pC.bind(null,t),t.Xu.zn=KS.bind(null,t.eventManager),t.Xu.Ec=qS.bind(null,t.eventManager),t}function DC(e){let t=V(e);return t.remoteStore.remoteSyncer.applySuccessfulWrite=mC.bind(null,t),t.remoteStore.remoteSyncer.rejectFailedWrite=hC.bind(null,t),t}var OC=class{constructor(){this.kind=`memory`,this.synchronizeTabs=!1}async initialize(e){this.serializer=Zg(e.databaseInfo.databaseId),this.sharedClientState=this.Rc(e),this.persistence=this.Ic(e),await this.persistence.start(),this.localStore=this.Ac(e),this.gcScheduler=this.Vc(e,this.localStore),this.indexBackfillerScheduler=this.dc(e,this.localStore)}Vc(e,t){return null}dc(e,t){return null}Ac(e){return Ux(this.persistence,new zx,e.initialUser,this.serializer)}Ic(e){return new Mx(Px.C_,this.serializer)}Rc(e){return new tS}async terminate(){this.gcScheduler?.stop(),this.indexBackfillerScheduler?.stop(),this.sharedClientState.shutdown(),await this.persistence.shutdown()}};OC.provider={build:()=>new OC};var kC=class extends OC{constructor(e){super(),this.cacheSizeBytes=e}Vc(e,t){B(this.persistence.referenceDelegate instanceof Fx,46915);let n=this.persistence.referenceDelegate.garbageCollector;return new F_(n,e.asyncQueue,t)}Ic(e){let t=this.cacheSizeBytes===void 0?A_.DEFAULT:A_.withCacheSize(this.cacheSizeBytes);return new Mx((e=>Fx.C_(e,t)),this.serializer)}},AC=class{async initialize(e,t){this.localStore||(this.localStore=e.localStore,this.sharedClientState=e.sharedClientState,this.datastore=this.createDatastore(t),this.remoteStore=this.createRemoteStore(t),this.eventManager=this.createEventManager(t),this.syncEngine=this.createSyncEngine(t,!e.synchronizeTabs),this.sharedClientState.onlineStateHandler=e=>fC(this.syncEngine,e,1),this.remoteStore.remoteSyncer.handleCredentialChange=wC.bind(null,this.syncEngine),await NS(this.remoteStore,this.syncEngine.isPrimaryClient))}createEventManager(e){return function(){return new HS}()}createDatastore(e){let t=Zg(e.databaseInfo.databaseId),n=g_(e.databaseInfo);return w_(e.authCredentials,e.appCheckCredentials,n,t)}createRemoteStore(e){return function(e,t,n,r,i){return new aS(e,t,n,r,i)}(this.localStore,this.datastore,e.asyncQueue,(e=>fC(this.syncEngine,e,0)),function(){return o_.C()?new o_:new i_}())}createSyncEngine(e,t){return function(e,t,n,r,i,a,o){let s=new rC(e,t,n,r,i,a);return o&&(s.cc=!0),s}(this.localStore,this.remoteStore,this.eventManager,this.sharedClientState,e.initialUser,e.maxConcurrentLimboResolutions,t)}async terminate(){await async function(e){let t=V(e);R(iS,`RemoteStore shutting down.`),t.tu.add(5),await sS(t),t.ru.shutdown(),t.iu.set(`Unknown`)}(this.remoteStore),this.datastore?.terminate(),this.eventManager?.terminate()}};AC.provider={build:()=>new AC};var jC=class{constructor(e){this.observer=e,this.muted=!1}next(e){this.muted||this.observer.next&&this.mc(this.observer.next,e)}error(e){this.muted||(this.observer.error?this.mc(this.observer.error,e):Xd(`Uncaught Error in snapshot listener:`,e.toString()))}gc(){this.muted=!0}mc(e,t){setTimeout((()=>{this.muted||e(t)}),0)}},MC=`FirestoreClient`,NC=class{constructor(e,t,n,r,i){this.authCredentials=e,this.appCheckCredentials=t,this.asyncQueue=n,this._databaseInfo=r,this.user=Gd.UNAUTHENTICATED,this.clientId=df.newId(),this.authCredentialListener=()=>Promise.resolve(),this.appCheckCredentialListener=()=>Promise.resolve(),this._uninitializedComponentsProvider=i,this.authCredentials.start(n,(async e=>{R(MC,`Received user=`,e.uid),await this.authCredentialListener(e),this.user=e})),this.appCheckCredentials.start(n,(e=>(R(MC,`Received new app check token=`,e),this.appCheckCredentialListener(e,this.user))))}get configuration(){return{asyncQueue:this.asyncQueue,databaseInfo:this._databaseInfo,clientId:this.clientId,authCredentials:this.authCredentials,appCheckCredentials:this.appCheckCredentials,initialUser:this.user,maxConcurrentLimboResolutions:100}}setCredentialChangeListener(e){this.authCredentialListener=e}setAppCheckTokenChangeListener(e){this.appCheckCredentialListener=e}terminate(){this.asyncQueue.enterRestrictedMode();let e=new ef;return this.asyncQueue.enqueueAndForgetEvenWhileRestricted((async()=>{try{this._onlineComponents&&await this._onlineComponents.terminate(),this._offlineComponents&&await this._offlineComponents.terminate(),this.authCredentials.shutdown(),this.appCheckCredentials.shutdown(),e.resolve()}catch(t){let n=LS(t,`Failed to shutdown persistence`);e.reject(n)}})),e.promise}};async function PC(e,t){e.asyncQueue.verifyOperationInProgress(),R(MC,`Initializing OfflineComponentProvider`);let n=e.configuration;await t.initialize(n);let r=n.initialUser;e.setCredentialChangeListener((async e=>{r.isEqual(e)||(await Wx(t.localStore,e),r=e)})),t.persistence.setDatabaseDeletedListener((()=>e.terminate())),e._offlineComponents=t}async function FC(e,t){e.asyncQueue.verifyOperationInProgress();let n=await IC(e);R(MC,`Initializing OnlineComponentProvider`),await t.initialize(n,e.configuration),e.setCredentialChangeListener((e=>MS(t.remoteStore,e))),e.setAppCheckTokenChangeListener(((e,n)=>MS(t.remoteStore,n))),e._onlineComponents=t}async function IC(e){if(!e._offlineComponents)if(e._uninitializedComponentsProvider){R(MC,`Using user provided OfflineComponentProvider`);try{await PC(e,e._uninitializedComponentsProvider._offline)}catch(t){let n=t;if(!function(e){return e.name===`FirebaseError`?e.code===H.FAILED_PRECONDITION||e.code===H.UNIMPLEMENTED:!(typeof DOMException<`u`&&e instanceof DOMException)||e.code===22||e.code===20||e.code===11}(n))throw n;Zd(`Error using user provided cache. Falling back to memory cache: `+n),await PC(e,new OC)}}else R(MC,`Using default OfflineComponentProvider`),await PC(e,new kC(void 0));return e._offlineComponents}async function LC(e){return e._onlineComponents||(e._uninitializedComponentsProvider?(R(MC,`Using user provided OnlineComponentProvider`),await FC(e,e._uninitializedComponentsProvider._online)):(R(MC,`Using default OnlineComponentProvider`),await FC(e,new AC))),e._onlineComponents}function RC(e){return LC(e).then((e=>e.syncEngine))}async function zC(e){let t=await LC(e),n=t.eventManager;return n.onListen=iC.bind(null,t.syncEngine),n.onUnlisten=cC.bind(null,t.syncEngine),n.onFirstRemoteStoreListen=aC.bind(null,t.syncEngine),n.onLastRemoteStoreUnlisten=lC.bind(null,t.syncEngine),n}function BC(e,t,n,r){let i=new jC(r),a=new XS(t,i,n);return e.asyncQueue.enqueueAndForget((async()=>WS(await zC(e),a))),()=>{i.gc(),e.asyncQueue.enqueueAndForget((async()=>GS(await zC(e),a)))}}function VC(e,t,n={}){let r=new ef;return e.asyncQueue.enqueueAndForget((async()=>function(e,t,n,r,i){let a=new jC({next:s=>{a.gc(),t.enqueueAndForget((()=>GS(e,o)));let c=s.docs.has(n);!c&&s.fromCache?i.reject(new U(H.UNAVAILABLE,`Failed to get document because the client is offline.`)):c&&s.fromCache&&r&&r.source===`server`?i.reject(new U(H.UNAVAILABLE,`Failed to get document from server. (However, this document does exist in the local cache. Run again without setting source to "server" to retrieve the cached document.)`)):i.resolve(s)},error:e=>i.reject(e)}),o=new XS(_h(n.path),a,{includeMetadataChanges:!0,waitForSyncWhenOnline:!0});return WS(e,o)}(await zC(e),e.asyncQueue,t,n,r))),r.promise}function HC(e,t){let n=new ef;return e.asyncQueue.enqueueAndForget((async()=>uC(await RC(e),t,n))),n.promise}var UC=`AsyncQueue`,WC=class{constructor(e=Promise.resolve()){this.qc=[],this.$c=!1,this.Kc=[],this.Wc=null,this.Qc=!1,this.Gc=!1,this.zc=[],this.xn=new __(this,`async_queue_retry`),this.jc=()=>{let e=nS();e&&R(UC,`Visibility state changed to `+e.visibilityState),this.xn.gn()},this.Hc=e;let t=nS();t&&typeof t.addEventListener==`function`&&t.addEventListener(`visibilitychange`,this.jc)}get isShuttingDown(){return this.$c}enqueueAndForget(e){this.enqueue(e)}enqueueAndForgetEvenWhileRestricted(e){this.Jc(),this.Yc(e)}enterRestrictedMode(e){if(!this.$c){this.$c=!0,this.Gc=e||!1;let t=nS();t&&typeof t.removeEventListener==`function`&&t.removeEventListener(`visibilitychange`,this.jc)}}enqueue(e){if(this.Jc(),this.$c)return new Promise((()=>{}));let t=new ef;return this.Yc((()=>this.$c&&this.Gc?Promise.resolve():(e().then(t.resolve,t.reject),t.promise))).then((()=>t.promise))}enqueueRetryable(e){this.enqueueAndForget((()=>(this.qc.push(e),this.Zc())))}async Zc(){if(this.qc.length!==0){try{await this.qc[0](),this.qc.shift(),this.xn.reset()}catch(e){if(!Uf(e))throw e;R(UC,`Operation failed with retryable error: `+e)}this.qc.length>0&&this.xn.mn((()=>this.Zc()))}}Yc(e){let t=this.Hc.then((()=>(this.Qc=!0,e().catch((e=>{throw this.Wc=e,this.Qc=!1,Xd(`INTERNAL UNHANDLED ERROR: `,GC(e)),e})).then((e=>(this.Qc=!1,e))))));return this.Hc=t,t}enqueueAfterDelay(e,t,n){this.Jc(),this.zc.indexOf(e)>-1&&(t=0);let r=IS.createAndSchedule(this,e,t,n,(e=>this.Xc(e)));return this.Kc.push(r),r}Jc(){this.Wc&&z(47125,{el:GC(this.Wc)})}verifyOperationInProgress(){}async tl(){let e;do e=this.Hc,await e;while(e!==this.Hc)}nl(e){for(let t of this.Kc)if(t.timerId===e)return!0;return!1}rl(e){return this.tl().then((()=>{this.Kc.sort(((e,t)=>e.targetTimeMs-t.targetTimeMs));for(let t of this.Kc)if(t.skipDelay(),e!==`all`&&t.timerId===e)break;return this.tl()}))}il(e){this.zc.push(e)}Xc(e){let t=this.Kc.indexOf(e);this.Kc.splice(t,1)}};function GC(e){let t=e.message||``;return e.stack&&(t=e.stack.includes(e.message)?e.stack:e.message+`
-`+e.stack),t}var KC=class extends V_{constructor(e,t,n,r){super(e,t,n,r),this.type=`firestore`,this._queue=new WC,this._persistenceKey=r?.name||`[DEFAULT]`}async _terminate(){if(this._firestoreClient){let e=this._firestoreClient.terminate();this._queue=new WC(e),this._firestoreClient=void 0,await e}}};function qC(e,t){let n=typeof e==`object`?e:Da(),r=typeof e==`string`?e:t||wp,i=xa(n,`firestore`).getImmediate({identifier:r});if(!i._initialized){let e=Sr(`firestore`);e&&H_(i,...e)}return i}function JC(e){if(e._terminated)throw new U(H.FAILED_PRECONDITION,`The client has already been terminated.`);return e._firestoreClient||YC(e),e._firestoreClient}function YC(e){let t=e._freezeSettings(),n=D_(e._databaseId,e._app?.options.appId||``,e._persistenceKey,e._app?.options.apiKey,t);e._componentsProvider||t.localCache?._offlineComponentProvider&&t.localCache?._onlineComponentProvider&&(e._componentsProvider={_offline:t.localCache._offlineComponentProvider,_online:t.localCache._onlineComponentProvider}),e._firestoreClient=new NC(e._authCredentials,e._appCheckCredentials,e._queue,n,e._componentsProvider&&function(e){let t=e?._online.build();return{_offline:e?._offline.build(t),_online:t}}(e._componentsProvider))}var XC=class{convertValue(e,t=`none`){switch(Fp(e)){case 0:return null;case 1:return e.booleanValue;case 2:return mp(e.integerValue||e.doubleValue);case 3:return this.convertTimestamp(e.timestampValue);case 4:return this.convertServerTimestamp(e,t);case 5:return e.stringValue;case 6:return this.convertBytes(hp(e.bytesValue));case 7:return this.convertReference(e.referenceValue);case 8:return this.convertGeoPoint(e.geoPointValue);case 9:return this.convertArray(e.arrayValue,t);case 11:return this.convertObject(e.mapValue,t);case 10:return this.convertVectorValue(e.mapValue);default:throw z(62114,{value:e})}}convertObject(e,t){return this.convertObjectMap(e.fields,t)}convertObjectMap(e,t=`none`){let n={};return sp(e,((e,r)=>{n[e]=this.convertValue(r,t)})),n}convertVectorValue(e){let t=e.fields?.[jp].arrayValue?.values?.map((e=>mp(e.doubleValue)));return new q_(t)}convertGeoPoint(e){return new n_(mp(e.latitude),mp(e.longitude))}convertArray(e,t){return(e.values||[]).map((e=>this.convertValue(e,t)))}convertServerTimestamp(e,t){switch(t){case`previous`:let n=xp(e);return n==null?null:this.convertValue(n,t);case`estimate`:return this.convertTimestamp(Sp(e));default:return null}}convertTimestamp(e){let t=pp(e);return new Mf(t.seconds,t.nanos)}convertDocumentKey(e,t){let n=yf.fromString(e);B(qg(n),9688,{name:e});let r=new Tp(n.get(1),n.get(3)),i=new G(n.popFirst(5));return r.isEqual(t)||Xd(`Document ${i} contains a document reference within a different database (${r.projectId}/${r.database}) which is not supported. It will be treated as a reference in the current database (${t.projectId}/${t.database}) instead.`),i}},ZC=class extends XC{constructor(e){super(),this.firestore=e}convertBytes(e){return new Qg(e)}convertReference(e){let t=this.convertDocumentKey(e,this.firestore._databaseId);return new W_(this.firestore,null,t)}},QC=`@firebase/firestore`,$C=`4.16.0`;function ew(e){return function(e,t){if(typeof e!=`object`||!e)return!1;let n=e;for(let e of t)if(e in n&&typeof n[e]==`function`)return!0;return!1}(e,[`next`,`error`,`complete`])}var tw=class{constructor(e,t,n,r,i){this._firestore=e,this._userDataWriter=t,this._key=n,this._document=r,this._converter=i}get id(){return this._key.path.lastSegment()}get ref(){return new W_(this._firestore,this._converter,this._key)}exists(){return this._document!==null}data(){if(this._document){if(this._converter){let e=new nw(this._firestore,this._userDataWriter,this._key,this._document,null);return this._converter.fromFirestore(e)}return this._userDataWriter.convertValue(this._document.data.value)}}_fieldsProto(){return this._document?.data.clone().value.mapValue.fields??void 0}get(e){if(this._document){let t=this._document.data.field(uv(`DocumentSnapshot.get`,e));if(t!==null)return this._userDataWriter.convertValue(t)}}},nw=class extends tw{data(){return super.data()}};function rw(e){if(e.limitType===`L`&&e.explicitOrderBy.length===0)throw new U(H.UNIMPLEMENTED,`limitToLast() queries require specifying at least one orderBy() clause`)}function iw(e,t,n){let r;return r=e?n&&(n.merge||n.mergeFields)?e.toFirestore(t,n):e.toFirestore(t):t,r}var aw=class{constructor(e,t){this.hasPendingWrites=e,this.fromCache=t}isEqual(e){return this.hasPendingWrites===e.hasPendingWrites&&this.fromCache===e.fromCache}},ow=class e extends tw{constructor(e,t,n,r,i,a){super(e,t,n,r,a),this._firestore=e,this._firestoreImpl=e,this.metadata=i}exists(){return super.exists()}data(e={}){if(this._document){if(this._converter){let t=new sw(this._firestore,this._userDataWriter,this._key,this._document,this.metadata,null);return this._converter.fromFirestore(t,e)}return this._userDataWriter.convertValue(this._document.data.value,e.serverTimestamps)}}get(e,t={}){if(this._document){let n=this._document.data.field(uv(`DocumentSnapshot.get`,e));if(n!==null)return this._userDataWriter.convertValue(n,t.serverTimestamps)}}toJSON(){if(this.metadata.hasPendingWrites)throw new U(H.FAILED_PRECONDITION,`DocumentSnapshot.toJSON() attempted to serialize a document with pending writes. Await waitForPendingWrites() before invoking toJSON().`);let t=this._document,n={};return n.type=e._jsonSchemaVersion,n.bundle=``,n.bundleSource=`DocumentSnapshot`,n.bundleName=this._key.toString(),!t||!t.isValidDocument()||!t.isFoundDocument()?n:(this._userDataWriter.convertObjectMap(t.data.value.mapValue.fields,`previous`),n.bundle=(this._firestore,this.ref.path,`NOT SUPPORTED`),n)}};ow._jsonSchemaVersion=`firestore/documentSnapshot/1.0`,ow._jsonSchema={type:Of(`string`,ow._jsonSchemaVersion),bundleSource:Of(`string`,`DocumentSnapshot`),bundleName:Of(`string`),bundle:Of(`string`)};var sw=class extends ow{data(e={}){return super.data(e)}},cw=class e{constructor(e,t,n,r){this._firestore=e,this._userDataWriter=t,this._snapshot=r,this.metadata=new aw(r.hasPendingWrites,r.fromCache),this.query=n}get docs(){let e=[];return this.forEach((t=>e.push(t))),e}get size(){return this._snapshot.docs.size}get empty(){return this.size===0}forEach(e,t){this._snapshot.docs.forEach((n=>{e.call(t,new sw(this._firestore,this._userDataWriter,n.key,n,new aw(this._snapshot.mutatedKeys.has(n.key),this._snapshot.fromCache),this.query.converter))}))}docChanges(e={}){let t=!!e.includeMetadataChanges;if(t&&this._snapshot.excludesMetadataChanges)throw new U(H.INVALID_ARGUMENT,`To include metadata changes with your document changes, you must also pass { includeMetadataChanges:true } to onSnapshot().`);return this._cachedChanges&&this._cachedChangesIncludeMetadataChanges===t||(this._cachedChanges=function(e,t){if(e._snapshot.oldDocs.isEmpty()){let t=0;return e._snapshot.docChanges.map((n=>{Qb(e._snapshot.query)?vx(e._snapshot.query):e.query._query;let r=new sw(e._firestore,e._userDataWriter,n.doc.key,n.doc,new aw(e._snapshot.mutatedKeys.has(n.doc.key),e._snapshot.fromCache),e.query.converter);return n.doc,{type:`added`,doc:r,oldIndex:-1,newIndex:t++}}))}{let n=e._snapshot.oldDocs;return e._snapshot.docChanges.filter((e=>t||e.type!==3)).map((t=>{let r=new sw(e._firestore,e._userDataWriter,t.doc.key,t.doc,new aw(e._snapshot.mutatedKeys.has(t.doc.key),e._snapshot.fromCache),e.query.converter),i=-1,a=-1;return t.type!==0&&(i=n.indexOf(t.doc.key),n=n.delete(t.doc.key)),t.type!==1&&(n=n.add(t.doc),a=n.indexOf(t.doc.key)),{type:lw(t.type),doc:r,oldIndex:i,newIndex:a}}))}}(this,t),this._cachedChangesIncludeMetadataChanges=t),this._cachedChanges}toJSON(){if(this.metadata.hasPendingWrites)throw new U(H.FAILED_PRECONDITION,`QuerySnapshot.toJSON() attempted to serialize a document with pending writes. Await waitForPendingWrites() before invoking toJSON().`);let t={};t.type=e._jsonSchemaVersion,t.bundleSource=`QuerySnapshot`,t.bundleName=df.newId(),this._firestore._databaseId.database,this._firestore._databaseId.projectId;let n=[],r=[],i=[];return this.docs.forEach((e=>{e._document!==null&&(n.push(e._document),r.push(this._userDataWriter.convertObjectMap(e._document.data.value.mapValue.fields,`previous`)),i.push(e.ref.path))})),t.bundle=(this._firestore,this.query._query,t.bundleName,`NOT SUPPORTED`),t}};function lw(e){switch(e){case 0:return`added`;case 2:case 3:return`modified`;case 1:return`removed`;default:return z(61501,{type:e})}}cw._jsonSchemaVersion=`firestore/querySnapshot/1.0`,cw._jsonSchema={type:Of(`string`,cw._jsonSchemaVersion),bundleSource:Of(`string`,`QuerySnapshot`),bundleName:Of(`string`),bundle:Of(`string`)};function uw(e){e=Df(e,W_);let t=Df(e.firestore,KC);return VC(JC(t),e._key).then((n=>hw(t,e,n)))}function dw(e,t,n){e=Df(e,W_);let r=Df(e.firestore,KC),i=iw(e.converter,t,n);return mw(r,[tv(ev(r),`setDoc`,e._key,i,e.converter!==null,n).toMutation(e._key,Tm.none())])}function fw(e,t,n,...r){e=Df(e,W_);let i=Df(e.firestore,KC),a=ev(i),o;return o=typeof(t=Qr(t))==`string`||t instanceof $g?av(a,`updateDoc`,e._key,t,n,r):iv(a,`updateDoc`,e._key,t),mw(i,[o.toMutation(e._key,Tm.exists(!0))])}function pw(e,...t){e=Qr(e);let n={includeMetadataChanges:!1,source:`default`},r=0;typeof t[r]!=`object`||ew(t[r])||(n=t[r++]);let i={includeMetadataChanges:n.includeMetadataChanges,source:n.source};if(ew(t[r])){let e=t[r];t[r]=e.next?.bind(e),t[r+1]=e.error?.bind(e),t[r+2]=e.complete?.bind(e)}let a,o,s;if(e instanceof W_)o=Df(e.firestore,KC),s=_h(e._key.path),a={next:n=>{t[r]&&t[r](hw(o,e,n))},error:t[r+1],complete:t[r+2]};else{let n=Df(e,U_);o=Df(n.firestore,KC),s=n._query;let i=new ZC(o);a={next:e=>{t[r]&&t[r](new cw(o,i,n,e))},error:t[r+1],complete:t[r+2]},rw(e._query)}return BC(JC(o),s,i,a)}function mw(e,t){return HC(JC(e),t)}function hw(e,t,n){let r=n.docs.get(t._key);return new ow(e,new ZC(e),t._key,r,new aw(n.hasPendingWrites,n.fromCache),t.converter)}(function(e,t=!0){qd(Ta),ba(new ti(`firestore`,((e,{instanceIdentifier:n,options:r})=>{let i=e.getProvider(`app`).getImmediate(),a=new KC(new af(e.getProvider(`auth-internal`)),new lf(i,e.getProvider(`app-check-internal`)),Ep(i,n),i);return r={useFetchStreams:t,...r},a._setSettings(r),a}),`PUBLIC`).setMultipleInstances(!0)),Oa(QC,$C,e),Oa(QC,$C,`esm2020`)})();var gw=Ea({apiKey:`AIzaSyBiKoYLM9_VOiS45UqpOXjm2_HUIgQ-qNs`,authDomain:`frontend-review-eecf3.firebaseapp.com`,projectId:`frontend-review-eecf3`,storageBucket:`frontend-review-eecf3.firebasestorage.app`,messagingSenderId:`142885299058`,appId:`1:142885299058:web:fb528e5996b40a88abf3eb`}),_w=Pu(gw),vw=qC(gw),yw=(e,t)=>Cc(_w,e,t),bw=(e,t)=>Sc(_w,e,t),xw=()=>Dc(_w),Sw=o((e=>{var t=Symbol.for(`react.transitional.element`),n=Symbol.for(`react.fragment`);function r(e,n,r){var i=null;if(r!==void 0&&(i=``+r),n.key!==void 0&&(i=``+n.key),`key`in n)for(var a in r={},n)a!==`key`&&(r[a]=n[a]);else r=n;return n=r.ref,{$$typeof:t,type:e,key:i,ref:n===void 0?null:n,props:r}}e.Fragment=n,e.jsx=r,e.jsxs=r})),$=o(((e,t)=>{t.exports=Sw()}))(),Cw=(0,_.createContext)(),ww=({children:e})=>{let[t,n]=(0,_.useState)(null),[r,i]=(0,_.useState)(!0);(0,_.useEffect)(()=>{let e=Ec(_w,e=>{n(e),i(!1)});return()=>e()},[]);let a={user:t,loading:r,login:(e,t)=>yw(e,t),register:(e,t)=>bw(e,t),logout:()=>xw()};return(0,$.jsx)(Cw.Provider,{value:a,children:!r&&e})},Tw=()=>(0,_.useContext)(Cw),Ew=[{id:`html`,title:`HTML`,accent:`#ff8a3d`,topics:[{id:`doc`,title:`Документ и основы`,questions:[{id:`html-01`,hot:!0,q:`Что такое DOCTYPE и для чего он нужен?`,a:"DOCTYPE (Document Type Declaration) — это не тег, а специальная инструкция, которая должна стоять самой первой строкой в HTML-документе. Для HTML5 она выглядит так: `<!DOCTYPE html>`. Её главная задача — переключить браузер в режим стандартов (Standards Mode). Если DOCTYPE отсутствует или написан с ошибкой, браузер перейдёт в Quirks Mode, пытаясь эмулировать поведение старых браузеров, что сломает современную вёрстку (например, расчёт размеров box-sizing)."},{id:`html-16`,q:"Какова роль тегов `<html>`, `<head>` и `<body>` в структуре документа?",a:"Тег `<html>` является корневым элементом, объединяющим всё содержимое. В `<head>` находятся метаданные: кодировка, viewport, title, подключения стилей и скриптов, которые не отображаются напрямую. В `<body>` размещается вся визуальная структура страницы (текст, изображения, формы), которая рендерится в окне браузера."},{id:`html-02`,hot:!0,q:`В чём разница между блочными и строчными элементами?`,a:"Блочные элементы (div, p, h1) занимают всю доступную ширину и всегда начинаются с новой строки. Строчные (span, a, strong) занимают только пространство, необходимое для содержимого, и не переносят строку. Важно: строчные элементы игнорируют вертикальные `margin`, но `padding` визуально работает, хотя и не сдвигает соседние строки. Строчные не могут содержать блочные элементы (кроме особых случаев, например, `<a>`)."},{id:`html-08`,q:"В чём разница между `<div>` и `<span>`?",a:`div — универсальный контейнер для группировки блочного контента, span — для строчного. Использование этих тегов без семантической нагрузки оправдано, когда нужно применить стили или скрипты к группе элементов, и ни один семантический тег не подходит по смыслу.`}]},{id:`semantics`,title:`Семантика`,questions:[{id:`html-03`,hot:!0,q:`Что такое семантическая вёрстка и зачем она нужна?`,a:"Семантическая вёрстка подразумевает выбор тегов, которые точно описывают содержание (header, nav, main, article, section, aside, footer). Это помогает поисковым системам лучше понимать структуру страницы, а также делает сайт более доступным для скринридеров и других вспомогательных технологий. Использование `<div>` с классом `.header` визуально даст тот же результат, но роботы не поймут, что это шапка сайта."},{id:`html-04`,q:`Какие основные структурные семантические теги появились в HTML5?`,a:"Это теги, которые чётко определяют структуру документа: header (шапка), nav (навигация), main (главное содержимое), article (самостоятельная статья), section (раздел), aside (боковая информация), footer (подвал). Теги вроде `<strong>` тоже семантические, но они отвечают за смысловое выделение текста, а не за каркас страницы."},{id:`html-14`,hot:!0,q:"Разница между `<section>` и `<article>`?",a:"`<section>` обозначает тематическую группу контента (например, глава книги или раздел «О нас»). `<article>` — независимый, завершённый фрагмент, который имеет смысл сам по себе (например, пост в блоге, новость, комментарий, товар). Если контент можно вырвать из контекста и он останется понятным (например, в RSS-ленте) — это article."},{id:`html-17`,q:"В чём семантическая разница между `<b>`/`<strong>` и `<i>`/`<em>`?",a:"Теги `<strong>` (сильная важность) и `<em>` (смысловой акцент) изменяют интонацию чтения, что критично для скринридеров и поисковых ботов. По умолчанию браузеры делают их жирным и курсивом. Теги `<b>` (привлечение внимания) и `<i>` (альтернативное настроение/термин) используются только для визуального оформления, когда смысловое ударение не требуется (например, выделение ключевых слов в обзоре или названий таксонов)."},{id:`html-19`,q:"Когда следует использовать список определений `<dl>` вместо `<ul>` или `<ol>`?",a:"Список определений (`<dl>`) состоит из тегов `<dt>` (термин) и `<dd>` (описание). Это семантически правильный способ верстать словари, FAQ, спецификации товаров или пары «ключ-значение». В отличие от `<ul>` (неупорядоченный) и `<ol>` (упорядоченный) списков, `<dl>` подчёркивает именно связь между понятием и его расшифровкой, что улучшает доступность и парсинг поисковыми системами."},{id:`html-20`,q:"Зачем в таблицах использовать теги `<thead>`, `<tbody>` и `<tfoot>`?",a:"Теги `<thead>`, `<tbody>` и `<tfoot>` группируют строки таблицы по их назначению. Это критично для скринридеров, которые озвучивают заголовки столбцов при чтении тела таблицы. Кроме того, при печати длинных таблиц на бумаге браузер может автоматически повторять `<thead>` и `<tfoot>` на каждой новой странице. С точки зрения CSS они также позволяют применять специфичные стили и использовать `position: sticky` для закрепления шапки при скролле."},{id:`html-27`,q:"В чём назначение тегов `<figure>` и `<figcaption>`?",a:"Тег `<figure>` используется для контента, который дополняет основной текст, но может быть перенесён в другое место без потери смысла (фотографии, диаграммы, фрагменты кода, цитаты). Тег `<figcaption>` (первый или последний дочерний элемент внутри figure) предоставляет подпись. Это улучшает семантику: поисковики и скринридеры понимают, что текст подписи напрямую относится к медиа-объекту."}]},{id:`media`,title:`Медиа и встраивание`,questions:[{id:`html-05`,q:"Для чего используется тег `<canvas>`?",a:"Элемент `<canvas>` создаёт растровую область, в которой с помощью JavaScript (API Canvas 2D или WebGL) можно рисовать графику, анимировать объекты, обрабатывать пиксели и т.д. Он широко применяется в играх, визуализациях данных и редакторах изображений. В отличие от SVG, canvas не хранит объекты в DOM, а рисует пиксели, что лучше для высокой производительности при большом количестве элементов."},{id:`html-06`,hot:!0,q:"Что такое атрибут `alt` у изображений?",a:"Атрибут alt обязателен для тега img. Он должен кратко описывать содержание изображения. Это критично для SEO и для пользователей с нарушениями зрения, которые используют программы чтения с экрана. Также alt показывается, если изображение не загрузилось. За всплывающую подсказку при наведении отвечает атрибут `title`, а не `alt`."},{id:`html-10`,q:`Как вставить видео на страницу?`,a:'Элемент `<video>` позволяет встраивать видеофайлы. Пример: `<video src="movie.mp4" controls></video>`. Лучше использовать несколько источников через `<source>` внутри `<video>` для поддержки разных форматов браузером. Атрибут `controls` добавляет нативные кнопки управления, а `poster` задаёт обложку до начала воспроизведения.'},{id:`html-11`,q:`Что такое iframe?`,a:'Тег `<iframe src="...">` создаёт встроенный фрейм, который загружает отдельную HTML-страницу. Используется для вставки карт, видео, виджетов и т.п. Iframe имеет собственный DOM, историю и window, что обеспечивает изоляцию, но требует осторожности с безопасностью (атрибуты sandbox, X-Frame-Options, CSP).'},{id:`html-25`,hot:!0,q:"Зачем нужен тег `<picture>` с вложенными `<source>`?",a:"Тег `<picture>` выступает обёрткой, а теги `<source>` задают условия через атрибуты `media` (медиа-запросы) и `type` (MIME-тип). Браузер просматривает `<source>` сверху вниз и выбирает первый подходящий. В конце обязательно должен идти тег `<img>` как fallback для старых браузеров и на случай, если ни один source не подошёл. Это лучший способ экономить трафик, отдавая современные форматы поддерживающим браузерам."},{id:`html-26`,hot:!0,q:'Как работает атрибут `loading="lazy"` у изображений и iframe?',a:'Атрибут `loading="lazy"` указывает браузеру отложить загрузку изображений и iframe, которые находятся за пределами текущего экрана. Как только пользователь приближается к ним, браузер начинает загрузку. Это значительно ускоряет первоначальную отрисовку страницы (LCP) и экономит трафик. Не стоит применять его к изображениям первого экрана (above the fold), так как это ухудшит метрики производительности. (За размытие превью отвечает LQIP-техника, а не сам атрибут).'},{id:`html-28`,q:"Что такое тег `<dialog>` и как им управлять?",a:"Тег `<dialog>` решает боль создания модальных окон без сторонних библиотек. Вызов `dialog.showModal()` открывает окно, автоматически создаёт затемнённый фон (`::backdrop`), блокирует скролл страницы и фокусирует первый интерактивный элемент. Закрытие происходит по нажатию Escape или вызову `dialog.close()`. Значение, переданное в `close()`, можно прочитать через свойство `returnValue`."},{id:`html-29`,q:"Для чего нужны теги `<template>` и `<slot>` в HTML?",a:"Тег `<template>` содержит фрагмент HTML, который парсер проверяет на валидность, но не рендерит и не загружает ресурсы (картинки/скрипты) внутри него. Разработчик берёт его содержимое через `content.cloneNode(true)` и вставляет в DOM. Тег `<slot>` — это часть технологии Web Components (Shadow DOM). Он служит «дыркой» в изолированном компоненте, куда пользователь компонента может передать свой HTML-контент из светлого DOM."}]},{id:`forms`,title:`Формы`,questions:[{id:`html-07`,q:"Как работает тег `<form>` и атрибуты `action`, `method`?",a:"Тег `<form>` используется для создания интерактивных форм. Атрибут action определяет URL-адрес, на который будут отправлены данные при отправке формы. Атрибут method указывает HTTP-метод: GET (данные добавляются к URL, ограничены по длине) или POST (данные в теле запроса, безопаснее для паролей и больших объёмов)."},{id:`html-13`,hot:!0,q:`Что такое валидация форм на HTML?`,a:`Современные браузеры поддерживают встроенную валидацию форм. Атрибуты: required (обязательное поле), pattern (регулярное выражение), minlength/maxlength, type (email, url, number). Это улучшает пользовательский опыт (мгновенная обратная связь), но **никогда не заменяет серверную валидацию**, так как клиентскую проверку легко обойти через DevTools или отправив запрос напрямую через curl/Postman.`},{id:`html-21`,q:'Чем отличается `<input type="email">` от `type="text"`?',a:'Главное отличие — встроенная браузерная валидация и UX на мобильных устройствах. При фокусе на `type="email"` смартфон покажет клавиатуру с кнопками «@» и «.com». При отправке формы браузер проверит наличие символа «@» и базовую структуру адреса. Если нужно ввести несколько email через запятую, используется атрибут `multiple`. Однако серверная валидация всё равно обязательна, так как клиентскую можно обойти.'},{id:`html-22`,hot:!0,q:"Зачем нужен тег `<label>` и его атрибут `for`?",a:"Тег `<label>` критически важен для доступности (a11y). Скринридеры читают текст лейбла при фокусе на связанном поле, помогая слабовидящим пользователям понять, что нужно ввести. Атрибут `for` должен совпадать с `id` поля ввода. Это также увеличивает зону клика: пользователь может нажать на текст «Запомнить меня», чтобы поставить галочку в маленьком чекбоксе. Альтернатива — вложить поле прямо внутрь `<label>` без атрибута `for`."},{id:`html-23`,q:"Для чего используются теги `<fieldset>` и `<legend>`?",a:"Эти теги помогают разбить сложную форму на логические блоки (например, «Адрес доставки», «Платёжные данные»). `<fieldset>` визуально объединяет поля, а `<legend>` предоставляет текстовый заголовок. Для скринридеров это сигнал, что поля связаны. Также у `<fieldset>` есть полезное свойство: если добавить ему атрибут `disabled`, все поля внутри него автоматически станут неактивными и не отправятся на сервер."},{id:`html-24`,q:'Когда необходимо использовать `enctype="multipart/form-data"` в форме?',a:"По умолчанию формы используют `application/x-www-form-urlencoded`, который кодирует данные как строку (подходит для текста). Но для передачи файлов (изображений, PDF) этот формат не подходит. `multipart/form-data` разбивает HTTP-запрос на несколько частей (boundary), каждая из которых содержит свой заголовок и бинарное тело. Без этого атрибута сервер получит только имя файла, но не его содержимое. Используется только с методом POST. (Для отправки JSON нативные формы не подходят, нужен fetch/XHR)."}]},{id:`meta`,title:`Метаданные и атрибуты`,questions:[{id:`html-09`,q:`Что такое data-атрибуты?`,a:'Атрибуты, начинающиеся с `data-`, например, `data-user-id="123"`, используются для хранения пользовательских данных. К ним можно обратиться через свойство `dataset` в JavaScript (element.dataset.userId) и использовать в CSS через `attr()`. Это удобно для передачи данных из HTML в скрипты без использования глобальных переменных или лишних запросов.'},{id:`html-12`,hot:!0,q:"Как работает тег `<meta>`?",a:'Элемент `<meta>` размещается в `<head>`. Он не отображается, но влияет на поведение страницы. Например, `charset="UTF-8"` задаёт кодировку, `name="viewport"` управляет масштабированием на мобильных устройствах, `name="description"` используется поисковыми системами для описания страницы в выдаче.'},{id:`html-15`,q:"Для чего используется `<details>` и `<summary>`?",a:"`<details>` — контейнер для скрытого содержимого, `<summary>` — видимый заголовок. При клике на summary содержимое details отображается или скрывается. Это нативный способ создания раскрывающихся панелей (FAQ, спойлеры) без JavaScript. Состояние можно контролировать через атрибут `open` или JS-свойство `.open`."},{id:`html-18`,q:'Зачем нужен атрибут `rel="noopener noreferrer"` у ссылок с `target="_blank"`?',a:'Когда ссылка открывается в новой вкладке (`target="_blank"`), новая страница получает доступ к `window.opener` и может перенаправить родительскую вкладку на фишинговый сайт. `noopener` блокирует этот доступ. `noreferrer` скрывает URL страницы, с которой произошёл переход (в заголовке Referer), что полезно для приватности. В современных браузерах `noopener` применяется по умолчанию, но явное указание остаётся хорошей практикой. (Для SEO-веса используется `rel="nofollow"` или `rel="sponsored"`).'}]},{id:`a11y`,title:`Доступность (a11y)`,questions:[{id:`html-30`,hot:!0,q:`Что такое ARIA-атрибуты и когда их следует применять?`,a:'ARIA (например, `role="button"`, `aria-expanded`, `aria-live`) помогает вспомогательным технологиям понять состояние кастомных интерактивных элементов (слайдеров, древовидных списков, вкладок). Главное правило ARIA: **«Не используйте ARIA, если можно использовать нативный HTML-тег»**. Например, лучше взять `<button>`, чем `<div role="button">`, так как нативный тег уже имеет поддержку клавиатуры и фокуса из коробки. ARIA не меняет поведение или внешний вид, она только добавляет метаданные.'}]}]},{id:`css`,title:`CSS`,accent:`#43d2ff`,topics:[{id:`cascade`,title:`Каскад и наследование`,questions:[{id:`css-01`,hot:!0,q:`Что такое каскадность и специфичность в CSS?`,a:`Каскадность (cascading) — это процесс объединения стилей из разных источников и разрешения конфликтов на основе важности (\`!important\`), происхождения (user agent, user, author) и специфичности.
+`+e.stack),t}var KC=class extends V_{constructor(e,t,n,r){super(e,t,n,r),this.type=`firestore`,this._queue=new WC,this._persistenceKey=r?.name||`[DEFAULT]`}async _terminate(){if(this._firestoreClient){let e=this._firestoreClient.terminate();this._queue=new WC(e),this._firestoreClient=void 0,await e}}};function qC(e,t){let n=typeof e==`object`?e:Da(),r=typeof e==`string`?e:t||wp,i=xa(n,`firestore`).getImmediate({identifier:r});if(!i._initialized){let e=Sr(`firestore`);e&&H_(i,...e)}return i}function JC(e){if(e._terminated)throw new U(H.FAILED_PRECONDITION,`The client has already been terminated.`);return e._firestoreClient||YC(e),e._firestoreClient}function YC(e){let t=e._freezeSettings(),n=D_(e._databaseId,e._app?.options.appId||``,e._persistenceKey,e._app?.options.apiKey,t);e._componentsProvider||t.localCache?._offlineComponentProvider&&t.localCache?._onlineComponentProvider&&(e._componentsProvider={_offline:t.localCache._offlineComponentProvider,_online:t.localCache._onlineComponentProvider}),e._firestoreClient=new NC(e._authCredentials,e._appCheckCredentials,e._queue,n,e._componentsProvider&&function(e){let t=e?._online.build();return{_offline:e?._offline.build(t),_online:t}}(e._componentsProvider))}var XC=class{convertValue(e,t=`none`){switch(Fp(e)){case 0:return null;case 1:return e.booleanValue;case 2:return mp(e.integerValue||e.doubleValue);case 3:return this.convertTimestamp(e.timestampValue);case 4:return this.convertServerTimestamp(e,t);case 5:return e.stringValue;case 6:return this.convertBytes(hp(e.bytesValue));case 7:return this.convertReference(e.referenceValue);case 8:return this.convertGeoPoint(e.geoPointValue);case 9:return this.convertArray(e.arrayValue,t);case 11:return this.convertObject(e.mapValue,t);case 10:return this.convertVectorValue(e.mapValue);default:throw z(62114,{value:e})}}convertObject(e,t){return this.convertObjectMap(e.fields,t)}convertObjectMap(e,t=`none`){let n={};return sp(e,((e,r)=>{n[e]=this.convertValue(r,t)})),n}convertVectorValue(e){let t=e.fields?.[jp].arrayValue?.values?.map((e=>mp(e.doubleValue)));return new q_(t)}convertGeoPoint(e){return new n_(mp(e.latitude),mp(e.longitude))}convertArray(e,t){return(e.values||[]).map((e=>this.convertValue(e,t)))}convertServerTimestamp(e,t){switch(t){case`previous`:let n=xp(e);return n==null?null:this.convertValue(n,t);case`estimate`:return this.convertTimestamp(Sp(e));default:return null}}convertTimestamp(e){let t=pp(e);return new Mf(t.seconds,t.nanos)}convertDocumentKey(e,t){let n=yf.fromString(e);B(qg(n),9688,{name:e});let r=new Tp(n.get(1),n.get(3)),i=new G(n.popFirst(5));return r.isEqual(t)||Xd(`Document ${i} contains a document reference within a different database (${r.projectId}/${r.database}) which is not supported. It will be treated as a reference in the current database (${t.projectId}/${t.database}) instead.`),i}},ZC=class extends XC{constructor(e){super(),this.firestore=e}convertBytes(e){return new Qg(e)}convertReference(e){let t=this.convertDocumentKey(e,this.firestore._databaseId);return new W_(this.firestore,null,t)}},QC=`@firebase/firestore`,$C=`4.16.0`;function ew(e){return function(e,t){if(typeof e!=`object`||!e)return!1;let n=e;for(let e of t)if(e in n&&typeof n[e]==`function`)return!0;return!1}(e,[`next`,`error`,`complete`])}var tw=class{constructor(e,t,n,r,i){this._firestore=e,this._userDataWriter=t,this._key=n,this._document=r,this._converter=i}get id(){return this._key.path.lastSegment()}get ref(){return new W_(this._firestore,this._converter,this._key)}exists(){return this._document!==null}data(){if(this._document){if(this._converter){let e=new nw(this._firestore,this._userDataWriter,this._key,this._document,null);return this._converter.fromFirestore(e)}return this._userDataWriter.convertValue(this._document.data.value)}}_fieldsProto(){return this._document?.data.clone().value.mapValue.fields??void 0}get(e){if(this._document){let t=this._document.data.field(uv(`DocumentSnapshot.get`,e));if(t!==null)return this._userDataWriter.convertValue(t)}}},nw=class extends tw{data(){return super.data()}};function rw(e){if(e.limitType===`L`&&e.explicitOrderBy.length===0)throw new U(H.UNIMPLEMENTED,`limitToLast() queries require specifying at least one orderBy() clause`)}function iw(e,t,n){let r;return r=e?n&&(n.merge||n.mergeFields)?e.toFirestore(t,n):e.toFirestore(t):t,r}var aw=class{constructor(e,t){this.hasPendingWrites=e,this.fromCache=t}isEqual(e){return this.hasPendingWrites===e.hasPendingWrites&&this.fromCache===e.fromCache}},ow=class e extends tw{constructor(e,t,n,r,i,a){super(e,t,n,r,a),this._firestore=e,this._firestoreImpl=e,this.metadata=i}exists(){return super.exists()}data(e={}){if(this._document){if(this._converter){let t=new sw(this._firestore,this._userDataWriter,this._key,this._document,this.metadata,null);return this._converter.fromFirestore(t,e)}return this._userDataWriter.convertValue(this._document.data.value,e.serverTimestamps)}}get(e,t={}){if(this._document){let n=this._document.data.field(uv(`DocumentSnapshot.get`,e));if(n!==null)return this._userDataWriter.convertValue(n,t.serverTimestamps)}}toJSON(){if(this.metadata.hasPendingWrites)throw new U(H.FAILED_PRECONDITION,`DocumentSnapshot.toJSON() attempted to serialize a document with pending writes. Await waitForPendingWrites() before invoking toJSON().`);let t=this._document,n={};return n.type=e._jsonSchemaVersion,n.bundle=``,n.bundleSource=`DocumentSnapshot`,n.bundleName=this._key.toString(),!t||!t.isValidDocument()||!t.isFoundDocument()?n:(this._userDataWriter.convertObjectMap(t.data.value.mapValue.fields,`previous`),n.bundle=(this._firestore,this.ref.path,`NOT SUPPORTED`),n)}};ow._jsonSchemaVersion=`firestore/documentSnapshot/1.0`,ow._jsonSchema={type:Of(`string`,ow._jsonSchemaVersion),bundleSource:Of(`string`,`DocumentSnapshot`),bundleName:Of(`string`),bundle:Of(`string`)};var sw=class extends ow{data(e={}){return super.data(e)}},cw=class e{constructor(e,t,n,r){this._firestore=e,this._userDataWriter=t,this._snapshot=r,this.metadata=new aw(r.hasPendingWrites,r.fromCache),this.query=n}get docs(){let e=[];return this.forEach((t=>e.push(t))),e}get size(){return this._snapshot.docs.size}get empty(){return this.size===0}forEach(e,t){this._snapshot.docs.forEach((n=>{e.call(t,new sw(this._firestore,this._userDataWriter,n.key,n,new aw(this._snapshot.mutatedKeys.has(n.key),this._snapshot.fromCache),this.query.converter))}))}docChanges(e={}){let t=!!e.includeMetadataChanges;if(t&&this._snapshot.excludesMetadataChanges)throw new U(H.INVALID_ARGUMENT,`To include metadata changes with your document changes, you must also pass { includeMetadataChanges:true } to onSnapshot().`);return this._cachedChanges&&this._cachedChangesIncludeMetadataChanges===t||(this._cachedChanges=function(e,t){if(e._snapshot.oldDocs.isEmpty()){let t=0;return e._snapshot.docChanges.map((n=>{Qb(e._snapshot.query)?vx(e._snapshot.query):e.query._query;let r=new sw(e._firestore,e._userDataWriter,n.doc.key,n.doc,new aw(e._snapshot.mutatedKeys.has(n.doc.key),e._snapshot.fromCache),e.query.converter);return n.doc,{type:`added`,doc:r,oldIndex:-1,newIndex:t++}}))}{let n=e._snapshot.oldDocs;return e._snapshot.docChanges.filter((e=>t||e.type!==3)).map((t=>{let r=new sw(e._firestore,e._userDataWriter,t.doc.key,t.doc,new aw(e._snapshot.mutatedKeys.has(t.doc.key),e._snapshot.fromCache),e.query.converter),i=-1,a=-1;return t.type!==0&&(i=n.indexOf(t.doc.key),n=n.delete(t.doc.key)),t.type!==1&&(n=n.add(t.doc),a=n.indexOf(t.doc.key)),{type:lw(t.type),doc:r,oldIndex:i,newIndex:a}}))}}(this,t),this._cachedChangesIncludeMetadataChanges=t),this._cachedChanges}toJSON(){if(this.metadata.hasPendingWrites)throw new U(H.FAILED_PRECONDITION,`QuerySnapshot.toJSON() attempted to serialize a document with pending writes. Await waitForPendingWrites() before invoking toJSON().`);let t={};t.type=e._jsonSchemaVersion,t.bundleSource=`QuerySnapshot`,t.bundleName=df.newId(),this._firestore._databaseId.database,this._firestore._databaseId.projectId;let n=[],r=[],i=[];return this.docs.forEach((e=>{e._document!==null&&(n.push(e._document),r.push(this._userDataWriter.convertObjectMap(e._document.data.value.mapValue.fields,`previous`)),i.push(e.ref.path))})),t.bundle=(this._firestore,this.query._query,t.bundleName,`NOT SUPPORTED`),t}};function lw(e){switch(e){case 0:return`added`;case 2:case 3:return`modified`;case 1:return`removed`;default:return z(61501,{type:e})}}cw._jsonSchemaVersion=`firestore/querySnapshot/1.0`,cw._jsonSchema={type:Of(`string`,cw._jsonSchemaVersion),bundleSource:Of(`string`,`QuerySnapshot`),bundleName:Of(`string`),bundle:Of(`string`)};function uw(e){e=Df(e,W_);let t=Df(e.firestore,KC);return VC(JC(t),e._key).then((n=>hw(t,e,n)))}function dw(e,t,n){e=Df(e,W_);let r=Df(e.firestore,KC),i=iw(e.converter,t,n);return mw(r,[tv(ev(r),`setDoc`,e._key,i,e.converter!==null,n).toMutation(e._key,Tm.none())])}function fw(e,t,n,...r){e=Df(e,W_);let i=Df(e.firestore,KC),a=ev(i),o;return o=typeof(t=Qr(t))==`string`||t instanceof $g?av(a,`updateDoc`,e._key,t,n,r):iv(a,`updateDoc`,e._key,t),mw(i,[o.toMutation(e._key,Tm.exists(!0))])}function pw(e,...t){e=Qr(e);let n={includeMetadataChanges:!1,source:`default`},r=0;typeof t[r]!=`object`||ew(t[r])||(n=t[r++]);let i={includeMetadataChanges:n.includeMetadataChanges,source:n.source};if(ew(t[r])){let e=t[r];t[r]=e.next?.bind(e),t[r+1]=e.error?.bind(e),t[r+2]=e.complete?.bind(e)}let a,o,s;if(e instanceof W_)o=Df(e.firestore,KC),s=_h(e._key.path),a={next:n=>{t[r]&&t[r](hw(o,e,n))},error:t[r+1],complete:t[r+2]};else{let n=Df(e,U_);o=Df(n.firestore,KC),s=n._query;let i=new ZC(o);a={next:e=>{t[r]&&t[r](new cw(o,i,n,e))},error:t[r+1],complete:t[r+2]},rw(e._query)}return BC(JC(o),s,i,a)}function mw(e,t){return HC(JC(e),t)}function hw(e,t,n){let r=n.docs.get(t._key);return new ow(e,new ZC(e),t._key,r,new aw(n.hasPendingWrites,n.fromCache),t.converter)}(function(e,t=!0){qd(Ta),ba(new ti(`firestore`,((e,{instanceIdentifier:n,options:r})=>{let i=e.getProvider(`app`).getImmediate(),a=new KC(new af(e.getProvider(`auth-internal`)),new lf(i,e.getProvider(`app-check-internal`)),Ep(i,n),i);return r={useFetchStreams:t,...r},a._setSettings(r),a}),`PUBLIC`).setMultipleInstances(!0)),Oa(QC,$C,e),Oa(QC,$C,`esm2020`)})();var gw=Ea({apiKey:`AIzaSyBiKoYLM9_VOiS45UqpOXjm2_HUIgQ-qNs`,authDomain:`frontend-review-eecf3.firebaseapp.com`,projectId:`frontend-review-eecf3`,storageBucket:`frontend-review-eecf3.firebasestorage.app`,messagingSenderId:`142885299058`,appId:`1:142885299058:web:fb528e5996b40a88abf3eb`}),_w=Pu(gw),vw=qC(gw),yw=(e,t)=>Cc(_w,e,t),bw=(e,t)=>Sc(_w,e,t),xw=()=>Dc(_w),Sw=o((e=>{var t=Symbol.for(`react.transitional.element`),n=Symbol.for(`react.fragment`);function r(e,n,r){var i=null;if(r!==void 0&&(i=``+r),n.key!==void 0&&(i=``+n.key),`key`in n)for(var a in r={},n)a!==`key`&&(r[a]=n[a]);else r=n;return n=r.ref,{$$typeof:t,type:e,key:i,ref:n===void 0?null:n,props:r}}e.Fragment=n,e.jsx=r,e.jsxs=r})),$=o(((e,t)=>{t.exports=Sw()}))(),Cw=(0,_.createContext)(),ww=({children:e})=>{let[t,n]=(0,_.useState)(null),[r,i]=(0,_.useState)(!0);(0,_.useEffect)(()=>{let e=Ec(_w,e=>{n(e),i(!1)});return()=>e()},[]);let a={user:t,loading:r,login:(e,t)=>yw(e,t),register:(e,t)=>bw(e,t),logout:()=>xw()};return(0,$.jsx)(Cw.Provider,{value:a,children:!r&&e})},Tw=()=>(0,_.useContext)(Cw),Ew=[{id:`html`,title:`HTML`,accent:`#ff8a3d`,topics:[{id:`doc`,title:`Документ и основы`,questions:[{id:`html-01`,hot:!0,q:`Что такое DOCTYPE и для чего он нужен?`,a:`DOCTYPE - это инструкция в первой строке документа.
 
-Специфичность — это вес селектора:
+Для HTML5 она выглядит так: \`<!DOCTYPE html>\`
 
-inline-стили (1000) > ID (100) > классы, псевдоклассы, атрибуты (10) > теги, псевдоэлементы (1).
+Ее задача - переключить браузер в режим стандартов (Standards Mode).
+Если DOCTYPE отсутствует, браузер переходит в Quirks Mode.
+В Quirks Mode расчет размеров, отступов и поведения элементов меняется.
+Например, \`box-sizing\` может работать иначе, и верстка сломается.`},{id:`html-16`,q:`Какова роль тегов html, head и body?`,a:`\`<html>\` - корневой элемент, объединяет весь документ.
 
-Чем выше специфичность, тем приоритетнее правило. При равной специфичности побеждает последнее объявленное.
+\`<head>\` - метаданные, которые не отображаются:
+- кодировка (\`charset\`)
+- viewport для мобильных
+- title вкладки
+- подключение стилей и скриптов
 
-\`!important\` переопределяет всё, кроме другого \`!important\` с большей специфичностью. Используйте его крайне редко.`},{id:`css-02`,q:`Какие есть способы подключения CSS к HTML?`,a:'**Внешний**: `<link rel="stylesheet" href="style.css">`. Рекомендуется для разделения стилей и структуры. Кэшируется браузером.\n\n**Внутренний**: `<style> ... </style>` в head. Для специфичных стилей конкретной страницы.\n\n**Инлайн**: `style="color:red;"` у тега. Наивысший приоритет (специфичность 1000), но плохо поддерживается и не переиспользуется.\n\nАльтернатива внешнему — `@import url("style.css")` внутри `<style>`, но он медленнее и блокирует параллельную загрузку.'},{id:`css-22`,q:`Как работает наследование в CSS?`,a:"Наследование — механизм, при котором дочерние элементы получают значения некоторых свойств от родителей.\n\nНаследуются: типографика (`font-size`, `color`, `line-height`, `text-align`), списки (`list-style`).\n\nНе наследуются: размеры (`width`, `height`), отступы (`margin`, `padding`), границы (`border`), позиционирование.\n\nМожно принудительно наследовать: `margin: inherit;` или сбросить: `all: initial;`."}]},{id:`selectors`,title:`Селекторы и псевдоклассы`,questions:[{id:`css-03`,q:`Что такое CSS-селекторы и какие основные типы вы знаете?`,a:'Селекторы — основа CSS. Примеры:\n\n`div` — все div.\n`.header` — по классу.\n`#main` — по ID.\n`[type="text"]` — по атрибуту.\n`:first-child` — псевдокласс.\n`::after` — псевдоэлемент.\n\nКомбинаторы:\n\n`div p` — потомок.\n`div > p` — прямой потомок.\n`div + p` — сосед.\n`div ~ p` — все следующие соседи.\n\nСпецифичность растёт с количеством селекторов в цепочке.'},{id:`css-08`,q:`Что такое псевдоклассы и псевдоэлементы?`,a:"Псевдоклассы добавляются к селектору с одним двоеточием. Например, `a:hover` или `li:first-child`. Они определяют состояние: наведение, фокус, позиция.\n\nПсевдоэлементы — с двумя двоеточиями: `::before`, `::after`, `::first-line`. Они создают виртуальные элементы или стилизуют части элемента.\n\nНапример, `div::before` вставляет контент до содержимого div. Для работы нужно свойство `content`."},{id:`css-33`,q:"Что делают псевдоклассы `:is()`, `:where()` и `:has()`?",a:"`:is()` — принимает список селекторов, упрощает запись. `:is(h1, h2, h3) { color: red; }` вместо `h1, h2, h3 { ... }`. Специфичность равна самому специфичному селектору в списке.\n\n`:where()` — то же самое, но специфичность всегда 0. Полезно для сброса стилей.\n\n`:has()` — родительский селектор. Выбирает элемент, содержащий определённых потомков. `div:has(> p)` — div с прямым потомком p.\n\n`:has()` поддерживается во всех современных браузерах с 2023 года."},{id:`css-35`,q:`Что такое CSS Nesting (вложенность)?`,a:`Пример: \`.parent { color: red; .child { color: blue; &:hover { color: green; } } }\`.
+\`<body>\` - все визуальное содержимое страницы.
+Текст, изображения, формы, интерактивные элементы.`},{id:`html-02`,hot:!0,q:`В чем разница между блочными и строчными элементами?`,a:"Блочные элементы (`div`, `p`, `h1`, `section`):\n- занимают всю доступную ширину\n- начинаются с новой строки\n- можно задавать width, height, margin, padding\n\nСтрочные элементы (`span`, `a`, `strong`, `em`):\n- занимают только ширину содержимого\n- не переносят строку\n- нельзя задать width и height\n- вертикальные margin не работают\n\nСтрочные не могут содержать блочные.\nИсключение: `<a>` может содержать блочные в HTML5."},{id:`html-08`,q:`В чем разница между div и span?`,a:"`div` - универсальный блочный контейнер.\n`span` - универсальный строчный контейнер.\n\nОба не несут семантической нагрузки.\nИх используют когда ни один семантический тег не подходит.\n\nНапример, `div` для обертки секций, `span` для выделения слова в тексте.\nЕсли есть подходящий семантический тег - лучше использовать его."},{id:`html-20`,hot:!0,q:`Что делает meta viewport и зачем он нужен?`,a:`\`<meta name="viewport" content="width=device-width, initial-scale=1.0">\`
 
-Символ \`&\` ссылается на родительский селектор.
+Без этого тега мобильные браузеры рендерят страницу как десктопную.
+Обычно с шириной 980px, а потом уменьшают масштаб.
 
-Поддерживаются псевдоклассы: \`.button { &:hover { ... } }\`.
+С тегом viewport:
+- ширина страницы равна ширине экрана устройства
+- initial-scale=1.0 запрещает начальное масштабирование
+- CSS медиазапросы работают корректно
 
-Медиа-запросы: \`.container { @media (min-width: 768px) { ... } }\`.
+Это обязательный тег для адаптивной верстки.`}]},{id:`semantics`,title:`Семантика`,questions:[{id:`html-03`,hot:!0,q:`Что такое семантическая верстка и зачем она нужна?`,a:`Семантическая верстка - выбор тегов по смыслу содержимого.
 
-Упрощает чтение и поддержку кода, уменьшает дублирование. Поддерживается во всех современных браузерах с 2023 года.`}]},{id:`boxmodel`,title:`Блочная модель и display`,questions:[{id:`css-21`,hot:!0,q:`Что такое CSS Box Model и из чего он состоит?`,a:`Box Model состоит из четырёх областей:
+Вместо \`<div class="header">\` используем \`<header>\`.
+Вместо \`<div class="nav">\` используем \`<nav>\`.
 
-**content** — содержимое.
-**padding** — внутренний отступ.
-**border** — граница.
-**margin** — внешний отступ.
+Зачем:
+- Поисковые системы лучше понимают структуру
+- Скринридеры корректно озвучивают контент
+- Код становится читабельнее
+- Проще поддерживать и рефакторить
 
-По умолчанию (\`content-box\`) width и height задаются только для content. Padding и border добавляются сверху.
+Визуально разницы нет, но для роботов и доступности - огромная.`},{id:`html-04`,hot:!0,q:`Какие основные семантические теги появились в HTML5?`,a:"Каркас страницы:\n- `<header>` - шапка страницы или секции\n- `<nav>` - навигация\n- `<main>` - основной контент (один на страницу)\n- `<section>` - тематический раздел\n- `<article>` - самостоятельный контент\n- `<aside>` - боковая информация\n- `<footer>` - подвал страницы или секции\n\nТекстовые:\n- `<strong>` - важность (жирный)\n- `<em>` - акцент (курсив)\n- `<time>` - дата и время\n- `<mark>` - выделение маркером"},{id:`html-14`,hot:!0,q:`Разница между section и article?`,a:`\`<section>\` - тематическая группа контента.
+Например, глава книги, раздел с отзывами, блок с ценами.
 
-С \`box-sizing: border-box\` размеры включают padding и border.
+\`<article>\` - независимый, законченный фрагмент.
+Его можно вырвать из контекста и он останется понятным.
+Например, пост в блоге, новость, комментарий, карточка товара.
 
-Margin может схлопываться (collapsing) у соседних вертикальных элементов.`},{id:`css-04`,hot:!0,q:"В чём разница между `display: block`, `inline`, `inline-block`?",a:`**block**: элемент занимает всю доступную ширину, начинается с новой строки. Можно задавать width, height, margin, padding.
+Простой тест:
+Если контент можно отправить в RSS-ленту отдельно - это \`article\`.
+Если это часть чего-то большего - это \`section\`.
 
-**inline**: не переносит строку, ширина определяется содержимым. Нельзя задать высоту и ширину. Вертикальные margin не работают.
+Они могут вкладываться друг в друга:
+\`article\` может содержать \`section\`, и наоборот.`},{id:`html-21`,q:`В чем разница между b и strong, i и em?`,a:"`<strong>` - сильная важность, предупреждение.\n`<b>` - визуальное выделение без смыслового акцента.\n\n`<em>` - смысловой акцент, интонационное ударение.\n`<i>` - альтернативное настроение, термин, иностранное слово.\n\nДля скринридеров:\n`strong` и `em` меняют интонацию чтения.\n`b` и `i` - просто визуальное оформление.\n\nДля SEO:\nПоисковики учитывают `strong` и `em` как сигналы важности."}]},{id:`media`,title:`Медиа и встраивание`,questions:[{id:`html-06`,hot:!0,q:`Что такое атрибут alt у изображений?`,a:'Атрибут `alt` обязателен для тега `<img>`.\n\nОн описывает содержимое изображения для:\n- скринридеров (пользователи с нарушениями зрения)\n- поисковых систем (SEO)\n- показа текста если изображение не загрузилось\n\nХороший alt: `alt="Логотип компании Google"`\nПлохой alt: `alt="картинка"` или `alt="logo.png"`\n\nДля декоративных изображений: `alt=""` (пустой).\nСкринридер пропустит такое изображение.\n\nНе путать с `title` - это всплывающая подсказка при наведении.'},{id:`html-23`,hot:!0,q:`Зачем нужен тег picture с вложенными source?`,a:"`<picture>` позволяет отдавать разные изображения в разных условиях.\n\nВнутри `<picture>` идут теги `<source>` с условиями:\n- `media` - медиазапросы (размер экрана)\n- `type` - MIME-тип (WebP, AVIF)\n\nБраузер просматривает `<source>` сверху вниз.\nВыбирает первый подходящий.\nВ конце обязательно `<img>` как fallback.\n\nЭто экономит трафик пользователей.\nСовременные форматы (WebP, AVIF) весят меньше JPEG/PNG.\nНо поддерживаются не всеми браузерами."},{id:`html-24`,hot:!0,q:`Как работает loading lazy у изображений?`,a:`\`<img loading="lazy">\` откладывает загрузку изображения.
 
-**inline-block**: не переносит строку, но можно задавать размеры, отступы и рамки. Гибрид обоих подходов.`},{id:`css-11`,hot:!0,q:"Как работает `box-sizing`?",a:"По умолчанию `box-sizing: content-box` — ширина задаётся только для содержимого. Padding и border добавляются сверху.\n\n`width: 100px` + `padding: 10px` = итоговая ширина 120px.\n\n`box-sizing: border-box` — ширина включает padding и border.\n\n`width: 100px` + `padding: 10px` = итоговая ширина 100px, содержимое сжимается.\n\nЧасто применяют глобально: `* { box-sizing: border-box; }` для упрощения расчётов макета."},{id:`css-30`,q:"В чём разница между `outline` и `border`?",a:"`border` — часть box model. Влияет на размеры элемента, может быть скруглена через `border-radius`, поддерживает разные стили для каждой стороны.\n\n`outline` — рисуется поверх border, не влияет на размеры и поток. Не может быть скруглена в некоторых браузерах. Поддерживает `outline-offset`.\n\nOutline обычно используется для фокуса (focus ring). Не наследуется и не может быть задана для отдельных сторон."},{id:`css-23`,q:"Что делает свойство `overflow`?",a:"Значения:\n\n`visible` — по умолчанию, содержимое выходит за границы.\n`hidden` — обрезается, скролл недоступен.\n`scroll` — всегда показывается скролл, даже если не нужен.\n`auto` — скролл появляется только при необходимости.\n\nМожно задавать отдельно: `overflow-x`, `overflow-y`.\n\nЧасто используется для создания кастомных скроллбаров и обрезки текста (`text-overflow: ellipsis`)."}]},{id:`position`,title:`Позиционирование и слои`,questions:[{id:`css-07`,hot:!0,q:`Как работает позиционирование (relative, absolute, fixed, sticky)?`,a:"`static` — по умолчанию, элемент в обычном потоке.\n\n`relative`: элемент смещается относительно своего нормального положения, но занимает место в потоке.\n\n`absolute`: полностью удаляется из потока. Позиционируется относительно ближайшего positioned предка (не static).\n\n`fixed`: относительно viewport. Не двигается при скролле.\n\n`sticky`: ведёт себя как relative до достижения порога (top, bottom), затем фиксируется как fixed."},{id:`css-12`,hot:!0,q:"Что такое `z-index` и когда он работает?",a:"Элементы с большим `z-index` находятся выше. `z-index` работает только на элементах с `position` (кроме static).\n\nТакже создаётся новый контекст наложения (stacking context) для дочерних элементов.\n\nПо умолчанию элементы в DOM перекрывают друг друга в порядке следования: последний выше.\n\nОтрицательные значения `z-index` позволяют поместить элемент под родительский."},{id:`css-24`,q:"Что такое `float` и `clear` и почему они устарели?",a:`\`float\` (left, right) изначально предназначался для обтекания изображений текстом, но стал использоваться для создания колоночных макетов.
+Браузер не загружает картинку пока она за пределами экрана.
+Когда пользователь приближается к ней - загрузка начинается.
 
-Требовал хаков (clearfix) для очистки. \`clear\` (left, right, both) запрещал обтекание с указанной стороны.
+Это ускоряет первоначальную отрисовку страницы.
+Экономит трафик пользователей и сервера.
 
-С появлением flexbox и grid float устарел для layouts, но всё ещё используется для обтекания текста вокруг изображений.`}]},{id:`flex`,title:`Flexbox`,questions:[{id:`css-05`,hot:!0,q:`Что такое flexbox и для чего он используется?`,a:"Flexbox позволяет легко выравнивать элементы внутри контейнера по основной и поперечной осям.\n\nОсновные свойства контейнера: `display: flex`, `flex-direction` (row, column), `justify-content` (выравнивание по главной оси), `align-items` (по поперечной), `flex-wrap`.\n\nСвойства дочерних элементов: `flex-grow`, `flex-shrink`, `flex-basis`.\n\nИдеально подходит для компонентов интерфейса, навигации, карточек."},{id:`css-36`,q:"Что делает свойство `gap` в flexbox и grid?",a:"Пример: `display: flex; gap: 20px;` или `display: grid; gap: 10px 20px;` (rows columns).\n\nВ отличие от margin, gap применяется только между элементами, не добавляя отступы по краям контейнера.\n\nМожно задавать отдельно: `row-gap`, `column-gap`.\n\nРаботает только в flex и grid контейнерах, не в обычном потоке. Упрощает создание равномерных интервалов без хаков с отрицательными margin."}]},{id:`grid`,title:`Grid и центрирование`,questions:[{id:`css-06`,hot:!0,q:`Что такое CSS Grid и для чего он используется?`,a:"CSS Grid Layout даёт возможность управлять расположением элементов в двух измерениях одновременно.\n\nОпределяется сетка через `grid-template-columns`, `grid-template-rows`. Размещение элементов через `grid-column`, `grid-row` или `grid-area`.\n\nПоддерживает именованные области, авто-размещение, `minmax()`, `repeat()`.\n\nПозволяет создавать сложные макеты (dashboard, галереи) без дополнительных обёрток."},{id:`css-13`,hot:!0,q:`Как центрировать элемент по вертикали и горизонтали?`,a:`Современные способы:
+Не используйте lazy для изображений первого экрана.
+Это ухудшит метрику LCP (Largest Contentful Paint).
 
-**flexbox**: родитель \`display: flex; justify-content: center; align-items: center;\`.
+Также работает для \`<iframe loading="lazy">\`.`},{id:`html-10`,q:`Как вставить видео на страницу?`,a:"Тег `<video>` встраивает видеофайлы.\n\nАтрибуты:\n- `controls` - показывает кнопки управления\n- `autoplay` - автовоспроизведение (обычно с `muted`)\n- `loop` - зацикливание\n- `poster` - обложка до начала воспроизведения\n\nЛучше использовать несколько `<source>` внутри `<video>`:\nОдин в WebM, другой в MP4.\nБраузер выберет поддерживаемый формат."},{id:`html-11`,q:`Что такое iframe?`,a:`\`<iframe>\` встраивает отдельную HTML-страницу внутри текущей.
 
-**grid**: \`display: grid; place-items: center;\`.
+Используется для:
+- карт (Google Maps, Yandex Maps)
+- видео (YouTube)
+- виджетов и рекламных баннеров
 
-**absolute**: \`top: 50%; left: 50%; transform: translate(-50%, -50%);\`.
+У iframe свой DOM, своя история, свой window.
+Это обеспечивает изоляцию, но требует осторожности.
 
-Для строчных элементов: \`text-align: center\` и \`line-height\` равный высоте.
+Атрибут \`sandbox\` ограничивает возможности iframe.
+Например, запрещает выполнение скриптов или отправку форм.`},{id:`html-05`,q:`Для чего используется тег canvas?`,a:`\`<canvas>\` создает растровую область для рисования через JavaScript.
 
-Старые методы (table-cell, margin: 0 auto с фиксированной шириной) устарели.`}]},{id:`units`,title:`Единицы и функции`,questions:[{id:`css-15`,hot:!0,q:"Разница между `em` и `rem`?",a:`\`em\` — относительная единица, зависящая от размера шрифта родительского элемента. Может вызывать каскадные эффекты: вложенные элементы увеличиваются.
+Используется для:
+- игр
+- графиков и визуализаций
+- редакторов изображений
+- анимаций
 
-\`rem\` (root em) — относительно размера шрифта корневого элемента (\`html\`, обычно 16px по умолчанию).
+В отличие от SVG, canvas рисует пиксели.
+Он не хранит объекты в DOM.
+Это быстрее при большом количестве элементов.
 
-Использование rem упрощает масштабирование всего интерфейса, меняя только корневой размер.
+SVG лучше для интерактивных векторных фигур.
+Canvas лучше для высокопроизводительной графики.`}]},{id:`forms`,title:`Формы`,questions:[{id:`html-07`,hot:!0,q:`Как работает тег form и атрибуты action, method?`,a:`\`<form>\` создает интерактивную форму для отправки данных.
 
-Рекомендуется использовать rem для глобальных размеров, em — для локальных (например, padding внутри компонента).`},{id:`css-16`,q:"Что такое `calc()` в CSS?",a:"Пример: `width: calc(50% - 10px);`.\n\nПоддерживает `+`, `-`, `*`, `/`. Позволяет смешивать проценты, пиксели, em и другие единицы.\n\nПолезна для адаптивных макетов, где нужно учитывать отступы.\n\nМожно вкладывать: `calc(100% - calc(20px * 2))`.\n\nРаботает в большинстве свойств, принимающих числовые значения: width, height, margin, padding, font-size."},{id:`css-31`,q:`Какие относительные единицы измерения есть в CSS?`,a:"`vw` (viewport width) — 1% от ширины viewport.\n`vh` (viewport height) — 1% от высоты.\n`vmin` — меньшее из vw и vh.\n`vmax` — большее из vw и vh.\n`ch` — ширина символа 0 в текущем шрифте. Полезно для ограничения ширины текста.\n\nТакже есть `%` (относительно родителя), `em` (относительно шрифта родителя), `rem` (относительно корневого шрифта).\n\nЭти единицы помогают создавать адаптивные макеты без медиа-запросов."},{id:`css-32`,q:"Что делают функции `min()`, `max()` и `clamp()`?",a:`Примеры:
+\`action\` - URL, куда отправляются данные.
+\`method\` - HTTP-метод отправки.
 
-\`width: min(50%, 300px);\` — возьмёт меньшее из 50% и 300px.
-\`height: max(100px, 50vh);\` — возьмёт большее.
-\`font-size: clamp(16px, 2vw, 24px);\` — значение между 16px и 24px, в идеале 2vw.
+GET:
+- данные добавляются к URL как query-строка
+- ограничены по длине (~2048 символов)
+- видны в адресной строке
+- подходят для поиска и фильтров
 
-Эти функции позволяют создавать адаптивные значения без медиа-запросов.
+POST:
+- данные в теле запроса
+- нет ограничения по длине
+- не видны в URL
+- подходят для паролей, файлов, больших данных`},{id:`html-22`,hot:!0,q:`Когда нужен enctype multipart/form-data?`,a:`По умолчанию формы используют \`application/x-www-form-urlencoded\`.
+Данные кодируются как строка: \`name=John&age=25\`
 
-Можно комбинировать с calc(): \`width: calc(min(50%, 300px) - 20px);\`.`}]},{id:`vars`,title:`Переменные и @-правила`,questions:[{id:`css-10`,q:`Что такое CSS-переменные (custom properties)?`,a:'Пример: `:root { --main-color: #3498db; }` затем `color: var(--main-color);`.\n\nПеременные наследуются, могут быть изменены через медиа-запросы и JavaScript: `element.style.setProperty("--main-color", "red")`. Это облегчает создание динамических тем.\n\nМожно задавать fallback: `var(--color, blue)`.\n\nВ отличие от препроцессоров, работают в рантайме.'},{id:`css-34`,q:"Что такое @-правила: `@media`, `@supports`, `@layer`?",a:"`@media` — применяет стили при определённых условиях (ширина экрана, ориентация): `@media (max-width: 768px) { ... }`.\n\n`@supports` — проверяет поддержку свойства: `@supports (display: grid) { ... }` с fallback через `@supports not`.\n\n`@layer` — определяет каскадные слои для управления приоритетом стилей: `@layer base, components, utilities;`.\n\nСтили в более позднем слое имеют больший приоритет, независимо от специфичности."}]},{id:`adaptive`,title:`Адаптивность`,questions:[{id:`css-09`,hot:!0,q:`Как сделать адаптивный дизайн?`,a:`Основные инструменты:
+Для загрузки файлов нужен \`multipart/form-data\`:
+\`<form method="POST" enctype="multipart/form-data">\`
 
-**media queries** — изменение стилей в зависимости от ширины экрана, ориентации.
+Этот формат разбивает запрос на части.
+Каждая часть содержит заголовок и бинарное тело.
 
-**относительные единицы** (%, vw, vh, rem, em) вместо фиксированных пикселей.
+Без этого атрибута сервер получит только имя файла.
+Но не его содержимое.
 
-**flexbox и grid** для гибкого расположения.
+Используется только с методом POST.`},{id:`html-13`,hot:!0,q:`Что такое нативная валидация форм в HTML5?`,a:'HTML5 предлагает встроенную валидацию без JavaScript.\n\nАтрибуты:\n- `required` - обязательное поле\n- `pattern` - регулярное выражение\n- `minlength` / `maxlength` - длина текста\n- `min` / `max` - диапазон чисел\n- `type="email"` - проверка формата email\n- `type="url"` - проверка формата URL\n\nБраузер показывает сообщение об ошибке при отправке.\n\nНо клиентскую валидацию легко обойти.\nСерверная валидация обязательна всегда.'},{id:`html-15`,q:`Для чего используются details и summary?`,a:`\`<details>\` - контейнер со скрытым содержимым.
+\`<summary>\` - видимый заголовок для раскрытия.
 
-\`<picture>\` и \`<source>\` для адаптивных изображений.
+При клике на \`summary\` содержимое показывается или скрывается.
+Это работает без JavaScript.
 
-\`clamp()\` для плавного масштабирования.
+Используется для:
+- FAQ секций
+- спойлеров
+- раскрывающихся панелей
 
-Mobile-first подход: сначала стили для мобильных, затем медиа-запросы для больших экранов.`},{id:`css-37`,q:"Что делает свойство `aspect-ratio`?",a:`Пример: \`aspect-ratio: 16 / 9;\` или \`aspect-ratio: 1;\` (квадрат).
+Атрибут \`open\` раскрывает блок по умолчанию.
+Состояние можно контролировать через JS: \`details.open = true\``}]},{id:`a11y`,title:`Доступность (a11y)`,questions:[{id:`html-17`,hot:!0,q:`Что такое ARIA-атрибуты и когда их применять?`,a:`ARIA (Accessible Rich Internet Applications) - набор атрибутов.
+Они помогают скринридерам понять кастомные элементы.
 
-Если задана width, height вычисляется автоматически, и наоборот.
+Примеры:
+- \`role="button"\` - div ведет себя как кнопка
+- \`aria-expanded="true"\` - состояние раскрытия
+- \`aria-label="Закрыть окно"\` - текстовая метка
+- \`aria-hidden="true"\` - скрыть от скринридера
 
-Полезно для видео, изображений, карточек с фиксированными пропорциями.
+Главное правило ARIA:
+Не используйте ARIA, если есть нативный HTML-тег.
+Лучше \`<button>\`, чем \`<div role="button">\`.
 
-Можно комбинировать с min-width и max-width.
+Нативный тег уже имеет поддержку клавиатуры и фокуса.`},{id:`html-18`,hot:!0,q:`Что такое tabindex и как работает навигация с клавиатуры?`,a:'`tabindex` управляет порядком фокусировки через клавишу Tab.\n\n- `tabindex="0"` - элемент в потоке табуляции\n- `tabindex="-1"` - фокус только через JS, не через Tab\n- `tabindex="1"` и выше - кастомный порядок (не рекомендуется)\n\nНативные интерактивные элементы (`button`, `a`, `input`)\nуже имеют tabindex по умолчанию.\n\nДля кастомных виджетов (div-кнопка) нужно добавить `tabindex="0"`.\nИначе пользователь с клавиатуры не сможет к нему добраться.\n\nИзбегайте положительных значений tabindex.\nОни ломают естественный порядок навигации.'},{id:`html-19`,q:`Зачем нужен label и как он связан с input?`,a:`\`<label>\` связывает текст с полем ввода.
 
-Заменяет старый хак с padding-top в процентах (padding-top: 56.25% для 16:9).
+Два способа связи:
+1. Атрибут \`for\` совпадает с \`id\` поля
+2. Поле вложено внутрь \`<label>\`
 
-Поддерживается во всех современных браузерах с 2021 года.`},{id:`css-38`,q:"Что делают свойства `scroll-snap` и `scroll-behavior`?",a:"`scroll-snap-type` (на контейнере): `x mandatory` или `y proximity` — определяет ось и строгость привязки.\n\n`scroll-snap-align` (на дочерних элементах): `start`, `center`, `end` — точка привязки.\n\nСоздаёт эффект карусели или слайдера без JavaScript.\n\n`scroll-behavior`: `smooth` — плавная прокрутка при клике на якорные ссылки или программном скролле. `auto` — мгновенная прокрутка (по умолчанию).\n\nМожно задавать для html: `html { scroll-behavior: smooth; }`."}]},{id:`decoration`,title:`Оформление: фоны и эффекты`,questions:[{id:`css-17`,q:"Как работает `object-fit` для изображений?",a:"Свойство `object-fit` работает для заменяемых элементов: img, video, iframe.\n\nЗначения:\n\n`fill` — растянуть, может исказить.\n`contain` — вписать без обрезки, могут появиться пустые области.\n`cover` — заполнить контейнер, обрезая края.\n`none` — оригинальный размер.\n`scale-down` — выбирает наименьший из none и contain.\n\nЧасто используется с `object-position` для управления точкой фокуса."},{id:`css-19`,q:`Как задать градиент в CSS?`,a:`Пример: \`background: linear-gradient(to right, red, blue);\` или \`radial-gradient(circle, yellow, green);\`.
+Зачем:
+- Скринридер читает текст лейбла при фокусе на поле
+- Клик по тексту лейбла фокусирует поле
+- Увеличивается зона клика
 
-Можно задавать несколько цветов и направления: 45deg, to bottom right.
+Без label скринридер не знает, что нужно ввести.
+Это критично для доступности форм.`}]},{id:`scripts`,title:`Скрипты и загрузка`,questions:[{id:`html-25`,hot:!0,q:`В чем разница между async и defer у script?`,a:`Без атрибутов скрипт блокирует парсинг HTML.
 
-Также есть \`conic-gradient()\` для конических градиентов.
+\`async\`:
+- загружается в фоне, не блокирует парсинг
+- выполняется сразу как загрузится
+- порядок выполнения не гарантирован
+- для независимых скриптов: аналитика, реклама
 
-Градиенты генерируются CSS без загрузки изображений, что улучшает производительность.
+\`defer\`:
+- загружается в фоне, не блокирует парсинг
+- выполняется после полного парсинга HTML
+- порядок скриптов сохраняется
+- для скриптов которым нужен DOM
 
-Можно комбинировать с изображениями: \`background: linear-gradient(...), url(...);\`.`},{id:`css-28`,q:"Как работает сокращённая запись `background`?",a:`Пример: \`background: #f0f0f0 url("image.png") no-repeat center/cover fixed;\`.
+Модули \`type="module"\` по умолчанию ведут себя как defer.`},{id:`html-26`,q:`Что такое Web Components?`,a:`Web Components - набор технологий для создания переиспользуемых компонентов.
 
-Порядок: color, image, repeat, attachment, position/size.
+Три основных API:
+- Custom Elements - создание своих тегов
+- Shadow DOM - изолированный DOM внутри элемента
+- HTML Templates - шаблоны через \`<template>\` и \`<slot>\`
 
-Можно указывать не все свойства, остальные получат значения по умолчанию.
+Пример: \`<my-button>Текст</my-button>\`
 
-Поддерживает несколько фонов через запятую: \`background: url(top.png) top, url(bottom.png) bottom;\`.
+Shadow DOM изолирует стили и разметку компонента.
+Стили извне не проникают внутрь, и наоборот.
 
-\`background-size\` можно задавать через слэш после position: \`center/cover\`.`},{id:`css-29`,q:"Что делают `border-radius`, `box-shadow` и `text-shadow`?",a:"`border-radius`: скругляет углы. Можно задавать для каждого угла отдельно: `border-radius: 10px 5px 10px 5px;` или эллиптически: `50% / 30%;`.\n\n`box-shadow`: добавляет тень. `box-shadow: 2px 2px 5px rgba(0,0,0,0.3);` (смещение X, Y, размытие, цвет). Можно несколько теней через запятую. Поддерживает `inset` для внутренней тени.\n\n`text-shadow`: тень для текста. `text-shadow: 1px 1px 2px black;`."}]},{id:`animation`,title:`Анимации и трансформации`,questions:[{id:`css-14`,q:`Что такое @keyframes и как сделать анимацию?`,a:"Пример: `@keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }`.\n\nЗатем `.element { animation: slide 2s ease-in-out infinite; }`.\n\nАнимации управляются свойствами: `animation-duration`, `animation-timing-function`, `animation-delay`, `animation-iteration-count`, `animation-direction`, `animation-fill-mode`.\n\nВ отличие от `transition`, анимации могут иметь несколько ключевых кадров и повторяться."},{id:`css-25`,q:"Как работает `transition`?",a:"Пример: `transition: all 0.3s ease-in-out;` или `transition: background-color 0.5s, transform 0.2s;`.\n\nСвойства:\n\n`transition-property` — какие свойства анимировать.\n`transition-duration` — длительность.\n`transition-timing-function` — функция времени: ease, linear, cubic-bezier.\n`transition-delay` — задержка.\n\nВ отличие от @keyframes, transition работает только при изменении значения свойства, например при `:hover`."},{id:`css-26`,q:"Что делает свойство `transform`?",a:"Основные функции:\n\n`translate(x, y)` — перемещение.\n`rotate(deg)` — поворот.\n`scale(x, y)` — масштабирование.\n`skew(x, y)` — искажение.\n\nМожно комбинировать: `transform: translateX(10px) rotate(45deg);`.\n\nПоддерживает 3D: `rotateX()`, `rotateY()`, `translateZ()`.\n\nTransform не вызывает reflow (перерасчёт макета), только repaint. Это делает его производительным. Часто используется с transition для анимаций."},{id:`css-18`,q:"Что такое `will-change`?",a:`Пример: \`will-change: transform, opacity;\`.
+React и Vue используют похожие идеи.
+Но Web Components - нативный стандарт браузера.`}]}]},{id:`css`,title:`CSS`,accent:`#43d2ff`,topics:[{id:`cascade`,title:`Каскад и специфичность`,questions:[{id:`css-01`,hot:!0,q:`Что такое каскадность и специфичность в CSS?`,a:`Каскадность - процесс разрешения конфликтов стилей.
 
-Используется для улучшения производительности анимаций и трансформаций. Браузер заранее создаёт композитный слой для элемента, что ускоряет рендеринг.
+Приоритет определяется по порядку:
+1. Важность: \`!important\`
+2. Происхождение: user agent, user, author
+3. Специфичность селектора
+4. Порядок объявления (последний побеждает)
 
-Однако злоупотребление может ухудшить производительность из-за лишних слоёв и потребления памяти.
+Специфичность - вес селектора:
+- inline-стили: 1000
+- ID: 100
+- классы, псевдоклассы, атрибуты: 10
+- теги, псевдоэлементы: 1
 
-Применяйте только при реальной необходимости и удаляйте после завершения анимации.`}]},{id:`hide`,title:`Скрытие элементов`,questions:[{id:`css-27`,hot:!0,q:"В чём разница между `opacity`, `visibility: hidden` и `display: none`?",a:`\`opacity: 0\` — элемент невидим, но занимает место в потоке. Реагирует на события (клики, hover). Доступен для скринридеров.
+Пример: \`#header .nav a\` = 100 + 10 + 1 = 111
+Пример: \`.nav .link\` = 10 + 10 = 20`},{id:`css-02`,hot:!0,q:`Как рассчитать специфичность селектора?`,a:`Специфичность считается как четырехзначное число.
 
-\`visibility: hidden\` — элемент невидим, занимает место. Не реагирует на события. Недоступен для скринридеров.
+Формат: (inline, ID, классы, теги)
 
-\`display: none\` — элемент полностью удаляется из потока. Не занимает места. Не рендерится. Недоступен для скринридеров.
+Примеры:
+- \`div\` = (0, 0, 0, 1)
+- \`.card\` = (0, 0, 1, 0)
+- \`#main\` = (0, 1, 0, 0)
+- \`style="..."\` = (1, 0, 0, 0)
+- \`div.card.active\` = (0, 0, 2, 1)
+- \`#nav .item a:hover\` = (0, 1, 2, 1)
 
-Для анимаций лучше opacity. Для полного скрытия — display: none.`}]},{id:`frameworks`,title:`CSS-фреймворки`,questions:[{id:`css-20`,q:`Что такое CSS-фреймворки (Bootstrap, Tailwind) и их отличия?`,a:`**Bootstrap** предлагает готовые решения (кнопки, навигацию, модальные окна) с заранее заданным дизайном. Быстро прототипировать.
+Сравниваем слева направо.
+ID всегда важнее любого количества классов.
+Класс всегда важнее любого количества тегов.
 
-**Tailwind** — это utility-first фреймворк, где вы используете классы типа \`p-4\`, \`text-center\` для построения стилей. Даёт больше гибкости и меньший вес готового CSS. PurgeCSS удаляет неиспользуемые классы.
+\`!important\` переопределяет все, кроме другого \`!important\`.`},{id:`css-22`,q:`Как работает наследование в CSS?`,a:"Некоторые свойства наследуются от родителя к детям.\n\nНаследуются:\n- типографика: `font-size`, `color`, `line-height`, `text-align`\n- списки: `list-style`\n- видимость: `visibility`\n\nНе наследуются:\n- размеры: `width`, `height`\n- отступы: `margin`, `padding`\n- границы: `border`\n- позиционирование\n\nМожно принудительно наследовать: `margin: inherit`\nИли сбросить: `all: initial`"},{id:`css-34`,hot:!0,q:`Что такое cascade layers и @layer?`,a:`\`@layer\` определяет каскадные слои для управления приоритетом.
 
-Выбор зависит от проекта: Bootstrap для скорости, Tailwind для кастомизации.`}]}]},{id:`js`,title:`JavaScript`,color:`#ffc857`,topics:[{id:`types`,title:`Типы данных и значения`,questions:[{id:`js-01`,hot:!0,q:`Как проверить тип переменной в JavaScript?`,a:"Оператор `typeof` возвращает строку с типом значения.\n\nПримеры:\n- `typeof 'hello'` вернет `string`\n- `typeof 42` вернет `number`\n- `typeof true` вернет `boolean`\n- `typeof undefined` вернет `undefined`\n- `typeof Symbol()` вернет `symbol`\n- `typeof 10n` вернет `bigint`\n- `typeof function(){}` вернет `function`\n\nПодводные камни:\n- `typeof null` возвращает `object` - это исторический баг языка\n- `typeof []` возвращает `object`, для проверки массивов используйте `Array.isArray(arr)`\n\nДля точной проверки типа используйте `Object.prototype.toString.call(val).slice(8, -1)`.\nОн вернет `Null`, `Array`, `Date`, `RegExp` и другие типы корректно."},{id:`js-02`,q:`Что такое Infinity в JavaScript?`,a:"`Infinity` и `-Infinity` - это глобальные свойства, представляющие математическую бесконечность.\n\nКак получить:\n- `1 / 0` даст `Infinity`\n- `-1 / 0` даст `-Infinity`\n- `Number.MAX_VALUE * 2` даст `Infinity`\n\nПоведение:\n- Любое число умноженное на `Infinity` даст `Infinity`\n- Исключение: `0 * Infinity` даст `NaN`\n- `Infinity + Infinity` даст `Infinity`\n\nДля проверки используйте `Number.isFinite(val)`.\nВ отличие от глобальной `isFinite()`, она не приводит аргумент к числу принудительно."},{id:`js-03`,hot:!0,q:`Что такое NaN и когда возникает?`,a:"`NaN` (Not a Number) возникает при операциях, которые не могут вернуть валидное число.\n\nПримеры:\n- `Math.sqrt(-1)` даст `NaN`\n- `parseInt('hello')` даст `NaN`\n- `123 * 'abc'` даст `NaN`\n\nГлавная особенность:\n`NaN` - единственное значение в JS, которое не равно самому себе.\n`NaN === NaN` вернет `false`.\n\nКак проверять:\n- `Number.isNaN(val)` - строгая проверка, только для значений типа number\n- `isNaN(val)` - глобальная, сначала приводит аргумент к числу\n\nИнтересный факт: `typeof NaN` возвращает `number`."},{id:`js-04`,hot:!0,q:`В чем разница между null и undefined?`,a:"`undefined` - значение по умолчанию для необъявленных или неприсвоенных переменных.\n\nГде встречается:\n- Переменная объявлена без значения: `let a;`\n- Обращение к несуществующему свойству объекта\n- Функция без `return` возвращает `undefined`\n- Параметр функции, который не передали\n\n`null` - явное значение, которое разработчик присваивает сам.\nОно означает: значение ожидается, но пока его нет.\n\nСравнение:\n- `null == undefined` вернет `true`\n- `null === undefined` вернет `false`\n- `typeof null` вернет `object` (исторический баг)\n- `typeof undefined` вернет `undefined`"}]},{id:`coercion`,title:`Приведение типов и сравнение`,questions:[{id:`js-05`,hot:!0,q:`Чем отличается оператор == от ===?`,a:"`===` (строгое равенство) сначала проверяет типы.\nЕсли типы разные - сразу возвращает `false`.\n\n`==` (абстрактное равенство) использует приведение типов.\n\nПримеры неочевидного поведения `==`:\n- `'5' == 5` вернет `true` (строка приводится к числу)\n- `'' == 0` вернет `true`\n- `null == undefined` вернет `true`\n- `[] == false` вернет `true`\n- `[] == ![]` вернет `true`\n\nBest practice: всегда используйте `===` и `!==`.\nЭто исключает целую категорию багов с неявным приведением типов."},{id:`js-06`,hot:!0,q:`Какие значения являются falsy в JavaScript?`,a:"Falsy значения (при приведении к boolean дают `false`):\n\n- `false`\n- `0` и `-0`\n- `0n` (bigint ноль)\n- `''` (пустая строка)\n- `null`\n- `undefined`\n- `NaN`\n\nВсе остальные значения - truthy.\n\nЧастые ошибки:\n- Пустой массив `[]` это truthy (в отличие от Python)\n- Пустой объект `{}` это truthy\n- Строка `'0'` это truthy (она не пустая)\n- `new Boolean(false)` это truthy (это объект)"},{id:`js-07`,hot:!0,q:`Что происходит при сложении и вычитании с разными типами?`,a:"Оператор `+` ведет себя по-разному в зависимости от типов.\n\nЕсли один из операндов строка - происходит конкатенация:\n- `'5' + 3` даст `'53'`\n- `1 + '2'` даст `'12'`\n\nОператор `-` всегда приводит к числу:\n- `'5' - 3` даст `2`\n- `'10' - '4'` даст `6`\n\nКлассические edge cases:\n- `[] + []` даст `''` (пустая строка)\n- `[] + {}` даст `'[object Object]'`\n- `{} + []` в консоли даст `0` (браузер парсит `{}` как блок кода)\n- `[] + null` даст `'null'`\n\nПорядок слева направо: `1 + 2 + '3'` даст `'33'`, а не `'123'`."},{id:`js-08`,q:`Как объекты приводятся к примитивам?`,a:"При приведении объекта к примитиву вызываются специальные методы.\n\nПорядок вызова:\n1. Если есть `Symbol.toPrimitive` - вызывается он\n2. Иначе для числового контекста: `valueOf()`, затем `toString()`\n3. Для строкового контекста: `toString()`, затем `valueOf()`\n\nПример:\n`[1, 2].toString()` даст `'1,2'`\n`({}).toString()` даст `'[object Object]'`\n\nМожно переопределить поведение:\nСоздать объект с собственным `Symbol.toPrimitive` или `valueOf`."}]},{id:`operators`,title:`Операторы`,questions:[{id:`js-09`,q:`Что делает оператор логического присваивания ||=?`,a:"`x ||= y` эквивалентно `x || (x = y)`.\n\nЕсли `x` истинно (truthy) - присваивания не происходит.\nЕсли `x` ложно (falsy) - присваивается `y`.\n\nВажное отличие от `??=`:\n- `||=` сработает если слева `0` или `''` (они falsy)\n- `??=` сработает только при `null` или `undefined`\n\nЕсли `0` является валидным значением в вашей логике - используйте `??=` вместо `||=`."},{id:`js-10`,q:`Что делает оператор &&= и ??=?`,a:"`x &&= y` эквивалентно `x && (x = y)`.\nПрисваивание происходит только если `x` истинно.\n\nПример использования:\n`user.settings &&= newSettings` обновит настройки только если они уже существуют.\n\n`x ??= y` эквивалентно `x ?? (x = y)`.\nПрисваивание происходит только если `x` равно `null` или `undefined`.\n\nЭто удобно для задания значений по умолчанию без перезаписи существующих данных."},{id:`js-11`,hot:!0,q:`Что такое Optional Chaining (?.)?`,a:"Оператор `?.` позволяет безопасно читать свойства вложенных объектов.\n\nЕсли левая часть равна `null` или `undefined` - выражение возвращает `undefined` вместо ошибки.\n\nФормы записи:\n- `obj?.prop` - доступ к свойству\n- `obj?.method()` - вызов метода\n- `arr?.[0]` - доступ к элементу массива\n\nПример:\n`user?.address?.city` вернет `undefined` если `user` или `address` равны `null`.\n\nБез `?.` пришлось бы писать:\n`user && user.address && user.address.city`\n\nВажно: `?.` нельзя использовать слева от присваивания."},{id:`js-12`,hot:!0,q:`Что такое Nullish Coalescing (??) и чем отличается от ||?`,a:"Оператор `??` возвращает правый операнд только если левый равен `null` или `undefined`.\n\nОтличие от `||`:\n- `0 || 5` даст `5` (ноль это falsy)\n- `0 ?? 5` даст `0` (ноль не nullish)\n- `'' || 'default'` даст `'default'`\n- `'' ?? 'default'` даст `''`\n\nЭто критично когда `0`, `''` или `false` являются валидными значениями.\n\nОграничение: `??` нельзя использовать вместе с `&&` или `||` без скобок.\n`a ?? b || c` вызовет SyntaxError.\nНужно писать `(a ?? b) || c` или `a ?? (b || c)`."}]},{id:`loops`,title:`Циклы и switch`,questions:[{id:`js-13`,q:`Как выйти из цикла досрочно?`,a:"`break` выходит из самого внутреннего цикла.\n\nДля вложенных циклов можно использовать метки (labels):\n`outer: for (...) { for (...) { if (cond) break outer; } }`\n\n`continue` переходит к следующей итерации.\n\n`return` прервет цикл если он внутри функции.\n\nВ современных коде вместо вложенных циклов лучше использовать методы массивов:\n`find`, `some`, `every` - они прерываются возвратом значения."},{id:`js-14`,hot:!0,q:`Что произойдет если в switch не поставить break?`,a:`Без \`break\` выполнение продолжится в следующий case.
+Пример:
+\`@layer base, components, utilities;\`
+
+Стили в более позднем слое имеют больший приоритет.
+Независимо от специфичности селектора.
+
+Это решает проблему когда библиотека стилей
+переопределяет ваши стили из-за высокой специфичности.
+
+Поддерживается во всех современных браузерах с 2022 года.`}]},{id:`selectors`,title:`Селекторы и псевдоклассы`,questions:[{id:`css-03`,hot:!0,q:`Какие основные типы CSS-селекторов?`,a:'Базовые:\n- `div` - по тегу\n- `.header` - по классу\n- `#main` - по ID\n- `[type="text"]` - по атрибуту\n\nКомбинаторы:\n- `div p` - любой потомок\n- `div > p` - прямой потомок\n- `div + p` - следующий сосед\n- `div ~ p` - все следующие соседи\n\nПсевдоклассы: `:hover`, `:first-child`, `:nth-child(2n)`\nПсевдоэлементы: `::before`, `::after`, `::first-line`'},{id:`css-08`,hot:!0,q:`Что такое псевдоклассы и псевдоэлементы?`,a:"Псевдоклассы (одно двоеточие):\nОпределяют состояние элемента.\n- `:hover` - наведение мыши\n- `:focus` - элемент в фокусе\n- `:first-child`, `:last-child` - позиция среди братьев\n- `:nth-child(2n)` - каждый четный\n- `:not(.active)` - отрицание\n\nПсевдоэлементы (два двоеточия):\nСоздают виртуальные элементы или стилизуют части.\n- `::before` - контент перед элементом\n- `::after` - контент после элемента\n- `::first-line` - первая строка текста\n- `::placeholder` - текст placeholder"},{id:`css-33`,q:`Что делают псевдоклассы is, where и has?`,a:`\`:is()\` - упрощает запись списка селекторов.
+\`:is(h1, h2, h3) { color: red; }\` вместо трех селекторов.
+Специфичность равна самому специфичному в списке.
+
+\`:where()\` - то же самое, но специфичность всегда 0.
+Полезно для сброса стилей.
+
+\`:has()\` - родительский селектор.
+\`div:has(> p)\` - div с прямым потомком p.
+Один из самых ожидаемых псевдоклассов.
+Поддерживается во всех современных браузерах с 2023 года.`}]},{id:`boxmodel`,title:`Блочная модель и display`,questions:[{id:`css-21`,hot:!0,q:`Что такое CSS Box Model?`,a:`Каждый элемент - это прямоугольная коробка.
+
+Четыре области:
+- content - содержимое
+- padding - внутренний отступ
+- border - граница
+- margin - внешний отступ
+
+По умолчанию (\`content-box\`):
+width задается только для content.
+padding и border добавляются сверху.
+\`width: 100px\` + \`padding: 10px\` = 120px итого.
+
+С \`box-sizing: border-box\`:
+width включает padding и border.
+\`width: 100px\` + \`padding: 10px\` = 100px итого.
+
+Часто применяют глобально: \`* { box-sizing: border-box; }\``},{id:`css-04`,hot:!0,q:`В чем разница между display block, inline, inline-block?`,a:`\`block\`:
+- занимает всю доступную ширину
+- начинается с новой строки
+- можно задавать width, height, margin, padding
+
+\`inline\`:
+- не переносит строку
+- ширина определяется содержимым
+- нельзя задать width и height
+- вертикальные margin не работают
+
+\`inline-block\`:
+- не переносит строку
+- но можно задавать размеры и отступы
+- гибрид обоих подходов
+
+Также есть \`display: none\` - элемент полностью удаляется из потока.`},{id:`css-11`,hot:!0,q:`Как работает box-sizing?`,a:`\`box-sizing\` определяет как рассчитываются размеры элемента.
+
+\`content-box\` (по умолчанию):
+width и height задают только содержимое.
+padding и border добавляются сверху.
+
+\`border-box\`:
+width и height включают padding и border.
+Содержимое сжимается чтобы уместиться.
+
+Пример:
+\`width: 200px; padding: 20px; border: 2px;\`
+content-box: итог 244px
+border-box: итог 200px
+
+Рекомендуется \`border-box\` для упрощения расчетов.`}]},{id:`position`,title:`Позиционирование`,questions:[{id:`css-07`,hot:!0,q:`Как работает позиционирование relative, absolute, fixed, sticky?`,a:`\`static\` - по умолчанию, элемент в обычном потоке.
+
+\`relative\`:
+- смещается относительно своего нормального положения
+- занимает место в потоке
+- создает контекст для absolute потомков
+
+\`absolute\`:
+- удаляется из потока
+- позиционируется относительно ближайшего positioned предка
+- если такого нет - относительно body
+
+\`fixed\`:
+- относительно viewport
+- не двигается при скролле
+
+\`sticky\`:
+- ведет себя как relative до достижения порога
+- затем фиксируется как fixed
+- пример: \`top: 0\` при скролле`},{id:`css-12`,hot:!0,q:`Что такое z-index и когда он работает?`,a:"`z-index` управляет порядком наложения элементов.\n\nРаботает только на элементах с `position` (кроме static).\nТакже на элементах с `display: flex` или `grid`.\n\nБольшее значение = элемент выше.\nОтрицательные значения = элемент под родителем.\n\nСоздается контекст наложения (stacking context):\n- `position` + `z-index` (не auto)\n- `opacity` меньше 1\n- `transform` не none\n- `filter` не none\n\nВнутри контекста z-index дочерних не влияет на внешние элементы."}]},{id:`flex`,title:`Flexbox`,questions:[{id:`css-05`,hot:!0,q:`Что такое flexbox и для чего он используется?`,a:"Flexbox - одномерная система раскладки.\nЭлементы выстраиваются вдоль одной оси.\n\nСвойства контейнера:\n- `display: flex` - включает flex\n- `flex-direction` - направление: row, column\n- `justify-content` - выравнивание по главной оси\n- `align-items` - выравнивание по поперечной оси\n- `flex-wrap` - перенос на новую строку\n- `gap` - расстояние между элементами\n\nСвойства дочерних элементов:\n- `flex-grow` - как растягиваться\n- `flex-shrink` - как сжиматься\n- `flex-basis` - базовый размер\n\nИдеально для навигации, карточек, центрирования."},{id:`css-36`,hot:!0,q:`В чем разница между justify-content и align-items?`,a:"Это два разных направления выравнивания.\n\nГлавная ось - направление `flex-direction`.\nПоперечная ось - перпендикулярно главной.\n\n`justify-content` - выравнивание по главной оси.\nПри `flex-direction: row` это горизонталь.\nЗначения: `flex-start`, `center`, `flex-end`, `space-between`, `space-around`, `space-evenly`\n\n`align-items` - выравнивание по поперечной оси.\nПри `flex-direction: row` это вертикаль.\nЗначения: `flex-start`, `center`, `flex-end`, `stretch`, `baseline`\n\nЕсли поменять `flex-direction` на column - оси меняются местами."},{id:`css-39`,q:`Что делает gap в flexbox и grid?`,a:`\`gap\` задает расстояние между элементами.
+
+В отличие от margin:
+- применяется только между элементами
+- не добавляет отступы по краям контейнера
+- проще управлять
+
+Примеры:
+\`gap: 20px\` - одинаковое расстояние
+\`gap: 10px 20px\` - rows и columns отдельно
+
+Можно задавать отдельно: \`row-gap\`, \`column-gap\`
+
+Работает только в flex и grid контейнерах.
+В обычном потоке не работает.`}]},{id:`grid`,title:`Grid и центрирование`,questions:[{id:`css-06`,hot:!0,q:`Что такое CSS Grid и для чего он используется?`,a:`Grid - двумерная система раскладки.
+Элементы располагаются в строках и столбцах одновременно.
+
+Основные свойства:
+- \`display: grid\` - включает grid
+- \`grid-template-columns\` - определяет столбцы
+- \`grid-template-rows\` - определяет строки
+- \`gap\` - расстояние между ячейками
+
+Единицы:
+- \`fr\` - доля свободного пространства
+- \`minmax(200px, 1fr)\` - диапазон
+- \`repeat(3, 1fr)\` - повторение
+
+Пример адаптивной сетки:
+\`grid-template-columns: repeat(auto-fill, minmax(250px, 1fr))\`
+
+Идеально для dashboard, галерей, сложных макетов.`},{id:`css-40`,hot:!0,q:`В чем разница между Grid и Flexbox? Когда что использовать?`,a:`Flexbox - одномерный.
+Элементы выстраиваются вдоль одной оси (строка или столбец).
+
+Grid - двумерный.
+Элементы располагаются в строках и столбцах одновременно.
+
+Когда использовать Flexbox:
+- навигация
+- ряд карточек
+- центрирование одного элемента
+- когда контент определяет размер
+
+Когда использовать Grid:
+- сложный макет страницы
+- галерея с равными ячейками
+- dashboard
+- когда макет определяет размер контента
+
+Они отлично работают вместе.
+Grid для общего макета, Flexbox для компонентов внутри.`},{id:`css-13`,hot:!0,q:`Как центрировать элемент по вертикали и горизонтали?`,a:`Современные способы:
+
+Flexbox:
+\`display: flex; justify-content: center; align-items: center;\`
+
+Grid (самый короткий):
+\`display: grid; place-items: center;\`
+
+Absolute + transform:
+\`position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);\`
+
+Для строчных элементов:
+\`text-align: center\` по горизонтали
+\`line-height\` равный высоте по вертикали
+
+Старые методы (table-cell, margin: 0 auto) устарели.`}]},{id:`adaptive`,title:`Адаптивность`,questions:[{id:`css-09`,hot:!0,q:`Как сделать адаптивный дизайн?`,a:"Основные инструменты:\n\nMedia queries:\n`@media (max-width: 768px) { ... }`\nИзменение стилей в зависимости от ширины экрана.\n\nОтносительные единицы:\n`%`, `vw`, `vh`, `rem`, `em` вместо фиксированных пикселей.\n\nFlexbox и Grid:\nГибкое расположение элементов.\n`flex-wrap: wrap` для переноса.\n`auto-fill` и `auto-fit` в grid.\n\nMobile-first подход:\nСначала стили для мобильных.\nЗатем медиазапросы для больших экранов.\n\n`clamp()` для плавного масштабирования:\n`font-size: clamp(16px, 2vw, 24px);`"},{id:`css-41`,q:`Что такое container queries?`,a:`Container queries позволяют стилизовать элемент
+в зависимости от размера его родителя, а не viewport.
+
+Пример:
+\`@container (min-width: 400px) { .card { flex-direction: row; } }\`
+
+В отличие от media queries которые смотрят на окно браузера,
+container queries смотрят на конкретный контейнер.
+
+Это позволяет создавать truly переиспользуемые компоненты.
+Карточка адаптируется к ширине сайдбара, а не экрана.
+
+Поддерживается во всех современных браузерах с 2023 года.`},{id:`css-31`,hot:!0,q:`Какие относительные единицы измерения есть в CSS?`,a:"`%` - относительно родителя\n\n`em` - относительно размера шрифта родителя\nМожет вызывать каскадные эффекты при вложенности\n\n`rem` - относительно корневого элемента (html)\nОбычно 16px по умолчанию\nРекомендуется для глобальных размеров\n\n`vw` - 1% от ширины viewport\n`vh` - 1% от высоты viewport\n`vmin` - меньшее из vw и vh\n`vmax` - большее из vw и vh\n\n`ch` - ширина символа 0 в текущем шрифте\nПолезно для ограничения ширины текста"},{id:`css-32`,q:`Что делают функции min, max и clamp?`,a:`\`min()\` - выбирает меньшее значение.
+\`width: min(50%, 300px);\` возьмет меньшее из 50% и 300px.
+
+\`max()\` - выбирает большее значение.
+\`height: max(100px, 50vh);\` возьмет большее.
+
+\`clamp()\` - значение в диапазоне.
+\`font-size: clamp(16px, 2vw, 24px);\`
+Минимум 16px, идеал 2vw, максимум 24px.
+
+Эти функции позволяют создавать адаптивные значения
+без медиазапросов.
+
+Можно комбинировать с calc():
+\`width: calc(min(50%, 300px) - 20px);\``}]},{id:`vars`,title:`Переменные и методологии`,questions:[{id:`css-10`,hot:!0,q:`Что такое CSS-переменные (custom properties)?`,a:`CSS-переменные определяются через \`--имя\`.
+
+Пример:
+\`:root { --main-color: #3498db; }\`
+\`color: var(--main-color);\`
+
+Особенности:
+- наследуются от родителя
+- можно менять через медиазапросы
+- можно менять через JavaScript
+- работают в рантайме
+
+Fallback значение:
+\`color: var(--color, blue);\` если переменная не задана
+
+В отличие от препроцессоров (Sass, Less),
+CSS-переменные работают в браузере.
+Их можно менять динамически через JS.`},{id:`css-42`,hot:!0,q:`Что такое BEM и зачем он нужен?`,a:`BEM (Block, Element, Modifier) - методология именования классов.
+
+Блок: \`.card\` - самостоятельный компонент
+Элемент: \`.card__title\` - часть блока
+Модификатор: \`.card--active\` - вариант блока
+
+Правила:
+- Элементы не могут быть вложены друг в друга: \`.card__title__icon\`
+- Модификаторы не используются сами: только \`.card--active\`, не \`--active\`
+
+Зачем:
+- Нет конфликтов имен
+- Понятная структура
+- Легко найти где используется класс
+- Не нужно считать специфичность
+
+Альтернативы: CSS Modules, Tailwind, styled-components.`}]},{id:`animation`,title:`Анимации и трансформации`,questions:[{id:`css-14`,hot:!0,q:`Что такое @keyframes и как сделать анимацию?`,a:"`@keyframes` определяет шаги анимации.\n\nПример:\n`@keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }`\n\nПрименение:\n`animation: slide 2s ease-in-out infinite;`\n\nСвойства анимации:\n- `animation-name` - имя keyframes\n- `animation-duration` - длительность\n- `animation-timing-function` - функция времени\n- `animation-delay` - задержка\n- `animation-iteration-count` - количество повторений\n- `animation-fill-mode` - состояние до и после\n\nВ отличие от `transition`, анимации могут иметь\nнесколько ключевых кадров и повторяться."},{id:`css-25`,hot:!0,q:`Как работает transition?`,a:`\`transition\` анимирует изменение свойства.
+
+Пример:
+\`transition: background-color 0.5s ease, transform 0.2s;\`
+
+Свойства:
+- \`transition-property\` - какие свойства анимировать
+- \`transition-duration\` - длительность
+- \`transition-timing-function\` - ease, linear, cubic-bezier
+- \`transition-delay\` - задержка
+
+В отличие от @keyframes:
+transition работает только при изменении значения.
+Например, при :hover или смене класса через JS.
+
+Анимируйте только transform и opacity для производительности.`},{id:`css-26`,q:`Что делает свойство transform?`,a:"`transform` изменяет положение, размер и форму элемента.\n\nОсновные функции:\n- `translate(x, y)` - перемещение\n- `rotate(deg)` - поворот\n- `scale(x, y)` - масштабирование\n- `skew(x, y)` - искажение\n\nКомбинирование:\n`transform: translateX(10px) rotate(45deg);`\n\n3D:\n`rotateX()`, `rotateY()`, `translateZ()`\n\nTransform не вызывает reflow.\nТолько repaint, что делает его производительным.\nИспользуйте для анимаций вместо top/left."}]},{id:`hide`,title:`Скрытие элементов`,questions:[{id:`css-27`,hot:!0,q:`В чем разница между opacity, visibility hidden и display none?`,a:`\`opacity: 0\`:
+- элемент невидим
+- занимает место в потоке
+- реагирует на клики и hover
+- доступен для скринридеров
+- можно анимировать
+
+\`visibility: hidden\`:
+- элемент невидим
+- занимает место в потоке
+- не реагирует на события
+- недоступен для скринридеров
+- можно анимировать
+
+\`display: none\`:
+- элемент полностью удален из потока
+- не занимает места
+- не рендерится
+- недоступен для скринридеров
+- нельзя анимировать
+
+Для анимаций используйте opacity.
+Для полного скрытия - display: none.`}]}]},{id:`js`,title:`JavaScript`,color:`#ffc857`,topics:[{id:`types`,title:`Типы данных и значения`,questions:[{id:`js-01`,hot:!0,q:`Как проверить тип переменной в JavaScript?`,a:"Оператор `typeof` возвращает строку с типом значения.\n\nПримеры:\n- `typeof 'hello'` вернет `string`\n- `typeof 42` вернет `number`\n- `typeof true` вернет `boolean`\n- `typeof undefined` вернет `undefined`\n- `typeof Symbol()` вернет `symbol`\n- `typeof 10n` вернет `bigint`\n- `typeof function(){}` вернет `function`\n\nПодводные камни:\n- `typeof null` возвращает `object` - это исторический баг языка\n- `typeof []` возвращает `object`, для проверки массивов используйте `Array.isArray(arr)`\n\nДля точной проверки типа используйте `Object.prototype.toString.call(val).slice(8, -1)`.\nОн вернет `Null`, `Array`, `Date`, `RegExp` и другие типы корректно."},{id:`js-02`,q:`Что такое Infinity в JavaScript?`,a:"`Infinity` и `-Infinity` - это глобальные свойства, представляющие математическую бесконечность.\n\nКак получить:\n- `1 / 0` даст `Infinity`\n- `-1 / 0` даст `-Infinity`\n- `Number.MAX_VALUE * 2` даст `Infinity`\n\nПоведение:\n- Любое число умноженное на `Infinity` даст `Infinity`\n- Исключение: `0 * Infinity` даст `NaN`\n- `Infinity + Infinity` даст `Infinity`\n\nДля проверки используйте `Number.isFinite(val)`.\nВ отличие от глобальной `isFinite()`, она не приводит аргумент к числу принудительно."},{id:`js-03`,hot:!0,q:`Что такое NaN и когда возникает?`,a:"`NaN` (Not a Number) возникает при операциях, которые не могут вернуть валидное число.\n\nПримеры:\n- `Math.sqrt(-1)` даст `NaN`\n- `parseInt('hello')` даст `NaN`\n- `123 * 'abc'` даст `NaN`\n\nГлавная особенность:\n`NaN` - единственное значение в JS, которое не равно самому себе.\n`NaN === NaN` вернет `false`.\n\nКак проверять:\n- `Number.isNaN(val)` - строгая проверка, только для значений типа number\n- `isNaN(val)` - глобальная, сначала приводит аргумент к числу\n\nИнтересный факт: `typeof NaN` возвращает `number`."},{id:`js-04`,hot:!0,q:`В чем разница между null и undefined?`,a:"`undefined` - значение по умолчанию для необъявленных или неприсвоенных переменных.\n\nГде встречается:\n- Переменная объявлена без значения: `let a;`\n- Обращение к несуществующему свойству объекта\n- Функция без `return` возвращает `undefined`\n- Параметр функции, который не передали\n\n`null` - явное значение, которое разработчик присваивает сам.\nОно означает: значение ожидается, но пока его нет.\n\nСравнение:\n- `null == undefined` вернет `true`\n- `null === undefined` вернет `false`\n- `typeof null` вернет `object` (исторический баг)\n- `typeof undefined` вернет `undefined`"}]},{id:`coercion`,title:`Приведение типов и сравнение`,questions:[{id:`js-05`,hot:!0,q:`Чем отличается оператор == от ===?`,a:"`===` (строгое равенство) сначала проверяет типы.\nЕсли типы разные - сразу возвращает `false`.\n\n`==` (абстрактное равенство) использует приведение типов.\n\nПримеры неочевидного поведения `==`:\n- `'5' == 5` вернет `true` (строка приводится к числу)\n- `'' == 0` вернет `true`\n- `null == undefined` вернет `true`\n- `[] == false` вернет `true`\n- `[] == ![]` вернет `true`\n\nBest practice: всегда используйте `===` и `!==`.\nЭто исключает целую категорию багов с неявным приведением типов."},{id:`js-06`,hot:!0,q:`Какие значения являются falsy в JavaScript?`,a:"Falsy значения (при приведении к boolean дают `false`):\n\n- `false`\n- `0` и `-0`\n- `0n` (bigint ноль)\n- `''` (пустая строка)\n- `null`\n- `undefined`\n- `NaN`\n\nВсе остальные значения - truthy.\n\nЧастые ошибки:\n- Пустой массив `[]` это truthy (в отличие от Python)\n- Пустой объект `{}` это truthy\n- Строка `'0'` это truthy (она не пустая)\n- `new Boolean(false)` это truthy (это объект)"},{id:`js-07`,hot:!0,q:`Что происходит при сложении и вычитании с разными типами?`,a:"Оператор `+` ведет себя по-разному в зависимости от типов.\n\nЕсли один из операндов строка - происходит конкатенация:\n- `'5' + 3` даст `'53'`\n- `1 + '2'` даст `'12'`\n\nОператор `-` всегда приводит к числу:\n- `'5' - 3` даст `2`\n- `'10' - '4'` даст `6`\n\nКлассические edge cases:\n- `[] + []` даст `''` (пустая строка)\n- `[] + {}` даст `'[object Object]'`\n- `{} + []` в консоли даст `0` (браузер парсит `{}` как блок кода)\n- `[] + null` даст `'null'`\n\nПорядок слева направо: `1 + 2 + '3'` даст `'33'`, а не `'123'`."},{id:`js-08`,q:`Как объекты приводятся к примитивам?`,a:"При приведении объекта к примитиву вызываются специальные методы.\n\nПорядок вызова:\n1. Если есть `Symbol.toPrimitive` - вызывается он\n2. Иначе для числового контекста: `valueOf()`, затем `toString()`\n3. Для строкового контекста: `toString()`, затем `valueOf()`\n\nПример:\n`[1, 2].toString()` даст `'1,2'`\n`({}).toString()` даст `'[object Object]'`\n\nМожно переопределить поведение:\nСоздать объект с собственным `Symbol.toPrimitive` или `valueOf`."}]},{id:`operators`,title:`Операторы`,questions:[{id:`js-09`,q:`Что делает оператор логического присваивания ||=?`,a:"`x ||= y` эквивалентно `x || (x = y)`.\n\nЕсли `x` истинно (truthy) - присваивания не происходит.\nЕсли `x` ложно (falsy) - присваивается `y`.\n\nВажное отличие от `??=`:\n- `||=` сработает если слева `0` или `''` (они falsy)\n- `??=` сработает только при `null` или `undefined`\n\nЕсли `0` является валидным значением в вашей логике - используйте `??=` вместо `||=`."},{id:`js-10`,q:`Что делает оператор &&= и ??=?`,a:"`x &&= y` эквивалентно `x && (x = y)`.\nПрисваивание происходит только если `x` истинно.\n\nПример использования:\n`user.settings &&= newSettings` обновит настройки только если они уже существуют.\n\n`x ??= y` эквивалентно `x ?? (x = y)`.\nПрисваивание происходит только если `x` равно `null` или `undefined`.\n\nЭто удобно для задания значений по умолчанию без перезаписи существующих данных."},{id:`js-11`,hot:!0,q:`Что такое Optional Chaining (?.)?`,a:"Оператор `?.` позволяет безопасно читать свойства вложенных объектов.\n\nЕсли левая часть равна `null` или `undefined` - выражение возвращает `undefined` вместо ошибки.\n\nФормы записи:\n- `obj?.prop` - доступ к свойству\n- `obj?.method()` - вызов метода\n- `arr?.[0]` - доступ к элементу массива\n\nПример:\n`user?.address?.city` вернет `undefined` если `user` или `address` равны `null`.\n\nБез `?.` пришлось бы писать:\n`user && user.address && user.address.city`\n\nВажно: `?.` нельзя использовать слева от присваивания."},{id:`js-12`,hot:!0,q:`Что такое Nullish Coalescing (??) и чем отличается от ||?`,a:"Оператор `??` возвращает правый операнд только если левый равен `null` или `undefined`.\n\nОтличие от `||`:\n- `0 || 5` даст `5` (ноль это falsy)\n- `0 ?? 5` даст `0` (ноль не nullish)\n- `'' || 'default'` даст `'default'`\n- `'' ?? 'default'` даст `''`\n\nЭто критично когда `0`, `''` или `false` являются валидными значениями.\n\nОграничение: `??` нельзя использовать вместе с `&&` или `||` без скобок.\n`a ?? b || c` вызовет SyntaxError.\nНужно писать `(a ?? b) || c` или `a ?? (b || c)`."}]},{id:`loops`,title:`Циклы и switch`,questions:[{id:`js-13`,q:`Как выйти из цикла досрочно?`,a:"`break` выходит из самого внутреннего цикла.\n\nДля вложенных циклов можно использовать метки (labels):\n`outer: for (...) { for (...) { if (cond) break outer; } }`\n\n`continue` переходит к следующей итерации.\n\n`return` прервет цикл если он внутри функции.\n\nВ современных коде вместо вложенных циклов лучше использовать методы массивов:\n`find`, `some`, `every` - они прерываются возвратом значения."},{id:`js-14`,hot:!0,q:`Что произойдет если в switch не поставить break?`,a:`Без \`break\` выполнение продолжится в следующий case.
 Это называется fall-through.
 
 Пример:
@@ -857,7 +1199,812 @@ CommonJS (require/module.exports):
 \`.mjs\` для ESM, \`.cjs\` для CommonJS.
 Или \`type: 'module'\` в package.json.
 
-Бандлеры (Vite, Webpack) работают с обоими.`}]}]},{id:`http`,title:`HTTP и безопасность`,accent:`#3dd68c`,topics:[{id:`basics`,title:`Основы протокола`,questions:[{id:`http-01`,hot:!0,q:`Что такое HTTP и HTTPS?`,a:`HTTP (HyperText Transfer Protocol) работает поверх TCP и передаёт данные в открытом виде. HTTPS добавляет слой шифрования (TLS/SSL), что защищает от перехвата (MITM-атак) и подмены контента. Браузеры помечают HTTP-сайты как «Небезопасные», а многие современные API (Geolocation, Service Workers) работают только через HTTPS.`},{id:`http-02`,hot:!0,q:`Какие основные методы HTTP вы знаете и для чего они?`,a:`GET — идемпотентный и безопасный, параметры в URL. POST — не идемпотентный, данные в теле. PUT — идемпотентный, полностью заменяет ресурс. PATCH — вносит частичные изменения. DELETE — удаляет. HEAD — как GET, но без тела (для проверки существования). OPTIONS — для CORS preflight-запросов.`},{id:`http-03`,hot:!0,q:`Что такое статусы ответа HTTP и на какие группы делятся?`,a:`Коды помогают понять результат. 200 OK, 201 Created, 204 No Content. 301 (переехал навсегда), 302 (временно). 400 (Bad Request), 401 (Unauthorized — нет логина), 403 (Forbidden — нет прав), 404 (Not Found). 500 (Internal Server Error), 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout).`},{id:`http-04`,q:`Что такое заголовки (headers) HTTP?`,a:`Заголовки управляют поведением. Content-Type (application/json), Authorization (Bearer token), Cookie, Cache-Control, User-Agent. CORS-заголовки (Access-Control-Allow-Origin) настраиваются на сервере. Заголовки ограничены по размеру (обычно 8 КБ), поэтому большие данные нужно передавать в теле.`},{id:`http-16`,q:`Из каких частей состоит URL (Uniform Resource Locator)?`,a:"Пример: `https://site.com:8080/api/v1/users?sort=desc#top`. Схема (`https`) указывает протокол. Хост (`site.com`) резолвится через DNS в IP. Путь (`/api/...`) указывает ресурс. Query-строка передаёт параметры фильтрации. **Фрагмент (hash)** после `#` нужен только браузеру (например, для скролла к якорю или для роутинга в SPA) — HTTP-запрос уходит на сервер **без него**."},{id:`http-19`,q:`В чём разница между 301 и 302 редиректом?`,a:`Это критично для SEO. Если вы меняете домен или URL-структуру, используйте 301 — Google перенесёт рейтинг на новый адрес. Если делаете A/B тест или временную акцию — 302 (или современный 307 Temporary Redirect), чтобы поисковик продолжал индексировать старый URL. Браузер может закэшировать 301 навсегда, и даже если вы уберёте редирект на сервере, пользователь всё равно будет улетать на новый адрес (пока не очистит кэш).`},{id:`http-20`,hot:!0,q:`В чём принципиальная разница между 401 и 403?`,a:"Несмотря на то, что 401 переводится как «Неавторизован», спецификация HTTP подразумевает «Неаутентифицирован» (Unauthenticated). Сервер обычно возвращает заголовок `WWW-Authenticate`, предлагая ввести логин. 403 (Forbidden) означает, что сервер понял запрос, знает пользователя (токен валидный), но его роль (например, «user») не позволяет выполнить действие (требовался «admin»)."},{id:`http-21`,q:`Что такое Safe и Idempotent методы в HTTP?`,a:`**Safe**: GET, HEAD, OPTIONS. Они только читают. POST не safe (создаёт запись). **Idempotent**: повторение запроса 1 или 100 раз даёт одно и то же состояние сервера. GET (чтение), PUT (заменяет ресурс на то же самое), DELETE (удалённый ресурс остаётся удалённым). **POST не идемпотентен**: 10 POST-запросов создадут 10 новых записей в БД. Именно поэтому браузеры предупреждают «Отправить форму повторно?» при обновлении страницы после POST.`}]},{id:`caching`,title:`Кэширование`,questions:[{id:`http-11`,hot:!0,q:`Что такое кэширование (Cache-Control, ETag)?`,a:'Грамотный кэш ускоряет сайт в разы. `Cache-Control: max-age=31536000` — кэшировать на год (для статики с хэшем в имени). `no-store` — не кэшировать (для приватных данных). Если кэш истёк, браузер шлёт запрос с `If-None-Match: "ETag"`. Если файл не менялся, сервер отвечает 304 без тела, экономя гигабайты трафика.'}]},{id:`auth`,title:`Куки и авторизация`,questions:[{id:`http-05`,hot:!0,q:`Что такое куки (Cookies) и как они работают?`,a:`Куки решают проблему «статичности» HTTP. Они имеют ограничения: ~4 КБ, отправляются с каждым запросом (увеличивая трафик), доступны JS (если нет флага HttpOnly). Флаги безопасности: Secure (только HTTPS), SameSite (защита от CSRF), HttpOnly (скрыть от JS). В отличие от localStorage, куки автоматически участвуют в HTTP-обмене.`},{id:`http-06`,hot:!0,q:`Что такое сессия и JWT?`,a:`Сессии (Session-based) требуют памяти на сервере (или Redis), что усложняет масштабирование. JWT (JSON Web Token) состоит из Header.Payload.Signature. Сервер проверяет подпись своим секретным ключом, не обращаясь к БД. JWT идеален для микросервисов, но его сложно отозвать до истечения срока жизни (нужны blacklists или refresh-токены).`},{id:`http-26`,q:`Какие флаги безопасности есть у куки (HttpOnly, Secure, SameSite)?`,a:"**HttpOnly** — кука недоступна из JavaScript (`document.cookie`), что защищает от кражи через XSS. **Secure** — кука отправляется только по HTTPS, защищая от перехвата в открытом HTTP. **SameSite** — контролирует отправку куки при кросс-доменных запросах: `Strict` (никогда не отправляется при переходе с другого сайта), `Lax` (отправляется при GET-навигации, но не при POST/iframe), `None` (всегда отправляется, требует Secure). SameSite=Lax — хорошая защита от CSRF по умолчанию."},{id:`http-27`,q:`Где лучше хранить JWT-токен: в куках, localStorage или памяти?`,a:`**HttpOnly-куки** — самый безопасный вариант: JS не может прочитать куку (защита от XSS), а флаг SameSite защищает от CSRF. **localStorage** — уязвим для XSS: любой внедрённый скрипт может украсть токен. **Память (переменная в JS)** — токен теряется при перезагрузке страницы, но безопасен от XSS. Рекомендуемая схема: access-токен в памяти (или HttpOnly-куке с коротким TTL), refresh-токен в HttpOnly Secure куке с длинным TTL и ротацией.`}]},{id:`security`,title:`Безопасность`,questions:[{id:`http-08`,hot:!0,q:`Что такое XSS и как защититься?`,a:"XSS (Cross-Site Scripting) позволяет хакеру выполнить JS в браузере жертвы (украсть куки, сделать действие от её имени). Виды: Stored (в БД), Reflected (в URL), DOM-based. Защита: никогда не использовать `innerHTML` с сырыми данными, применять `textContent`. Флаг `HttpOnly` у кук не даст JS их прочитать. CSP-заголовок запретит загрузку скриптов с левых доменов."},{id:`http-09`,hot:!0,q:`Что такое CSRF и как защититься?`,a:'Если пользователь залогинен на bank.com, а хакер заманил его на evil.com, скрипт на evil.com может незаметно сделать `fetch("bank.com/transfer")` — браузер автоматически добавит куки банка. Защита: `SameSite=Lax/Strict` у кук (запрещает отправку при кросс-доменных переходах), генерация CSRF-токенов, которые сервер проверяет в теле POST-запроса.'},{id:`http-07`,hot:!0,q:`Что такое CORS и как его настроить?`,a:"CORS (Cross-Origin Resource Sharing) защищает от несанкционированного чтения данных. Настройка на сервере: `Access-Control-Allow-Origin: https://my-site.com` (или `*` для публичных API). Если запрос нестандартный (PUT, DELETE, кастомные заголовки, JSON), браузер сначала шлёт preflight OPTIONS-запрос. На клиенте CORS настроить нельзя!"},{id:`http-22`,q:`Что такое preflight-запрос (OPTIONS) в контексте CORS?`,a:"Если вы шлёте простой GET или `application/x-www-form-urlencoded`, браузер сразу отправит запрос. Но если вы используете `Content-Type: application/json`, кастомные заголовки (Authorization) или методы PUT/DELETE, браузер сначала отправит `OPTIONS` запрос. Сервер должен ответить заголовками `Access-Control-Allow-Methods: POST, PUT` и `Access-Control-Allow-Headers: Content-Type`. Только после этого браузер отправит настоящий запрос."},{id:`http-23`,q:`Что такое CSP (Content Security Policy)?`,a:"Даже если хакер найдёт XSS-уязвимость и внедрит `<script src=\"evil.com/hack.js\">`, CSP заблокирует его выполнение, если `evil.com` нет в белом списке. Пример заголовка: `Content-Security-Policy: default-src 'self'; script-src 'self' https://trusted.cdn.com;`. Это мощнейший уровень защиты, который также позволяет запрещать inline-скрипты (защищая от инъекций в HTML-атрибуты)."},{id:`http-24`,q:`Что такое HSTS (Strict-Transport-Security)?`,a:"Атака SSL-stripping происходит, когда пользователь вводит `site.com` (без https), и провайдер/хакер перехватывает первый HTTP-запрос, не давая серверу сделать редирект на HTTPS. Заголовок `Strict-Transport-Security: max-age=31536000` запоминается браузером. В следующий раз браузер сам, **до отправки запроса в сеть**, заменит http на https. Можно даже включить домен в предустановленный список HSTS всех браузеров (HSTS Preload List)."},{id:`http-15`,q:`Что такое безопасное хранение паролей (хэширование)?`,a:`Шифрование обратимо (если украдут ключ — расшифруют все пароли). MD5/SHA256 слишком быстрые, их ломают брутфорсом на GPU за секунды. **bcrypt/Argon2** намеренно медленные (требуют много CPU/RAM), что делает подбор невозможным. **Соль** — случайная строка, добавляемая к паролю перед хэшем, чтобы одинаковые пароли у разных пользователей дали разные хэши (защита от радужных таблиц).`}]},{id:`tls`,title:`HTTPS и TLS`,questions:[{id:`http-10`,hot:!0,q:`Что такое HTTPS и как работает SSL/TLS?`,a:`При TLS-рукопожатии сервер отдаёт сертификат (подписанный Центром Сертификации). Клиент проверяет его, они обмениваются ключами и генерируют общий симметричный ключ. Дальше весь HTTP шифруется этим быстрым симметричным алгоритмом (AES). Это обеспечивает конфиденциальность (никто не прочитает), целостность (никто не изменит) и аутентичность (вы точно на том сайте).`}]},{id:`api`,title:`Архитектура API`,questions:[{id:`http-12`,hot:!0,q:`Что такое REST API?`,a:"REST (Representational State Transfer) опирается на HTTP. Ресурс `/users/123`. GET (прочитать), POST `/users` (создать), PUT (перезаписать), DELETE (удалить). Принципы: Client-Server, Stateless (сервер не хранит состояние клиента между запросами), Cacheable, Uniform Interface. В отличие от RPC, где URL — это действия (`/getUser`)."},{id:`http-13`,hot:!0,q:`Что такое GraphQL и его отличия от REST?`,a:"В REST вы бьёте по множеству эндпоинтов (`/users`, `/posts`, `/comments`), получая лишние поля (over-fetching) или делая N+1 запросов (under-fetching). В GraphQL один эндпоинт, куда клиент шлёт запрос: `{ user(id:1) { name, posts { title } } }`. Сервер вернёт ровно этот JSON. Минусы GraphQL: сложнее кэшировать HTTP-кэшем, сложнее логировать, риск сложных запросов, нагружающих БД."}]},{id:`realtime`,title:`Реалтайм и версии HTTP`,questions:[{id:`http-14`,hot:!0,q:`Что такое WebSocket?`,a:"Клиент шлёт HTTP-запрос с `Upgrade: websocket`. Сервер соглашается (101 Switching Protocols), и TCP-сокет остаётся открытым. Обе стороны могут отправлять фреймы данных. Идеально для чатов, биржевых котировок, онлайн-игр. Альтернативы: Long Polling (много HTTP-запросов) и SSE (только сервер → клиент)."},{id:`http-25`,q:`Что такое Server-Sent Events (SSE) и чем они отличаются от WebSocket?`,a:`SSE (EventSource API) идеален, когда нужно только получать обновления от сервера (лента новостей, котировки, уведомления). Он работает поверх обычного HTTP, автоматически переподключается при разрыве, поддерживает события и ID сообщений. WebSocket нужен, когда клиент тоже должен часто слать данные (чат, онлайн-игра). SSE проще в реализации на сервере и легче проходит через корпоративные прокси-серверы.`},{id:`http-17`,q:`В чём разница между HTTP/1.1, HTTP/2 и HTTP/3?`,a:`В HTTP/1.1 браузеры открывали 6 TCP-соединений, чтобы качать файлы параллельно. HTTP/2 ввёл мультиплексирование (все файлы в одном потоке) и сжатие заголовков (HPACK). Но TCP страдает от «head-of-line blocking» (потеря одного пакета тормозит весь поток). HTTP/3 (на базе протокола QUIC от Google) использует UDP, что убирает эту проблему и ускоряет установку соединения (TLS встроен в QUIC).`},{id:`http-18`,q:`Что такое DNS и как он работает?`,a:`Когда вы вводите URL, браузер сначала спрашивает OS, затем локальный DNS-резолвер провайдера, затем корневые серверы (.com), затем серверы домена. Это иерархическая система с кэшированием (TTL). Атаки на DNS (спуфинг) могут перенаправить пользователя на фишинговый сайт. Для защиты используют DNSSEC и DoH (DNS over HTTPS).`}]}]},{id:`ts`,title:`TypeScript`,accent:`#4a9eff`,topics:[{id:`basics`,title:`Основы TypeScript`,questions:[{id:`ts-01`,hot:!0,q:`Что такое TypeScript и зачем он нужен?`,a:`TypeScript (разработка Microsoft) — это типизированное надмножество JS. Любой валидный JS-код является валидным TS-кодом. Главная польза: **статическая типизация** (ошибки ловятся на этапе компиляции, а не в рантайме), **улучшенная поддержка IDE** (автодополнение, рефакторинг, переход к определениям), **самодокументируемость** кода и безопасный рефакторинг больших проектов. TS компилируется (транспилируется) в чистый JS, который может выполняться в любом браузере или Node.js.`},{id:`ts-02`,hot:!0,q:`Какие базовые типы есть в TypeScript?`,a:'Примитивы: `string`, `number`, `boolean`, `bigint`, `symbol`, `null`, `undefined`. Специальные: `any` (отключает проверку типов, "дыра" в системе), `unknown` (безопасный аналог any, требует проверки), `void` (функция ничего не возвращает), `never` (функция никогда не завершается). Составные: `object`, `Array<T>` (или `T[]`), `tuple` (кортеж), `enum` (перечисление), `union` (A | B), `intersection` (A & B). Также есть литеральные типы и типы-интерфейсы.'},{id:`ts-03`,hot:!0,q:`Что такое интерфейсы (interface) и типы (type) в TS?`,a:"Оба способа создают именованные типы. **interface** идеален для описания API объектов и классов: поддерживает `extends`, declaration merging (если объявить interface User дважды, поля объединятся), что полезно для расширения сторонних библиотек. **type** — более гибкий: может описывать примитивы (`type ID = string | number`), union/intersection типы, кортежи, mapped types. Оба полностью удаляются при компиляции в JS (не существуют в рантайме)."},{id:`ts-04`,q:"В чём ключевое отличие `interface` от `type` при дублировании объявлений?",a:'Declaration merging — уникальная особенность interface. Пример: `interface User { name: string } interface User { age: number }` — в итоге User будет иметь оба поля. Это активно используется для расширения типов сторонних библиотек (например, добавить поле в `Express.Request`). Type так не умеет: `type User = { name: string }; type User = { age: number };` вызовет ошибку компиляции. Type можно "объединить" только явно через пересечение: `type User = BaseUser & ExtraFields`.'},{id:`ts-10`,q:`Какие ключевые опции есть в tsconfig.json?`,a:'`target` задаёт ECMAScript-версию вывода (ES5, ES2020, ESNext). `module` — систему модулей (CommonJS для Node.js, ESNext для современных бандлеров). `strict: true` включает `strictNullChecks`, `noImplicitAny`, `strictFunctionTypes` и другие — **обязательно для production**. `esModuleInterop` позволяет импортировать CommonJS-модули как ES-модули (`import x from "pkg"`). `paths` и `baseUrl` настраивают алиасы (`@/components/...`). `extends` позволяет наследовать конфиги (например, из `@tsconfig/node20`).'}]},{id:`generics`,title:`Дженерики и операторы типов`,questions:[{id:`ts-05`,hot:!0,q:`Что такое дженерики (generics) и зачем они нужны?`,a:'Пример: `function identity<T>(arg: T): T { return arg; }`. При вызове `identity<string>("hello")` T становится string, и TS знает, что вернётся строка. Без дженериков пришлось бы использовать `any` и терять типизацию. Generics поддерживаются в функциях, классах, интерфейсах и типах. Можно задавать ограничения: `<T extends Comparable>`, значения по умолчанию: `<T = string>`, и несколько параметров: `<T, U>`.'},{id:`ts-08`,hot:!0,q:"Что делают операторы `keyof` и `typeof`?",a:'**`keyof`** — оператор на уровне типов: `type UserKeys = keyof User; // "name" | "age"`. Идеально для создания типобезопасных функций: `function getProperty<T, K extends keyof T>(obj: T, key: K): T[K]`. **`typeof`** в TS имеет два контекста: в JS-коде это обычный оператор (`typeof x === "string"`), а в типах — извлечение типа (`type UserType = typeof user;`). Их комбинация — мощный инструмент: `type Keys = keyof typeof configObject`.'}]},{id:`union`,title:`Union, Intersection и Literal типы`,questions:[{id:`ts-13`,hot:!0,q:`Что такое объединение (union) и пересечение (intersection) типов?`,a:'**Union** (`string | number`) — значение может быть строкой ИЛИ числом. Перед использованием нужно сузить тип через typeof или type guard. **Intersection** (`User & Admin`) — объект должен иметь поля И User, И Admin (объединение полей). Используется для композиции: `type AuthenticatedRequest = Request & { user: User }`. Важный нюанс: пересечение строковых литералов даёт never: `"a" & "b"` = `never` (значение не может быть одновременно двумя разными строками).'},{id:`ts-16`,q:`Что такое Literal Types (литеральные типы)?`,a:'Вместо `type Method = string` можно написать `type Method = "GET" | "POST" | "PUT" | "DELETE"`. Тогда при передаче `"PATCH"` компилятор выдаст ошибку. Литералы бывают строковые, числовые и булевы (`true | false` — это то же самое, что `boolean`). В сочетании с `as const` литеральные типы извлекаются из обычных объектов и массивов. Мощно работают в discriminated unions и для создания типобезопасных конфигов.'},{id:`ts-19`,hot:!0,q:`Что такое Discriminated Unions (размеченные объединения)?`,a:'Классический пример: `type Result<T> = { status: "success"; data: T } | { status: "error"; error: Error };`. Поле `status` — дискриминатор. В коде: `if (result.status === "success") { result.data; }` — TS знает, что в этой ветке есть `data`. В switch с exhaustiveness checking это даёт 100% покрытие всех вариантов. Активно используется в Redux (actions), в result-типах (аналог Result в Rust), для моделирования состояний UI (loading/success/error).'}]},{id:`advanced`,title:`Продвинутые типы`,questions:[{id:`ts-11`,q:"Что такое тип `never` и когда он возникает?",a:"`never` — это bottom type, у него нет значений. Возникает в трёх случаях: 1) функция всегда бросает: `function fail(): never { throw new Error(); }`. 2) Бесконечный цикл: `while (true) {}`. 3) **Исчерпывающие проверки (exhaustiveness checking)**: в switch с union-типом, если обработаны все варианты, в default можно написать `const _exhaustive: never = value;` — при добавлении нового варианта в union компилятор выдаст ошибку, заставляя его обработать."},{id:`ts-12`,hot:!0,q:"В чём разница между `unknown` и `any`?",a:'С `any` можно делать что угодно: `anyVar.foo.bar()` скомпилируется, но упадёт в рантайме. С `unknown` TS не даст выполнить никакую операцию, пока вы не сузите тип: `if (typeof x === "string") { x.toUpperCase(); }` или через Type Guard. Это делает `unknown` идеальным для: 1) catch-блоков (`catch (e: unknown)`), 2) парсинга внешних данных (JSON.parse), 3) API, где тип заранее неизвестен. Правило: **никогда не используйте any без крайней необходимости**.'},{id:`ts-17`,q:`Что такое Tuple (кортеж) в TypeScript?`,a:"Пример: `type Point = [number, number];` или `type User = [id: number, name: string];` (с именованными элементами, TS 4.0+). В отличие от массива `Array<string | number>`, где каждый элемент может быть чем угодно, tuple гарантирует: первый элемент — number, второй — string. Часто возвращается из функций (как в Python) и используется в хуках React: `const [state, setState] = useState()` — это tuple. Добавление `as const` к массиву делает его readonly tuple: `const x = [1, 2] as const` имеет тип `readonly [1, 2]`."},{id:`ts-18`,hot:!0,q:`Что такое Type Guards и какие они бывают?`,a:'Когда у вас `x: string | number`, TS не даст вызвать `x.toUpperCase()`. Type guard сужает тип: `if (typeof x === "string") { x.toUpperCase(); }`. Встроенные: **typeof** (для примитивов), **instanceof** (для классов), **in** (для проверки наличия свойства). Пользовательский guard: `function isUser(x: any): x is User { return "name" in x; }` — конструкция `x is User` говорит TS, что если функция вернула true, то x имеет тип User. Это ключевой механизм работы с union-типами.'},{id:`ts-20`,q:`Что такое Conditional Types (условные типы)?`,a:'Синтаксис: `type IsString<T> = T extends string ? true : false;`. `IsString<"hello">` даст `true`, `IsString<123>` — `false`. Они распределяются (distribute) по union-типам: `IsString<string | number>` даст `true | false`. В сочетании с `infer` позволяют извлекать типы (например, тип возврата функции). Лежат в основе большинства utility types (`Exclude`, `Extract`, `ReturnType`). Пример реального использования: `type NonNullable<T> = T extends null | undefined ? never : T;`.'},{id:`ts-21`,q:`Что такое Mapped Types (сопоставленные типы)?`,a:"Синтаксис: `type Readonly<T> = { readonly [K in keyof T]: T[K] };`. Это как `Array.map()`, но для типов. Можно менять модификаторы (`+readonly`, `-?` для удаления optional), изменять типы значений, фильтровать ключи через `as` (key remapping, TS 4.1): `type Getters<T> = { [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K] }`. Позволяет создавать мощные трансформации: превращать все поля в функции-геттеры, добавлять префиксы, делать snake_case в camelCase на уровне типов."},{id:`ts-22`,hot:!0,q:"Что делает ключевое слово `infer` в Conditional Types?",a:'`infer` используется только в `extends`-части conditional type. Пример: `type ReturnType<T> = T extends (...args: any[]) => infer R ? R : any;`. Здесь `infer R` "захватывает" тип возврата функции в переменную R, которую можно использовать в true-ветке. Другие примеры: `type UnpackPromise<T> = T extends Promise<infer U> ? U : T;` (распаковка промиса), `type FirstElement<T> = T extends [infer First, ...any[]] ? First : never;` (первый элемент кортежа). Это основа продвинутого type-level программирования.'},{id:`ts-23`,hot:!0,q:"Что делает оператор `as const` (const assertion)?",a:'Без `as const`: `const arr = [1, 2, 3]` имеет тип `number[]`. С `as const`: `const arr = [1, 2, 3] as const` имеет тип `readonly [1, 2, 3]` (кортеж с конкретными числами). Аналогично для объектов: `const config = { mode: "dark" } as const` даёт тип `{ readonly mode: "dark" }`, а не `{ mode: string }`. Это мощнейший инструмент для: 1) создания константных enum-подобных структур, 2) вывода литеральных типов для discriminated unions, 3) типобезопасных конфигов. Важно: `as const` делает readonly только верхний уровень, вложенные объекты тоже, но массивы не становятся "глубоко замороженными".'},{id:`ts-24`,hot:!0,q:"Что делает оператор `satisfies` (появился в TS 4.9)?",a:'До satisfies была дилемма: `const palette = { red: [255, 0, 0], green: "#00ff00" };` — TS выведет точные типы. Но если добавить `: Record<string, string | number[]>`, то TS забудет, что `red` — это именно массив, а `green` — строка. Решение: `const palette = { red: [255, 0, 0], green: "#00ff00" } satisfies Record<string, string | number[]>;`. Теперь TS проверит соответствие, но сохранит узкие типы: `palette.red[0]` работает, `palette.green.toUpperCase()` работает. Идеально для конфигов и маппингов.'}]},{id:`utility`,title:`Utility types`,questions:[{id:`ts-09`,hot:!0,q:`Что такое утилитарные типы (Partial, Required, Readonly, Pick, Omit)?`,a:'Это **mapped types**, встроенные в TS. `Partial<User>` — все поля становятся `?:`. `Required<User>` — убирает `?`. `Readonly<User>` — все поля только для чтения. `Pick<User, "name" | "age">` — новый тип только с указанными полями. `Omit<User, "password">` — все поля, кроме указанных. Также популярны: `Record<K, V>` (словарь), `Exclude/Extract` (для union типов), `ReturnType<T>` (тип возврата функции). Они избавляют от дублирования интерфейсов.'},{id:`ts-28`,q:"Что делают utility types `ReturnType`, `Parameters` и `Record`?",a:"**`ReturnType<typeof fn>`** — использует `infer` внутри conditional type: `type Ret = ReturnType<typeof fetchData>` даст тип, который возвращает `fetchData`. **`Parameters<typeof fn>`** — кортеж аргументов: `[userId: number, options: Options]`. Идеально для создания типобезопасных обёрток и моков. **`Record<K, V>`** — удобная замена `{ [key: string]: any }`: `Record<string, User>` — словарь пользователей. Другие полезные: `ConstructorParameters<T>` (аргументы конструктора), `InstanceType<T>` (тип экземпляра класса), `Awaited<T>` (распаковка Promise)."}]},{id:`classes-modules`,title:`Классы, модули и декораторы`,questions:[{id:`ts-25`,hot:!0,q:`Какие есть модификаторы доступа в классах TypeScript?`,a:"Эти модификаторы существуют **только на этапе компиляции** и полностью удаляются из JS-кода. В рантайме все поля остаются публичными! Для реальной приватности в современном JS/TS используйте `#privateField` (ECMAScript private fields) — они защищены на уровне движка. `readonly` позволяет присвоить значение только в объявлении или конструкторе. `protected` методы и свойства доступны в наследниках, что полезно для шаблонного паттерна (Template Method). Краткий синтаксис: `constructor(private name: string)` автоматически создаёт поле."},{id:`ts-06`,q:`Как работают декораторы в TypeScript?`,a:"Декораторы — это экспериментальная фича (стандарт Stage 3 ECMAScript), включаемая флагом `experimentalDecorators` в tsconfig. Они выполняются **один раз при инициализации класса**, а не при каждом вызове метода. Примеры использования: `@Injectable()` в NestJS для DI, `@Column()` в TypeORM для маппинга БД, `@log` для логирования вызовов методов. В новом стандарте TC39 декораторы имеют другой синтаксис и возможности, TS поддерживает обе версии."},{id:`ts-07`,q:`Что такое enum и почему его часто не рекомендуют использовать?`,a:'Числовой `enum Status { Active, Inactive }` компилируется в объект с **обратным маппингом** (`Status[0] === "Active"`), что может приводить к багам. Строковый enum не имеет обратного маппинга, но всё равно генерирует реальный JS-объект, существующий в рантайме. Современная альтернатива: `const status = { Active: "active", Inactive: "inactive" } as const; type Status = typeof status[keyof typeof status];` — это даёт те же возможности, но без лишнего рантайм-кода и с полным type-safety.'},{id:`ts-14`,q:"Что делает оператор `as` (type assertion)?",a:'`const el = document.getElementById("app") as HTMLDivElement;` — TS знает, что `getElementById` возвращает `HTMLElement | null`, но мы уверены, что это div. **Важно**: `as` не выполняет проверок и преобразований в рантайме. Если вы напишете `"hello" as number`, компилятор может ругаться (нельзя приводить несовместимые типы), но двойной каст `"hello" as unknown as number` скомпилируется и упадёт при использовании. Для реальных преобразований используйте функции, а для проверок — Type Guards.'},{id:`ts-15`,q:`Что такое модули в TypeScript и как они работают?`,a:'Современный TS полностью совместим с ES-модулями: `export const x = 1; import { x } from "./file";`. При импорте можно опускать расширение `.ts` — бандлер сам найдёт файл. TS также поддерживает: 1) `import type` — импорт только типов (удаляется при компиляции), 2) `import()` динамический импорт для code splitting, 3) `namespace` (устаревший способ группировки без создания реального модуля). Опция `module` в tsconfig определяет, во что TS будет компилировать импорты: CommonJS, ESNext, AMD и т.д.'},{id:`ts-26`,q:`Что такое Function Overloads (перегрузка функций)?`,a:'Пример: `function createElement(tag: "img"): HTMLImageElement; function createElement(tag: "input"): HTMLInputElement; function createElement(tag: string): HTMLElement { ... }`. При вызове `createElement("img")` TS знает, что вернётся `HTMLImageElement`, и даст доступ к специфичным свойствам. Реализация функции должна быть совместима со всеми сигнатурами и обычно использует union-типы. Это нужно для типобезопасного API, где поведение зависит от типа аргументов (например, `document.querySelector`).'},{id:`ts-27`,q:"Что такое `.d.ts` файлы и ключевое слово `declare`?",a:"Когда вы используете JS-библиотеку (например, jQuery) или браузерные API (`window.myGlobal`), TS не знает их типов. Файл `jquery.d.ts` содержит только сигнатуры функций без реализации. `declare` используется внутри таких файлов: `declare const $: JQueryStatic;` или `declare function myGlobalFn(): void;`. Это называется **ambient declarations**. Сообщество публикует тысячи .d.ts файлов в DefinitelyTyped (`@types/react`, `@types/lodash`). Можно писать свои `.d.ts` для описания глобальных переменных, CSS-модулей, изображений и т.д."}]}]},{id:`react`,title:`React`,accent:`#61dafb`,topics:[{id:`basics`,title:`Основы React`,questions:[{id:`react-01`,hot:!0,q:`Что такое React и его основные принципы?`,a:`React (от Meta) — это библиотека (не фреймворк), отвечающая только за View (представление). Её основные принципы: **компонентный подход** (UI разбивается на независимые переиспользуемые куски), **Virtual DOM** (легковесная копия DOM в памяти для оптимизации обновлений), **однонаправленный поток данных** (данные текут сверху вниз через props) и **декларативность** (вы описываете, как UI должен выглядеть в зависимости от состояния, а React сам решает, как обновить DOM).`},{id:`react-02`,hot:!0,q:`Что такое JSX и как он работает под капотом?`,a:'Браузеры не понимают JSX. Сборщики (Babel, SWC) преобразуют `<div className="box">Hi</div>` в `React.createElement("div", {className: "box"}, "Hi")` (или `_jsx("div", ...)` в современном React JSX Transform). Результатом является обычный JavaScript-объект (React Element), описывающий узел дерева. JSX позволяет писать выражения внутри фигурных скобок `{}`, но не поддерживает директивы вроде `if` или `for` (используйте тернарные операторы или `&&`).'},{id:`react-03`,hot:!0,q:`В чём фундаментальная разница между функциональными и классовыми компонентами?`,a:"В классовых компонентах `this` всегда указывает на актуальный экземпляр, поэтому `this.state` или `this.props` в асинхронном колбэке (например, setTimeout) вернут самые свежие данные. Функциональные компоненты — это замыкания. Если вы захватили `count` в `useEffect`, он «заморозится» на момент того рендера, в котором эффект был создан (проблема **stale closure**). Сегодня классовые компоненты считаются устаревшим подходом (legacy), всё новое пишется на функциях и хуках."},{id:`react-04`,hot:!0,q:`Что такое props и можно ли их изменять внутри компонента?`,a:"Props — это механизм передачи данных от родителя к потомку (однонаправленный поток). React строго следит за их неизменяемостью. Если вам нужно изменить данные, вы должны вызвать колбэк, переданный в props, чтобы родитель обновил свой `state` и передал новые props вниз. Прямая мутация props нарушает предсказуемость React и ломает механизм согласования (reconciliation). Исключение: мутирование вложенных объектов технически возможно (JS позволяет), но это антипаттерн, приводящий к багам."}]},{id:`state-hooks`,title:`Хуки состояния`,questions:[{id:`react-05`,hot:!0,q:"Как работает `useState` и почему обновление состояния асинхронное?",a:"`const [val, setVal] = useState(0);`. Вызов `setVal(1)` не меняет `val` в текущей области видимости (она константа в рамках этого рендера). React ставит обновление в очередь и делает **батчинг** (группировку), чтобы вызвать только один ре-рендер, даже если вы вызвали `setVal` 5 раз подряд. Для обновления на основе предыдущего состояния используйте функциональную форму: `setVal(prev => prev + 1)`. Для сложных объектов используйте `useReducer`."},{id:`react-09`,hot:!0,q:"Когда стоит выбирать `useReducer` вместо `useState`?",a:"`useReducer` — это альтернатива `useState`. Он принимает функцию `reducer(state, action) => newState`. Это делает логику изменений предсказуемой и легко тестируемой (как в Redux). Ещё один мощный паттерн: передача `dispatch` (который стабилен и не меняется между рендерами) в глубокие дочерние компоненты вместо множества колбэков `onUpdate`, что позволяет избежать лишних ре-рендеров и необходимости в `useCallback`."},{id:`react-10`,hot:!0,q:"В чём особенность `useRef` по сравнению с `useState`?",a:"`useRef` возвращает объект `{ current: initialValue }`. Он используется для двух целей: 1) Доступ к DOM-узлам (`<input ref={myRef} />`). 2) Хранение любых мутируемых значений (ID таймеров, предыдущие props, флаги `isMounted`), которые должны пережить ре-рендер, но не должны его вызывать. Это «лазейка» из парадигмы иммутабельности React, аналогичная полям экземпляра в классовых компонентах."}]},{id:`effects`,title:`useEffect и побочные эффекты`,questions:[{id:`react-06`,hot:!0,q:"Что такое `useEffect` и когда выполняется функция очистки (cleanup)?",a:"`useEffect(fn, deps)` запускается **после** того, как React обновил DOM. Это идеальное место для fetch-запросов, `addEventListener` или `setInterval`. Возвращаемая функция (cleanup) нужна для предотвращения утечек памяти: она отменяет предыдущий эффект перед запуском нового (если изменились `deps`) или при `unmount`. **Важно**: в React 18 Strict Mode в dev-режиме эффекты намеренно монтируются, размонтируются и снова монтируются, чтобы выявить ошибки в cleanup-функциях."},{id:`react-07`,hot:!0,q:`Почему хуки нельзя вызывать внутри условий или циклов?`,a:"У функциональных компонентов нет экземпляра (`this`), где можно было бы хранить состояние. Вместо этого React использует внутреннюю структуру данных (связный список ячеек памяти), привязанную к компоненту. При каждом рендере React проходит по этому списку в том же порядке. Если один хук вызовется в `if`, а другой нет, порядок сдвинется, и `useState` вернёт значение чужого хука. Поэтому хуки вызываются **только на верхнем уровне**."},{id:`react-27`,hot:!0,q:"Чем `useLayoutEffect` отличается от `useEffect`?",a:"Обычный `useEffect` запускается асинхронно, после того как браузер уже нарисовал кадр (paint). Если внутри него изменить DOM (например, позиционировать тултип), пользователь увидит «мерцание» (сначала тултип в неверном месте, затем прыжок). `useLayoutEffect` запускается синхронно **сразу после мутаций DOM, но до отрисовки**. Браузер заблокируется, пока ваш код не отработает, и нарисует уже исправленный вариант. Используйте его только для измерений (`getBoundingClientRect`) и синхронных DOM-мутаций, чтобы не тормозить UI."},{id:`react-40`,hot:!0,q:`Что такое проблема «устаревшего замыкания» (stale closure) в React?`,a:"Так как каждый рендер функционального компонента создаёт новое замыкание, все функции внутри него «видят» только те props и state, которые были в этом конкретном рендере. Пример: `useEffect(() => { const id = setInterval(() => console.log(count), 1000); return () => clearInterval(id); }, []);`. Таймер будет вечно печатать `0` (первоначальное значение), потому что он «замкнул» первый рендер. Решения: 1) Добавить `count` в зависимости. 2) Использовать функциональный сеттер `setCount(c => c + 1)`. 3) Хранить актуальное значение в `useRef`."}]},{id:`optimization`,title:`Контекст и оптимизация`,questions:[{id:`react-08`,hot:!0,q:"Как `useContext` влияет на производительность и ре-рендеры?",a:"Это главная проблема Context API. Если вы положите в один контекст `{ user, theme }` и измените только `theme`, все компоненты, читающие `user`, тоже перерендерятся, потому что ссылка на объект контекста изменилась. Решения: 1) Разделять контексты (отдельно UserContext, отдельно ThemeContext). 2) Мемоизировать `value` через `useMemo`. 3) Использовать селекторы (как в Zustand/Redux) или сторонние библиотеки (например, `use-context-selector`)."},{id:`react-11`,hot:!0,q:"В чём разница между `useMemo` и `useCallback`?",a:"`useMemo(() => compute(a), [a])` вернёт кэшированный результат `compute`. `useCallback(() => doSomething(a), [a])` вернёт кэшированную ссылку на функцию. Фактически, `useCallback(fn, deps)` эквивалентен `useMemo(() => fn, deps)`. Они нужны для оптимизации: чтобы не передавать новые ссылки на объекты/функции в мемоизированные дочерние компоненты (`React.memo`), что вызвало бы их ненужный ре-рендер."},{id:`react-12`,hot:!0,q:"Как работает `React.memo` и когда он бесполезен?",a:'`React.memo` делает поверхностное сравнение (shallow equality) старых и новых props. Если родитель перерендеривается и передаёт `<Child style={{ color: "red" }} />`, то объект `style` создаётся заново при каждом рендере родителя. Ссылки разные → `React.memo` пропустит оптимизацию и перерендерит Child. Чтобы это исправить, нужно мемоизировать props в родителе через `useMemo` и `useCallback`. Не используйте `React.memo` без профилирования — чаще всего это преждевременная оптимизация.'}]},{id:`reconciliation`,title:`Reconciliation и паттерны`,questions:[{id:`react-13`,hot:!0,q:`Что такое алгоритм согласования (Reconciliation) в React?`,a:`Когда state меняется, React создаёт новое дерево элементов. Сравнивать деревья «в лоб» (O(n³)) слишком дорого. React использует эвристики (O(n)): 1) Элементы разных типов (div → span) уничтожаются и строятся заново с нуля. 2) Элементы одного типа обновляются по месту. 3) **Ключи (keys)** помогают React понять, какие элементы в списке были перемещены, добавлены или удалены, сохраняя их внутреннее состояние.`},{id:`react-14`,hot:!0,q:`Что означает паттерн «Поднятие состояния» (Lifting State Up)?`,a:`В React данные текут только сверху вниз. Если два компонента на одном уровне должны реагировать на одно и то же событие (например, два поля ввода температуры в Цельсиях и Фаренгейтах), вы не можете передать state напрямую между ними. Вы создаёте состояние в их общем родителе и передаёте вниз значение и функцию-обновитель. Это сохраняет единый источник правды (single source of truth).`},{id:`react-15`,hot:!0,q:`В чём разница между контролируемыми и неконтролируемыми компонентами?`,a:'**Controlled** (управляемые): React является «единым источником правды». `<input value={val} onChange={e => setVal(e.target.value)} />`. Это позволяет мгновенно валидировать ввод, форматировать текст или блокировать кнопки. **Uncontrolled** (неуправляемые): DOM сам хранит значение. `<input defaultValue="test" ref={myRef} />`. Значение читается только в момент отправки формы (`myRef.current.value`). Uncontrolled проще для интеграции с не-React кодом, но даёт меньше контроля над UI.'},{id:`react-21`,hot:!0,q:`Что такое «prop drilling» и как его избежать?`,a:"Если компоненту на самом дне дерева нужна `user`, вам придётся передавать `<Layout user={user}><Sidebar user={user}><Profile user={user} />` — это засоряет код и вызывает лишние ре-рендеры промежуточных узлов. Решения: 1) **Context API** для глобальных данных (тема, локализация, авторизация). 2) **Композиция компонентов** (передавать компоненты как `children`, чтобы промежуточные узлы не знали о данных). 3) **Стейт-менеджеры** (Redux, Zustand, Jotai) для сложной бизнес-логики."},{id:`react-22`,q:`Что такое HOC (Higher-Order Component) и Render Props?`,a:"До появления хуков (React 16.8) это были основные способы шарить логику. **HOC** (Higher-Order Component) — функция `withAuth(Component)`, возвращающая обёртку, которая проверяет авторизацию и рендерит Component. **Render Props** — паттерн, где компонент принимает функцию в props: `<MouseTracker render={(coords) => <div>{coords.x}</div>} />`. Сегодня это считается legacy-кодом, вызывающим «wrapper hell» (матрёшку из обёрток), и повсеместно заменяется на кастомные хуки (`useAuth()`, `useMouse()`)."}]},{id:`events-portals`,title:`События, порталы, фрагменты`,questions:[{id:`react-16`,hot:!0,q:`Что такое синтетические события (SyntheticEvent) в React?`,a:"React не вешает обработчики (`onClick`) на каждый конкретный DOM-узел. Вместо этого он использует **делегирование событий**: один глобальный слушатель вешается на корневой узел приложения (в React 17+ на `root`, раньше на `document`). Когда происходит нативное событие, оно всплывает до корня, где React создаёт `SyntheticEvent` (с тем же интерфейсом, что и нативный) и диспатчит его по своему виртуальному дереву. Это улучшает производительность и гарантирует кроссбраузерность."},{id:`react-17`,hot:!0,q:"Для чего нужны порталы (`createPortal`) в React?",a:"Частая проблема: модальное окно или выпадающий список рендерится внутри контейнера с `overflow: hidden` или `z-index: 1`, что обрезает или перекрывает его. `ReactDOM.createPortal(child, document.body)` решает это, физически перенося DOM-узел в `<body>`. **Важно**: хотя DOM-узел перенесён, в дереве React он остаётся на своём месте. Это значит, что контекст (Context API), пропсы и всплытие синтетических событий работают так, будто компонент не перемещался."},{id:`react-18`,q:"Зачем нужен `React.Fragment` (или `<>...</>`)?",a:"Компонент в React должен возвращать один корневой элемент. Раньше приходилось оборачивать списки в `<div>`, что ломало семантику HTML (например, `<tr>` внутри `<tbody>` не может содержать `<div>`) и CSS-сетки. `<React.Fragment>` (или короткий синтаксис `<>...</>`) решает эту проблему: он существует только на этапе Virtual DOM, а в реальный DOM рендерятся только его дети. Короткий синтаксис `<>` не поддерживает атрибут `key`, если фрагмент используется внутри `.map()`."},{id:`react-28`,q:"Для чего нужны `forwardRef` и `useImperativeHandle`?",a:"По умолчанию `ref`, переданный в компонент, не передаётся дальше (props `ref` не существует). `forwardRef((props, ref) => <input ref={ref} />)` решает это. `useImperativeHandle` используется для инкапсуляции: вместо того чтобы отдавать родителю сырой DOM-узел, вы можете отдать кастомный API. Например, компонент `FancyInput` может выставить только метод `.focus()`, скрыв доступ к `.value` или `.style`."}]},{id:`error-suspense`,title:`Error Boundaries и Suspense`,questions:[{id:`react-19`,hot:!0,q:`Что такое Error Boundaries и какие ошибки они НЕ ловят?`,a:"На данный момент Error Boundaries можно создать **только через класс** (используя `static getDerivedStateFromError` или `componentDidCatch`). Если в `render()` дочернего компонента произойдёт ошибка, приложение не упадёт полностью (white screen), а покажет запасной UI. **Что они НЕ ловят**: 1) Ошибки внутри `onClick` (используйте обычные `try/catch`). 2) Асинхронный код (`setTimeout`, `Promise`). 3) Ошибки в самом Error Boundary. 4) SSR. Сообщество использует библиотеку `react-error-boundary` для удобной обёртки с хуками."},{id:`react-20`,hot:!0,q:"Как работают `React.lazy` и `Suspense`?",a:'Это встроенный механизм для разделения бандла (code splitting). `const LazyComp = React.lazy(() => import("./HeavyComponent"));` создаёт компонент, который загружается только когда понадобится. Его нужно обернуть в `<Suspense fallback={<Spinner />}>`. Пока JS-файл грузится по сети, пользователь увидит спиннер. Это критически важно для уменьшения размера первоначального бандла (Initial Load). Suspense также используется для data fetching (в Relay, React Query, SWR).'}]},{id:`react18`,title:`React 18+`,questions:[{id:`react-23`,hot:!0,q:"Что делает `React.StrictMode`?",a:"`<StrictMode>` не влияет на production-сборку. В dev-режиме он: 1) Предупреждает об использовании устаревших API (например, `componentWillMount`). 2) Проверяет, что функции рендеринга чистые (вызывая их дважды). 3) **Двойной вызов эффектов**: в React 18 StrictMode намеренно монтирует компонент, вызывает `useEffect`, сразу размонтирует (вызывая cleanup) и снова монтирует. Это помогает разработчикам находить баги, когда эффект не очищает за собой подписки или таймеры, что критично для Concurrent Mode."},{id:`react-26`,hot:!0,q:"В чём разница между `ReactDOM.render` и `createRoot` (React 18)?",a:"В React 18 архитектура движка была переписана. `ReactDOM.createRoot(container).render(<App />)` создаёт корень, который умеет прерывать рендеринг (Concurrent Mode) и автоматически батчить обновления стейта (даже в промисах и setTimeout). Старый `ReactDOM.render` переведён в legacy-режим: он не поддерживает новые фичи React 18 (Suspense для данных, useTransition) и выдаёт warning в консоли. Для гидратации SSR используется `hydrateRoot`."},{id:`react-29`,q:"Зачем нужен хук `useId` (React 18)?",a:'Для доступности (a11y) `<label htmlFor="id">` должен совпадать с `<input id="id">`. Если генерировать ID через `Math.random()` или счётчик, при Server-Side Rendering (SSR) сервер сгенерирует один ID, а клиент при гидратации — другой. React увидит несоответствие и выдаст ошибку «Hydration failed». `useId()` генерирует детерминированные ID (например, `:r1:`), которые гарантированно совпадают на сервере и клиенте. **Не используйте useId для key в списках**.'},{id:`react-30`,hot:!0,q:"Что делают `useTransition` и `useDeferredValue` (React 18)?",a:"**useTransition** возвращает `[isPending, startTransition]`. Обернув `setState` в `startTransition`, вы говорите React: «это обновление можно прервать, если пользователь начнёт печатать что-то более срочное». **useDeferredValue** принимает значение и возвращает его «отложенную» версию, которая обновится, когда у браузера появится свободное время. Идеально для полей поиска с мгновенным фильтром списка из 10000 элементов: ввод текста (срочно) не лагает, а список (не срочно) обновляется чуть позже."},{id:`react-31`,q:"Для чего нужен `useSyncExternalStore`?",a:"В Concurrent Mode React может начать рендерить дерево, прерваться, и начать заново. Если внешнее хранилище (например, глобальная переменная или Redux) изменится в этот момент, разные части одного и того же дерева могут отрендериться с разными данными (это называется **tearing**). `useSyncExternalStore(subscribe, getSnapshot)` гарантирует, что React будет читать данные из внешнего источника синхронно и консистентно для всего кадра. Библиотеки вроде Zustand используют его под капотом."},{id:`react-32`,hot:!0,q:`Что такое автоматический батчинг (Automatic Batching) в React 18?`,a:"До React 18 батчинг работал только внутри синтетических событий React (например, `onClick`). Если вы вызывали `setState` дважды внутри `setTimeout` или после `await fetch()`, React делал **два** ре-рендера. В React 18 автоматический батчинг работает везде. Это значительно улучшает производительность. Если вам по какой-то причине нужно принудительно вызвать синхронный ре-рендер (например, чтобы измерить DOM сразу после обновления), можно использовать `flushSync(() => setState(...))`."},{id:`react-33`,hot:!0,q:`Что такое Concurrent Mode (Concurrent Features) в React?`,a:"Исторически рендеринг в React был синхронным и блокирующим: начав рендерить большое дерево, JS-поток «зависал» на десятки миллисекунд, и анимации/ввод лагали. Concurrent Mode делает рендеринг **прерываемым**. React может вычислить часть Virtual DOM, увидеть, что пользователь нажал кнопку (высокий приоритет), отбросить текущий черновик, отрендерить кнопку, и затем вернуться к фоновым вычислениям. Это фундамент для `useTransition`, `useDeferredValue` и Suspense для данных."}]},{id:`ssr-rsc`,title:`SSR и Server Components`,questions:[{id:`react-34`,hot:!0,q:`Что такое React Server Components (RSC)?`,a:'RSC (введены в Next.js App Router) — это революция. В отличие от SSR (где HTML генерируется на сервере, но JS всё равно грузится на клиент для гидратации), Server Components **никогда не отправляют свой JS на клиент**. Они могут напрямую `await db.query()` или читать файлы. Клиент получает только готовый JSON-формат дерева. Для интерактивности (кнопок, хуков) используются **Client Components** (`"use client"`), которые импортируются внутрь серверных. Это даёт нулевой бандл для статического контента.'},{id:`react-35`,hot:!0,q:`Что такое гидратация (Hydration) в контексте SSR?`,a:"При SSR сервер отдаёт полностью готовый HTML. Пользователь сразу видит контент (хороший FCP), но страница пока «мёртвая» (кнопки не кликаются). Затем загружается JS-бандл, и React вызывает `hydrateRoot()`. Он не перестраивает DOM с нуля (это дорого), а проходит по существующему HTML, связывает его с Virtual DOM и вешает слушатели событий. Если HTML от сервера не совпадёт с тем, что ожидает React на клиенте, произойдёт **Hydration Mismatch** (ошибка, и React может перезаписать DOM)."},{id:`react-37`,hot:!0,q:"Что такое Server Actions и хук `useActionState` (React 19)?",a:'Вместо создания API-роута (`/api/submit`) и написания `fetch` на клиенте, вы создаёте функцию с `"use server"` и передаёте её прямо в `<form action={myServerAction}>`. React автоматически сериализует данные формы, сделает POST-запрос и выполнит функцию на сервере. Хук `useActionState` (ранее `useFormState`) позволяет легко получить состояние `pending` (для спиннера на кнопке) и `error` (для отображения ошибок валидации под полями) без написания кучи `useState`.'}]},{id:`react19`,title:`React 19 и новые хуки`,questions:[{id:`react-36`,hot:!0,q:"Что делает новый хук `use()` (React 19)?",a:"`const data = use(promise);` — если промис не разрешён, React приостановит рендер (throw Promise) и покажет `<Suspense>` fallback. В отличие от хуков, `use()` **можно вызывать внутри условий и циклов**! Это огромный шаг к упрощению data fetching. Также `use(Context)` заменяет `useContext`, позволяя читать контекст условно. Если промис реджектится, ошибку можно поймать через ближайший Error Boundary."},{id:`react-38`,hot:!0,q:"Для чего нужен хук `useOptimistic` (React 19)?",a:"Классический пример — «лайк» или отправка сообщения в чат. Вы не хотите ждать 500мс ответа от сервера, чтобы закрасить сердечко. `useOptimistic` принимает текущее состояние и функцию обновления. При вызове серверной акции он мгновенно подменяет UI на «оптимистичное» значение. Когда Server Action завершается (успехом или ошибкой), React автоматически заменяет оптимистичное состояние на реальное, пришедшее с сервера. Это делает приложения ощущаемыми как нативные."},{id:`react-39`,hot:!0,q:`Что такое кастомные хуки и зачем они нужны?`,a:"Кастомные хуки — это главная сила React. Если у вас в 5 компонентах повторяется логика подписки на WebSocket или отслеживания размера окна, вы выносите её в `function useWindowSize() { ... }`. В отличие от HOC и Render Props, хуки не добавляют лишних узлов в дерево компонентов и не создают «матрёшки». Важно: каждый вызов кастомного хука создаёт **изолированное** состояние. `useMyHook()` в компоненте А и компоненте Б не поделят данные."}]},{id:`tools`,title:`Инструменты и best practices`,questions:[{id:`react-24`,hot:!0,q:"Почему использование индекса массива в качестве `key` — плохая практика?",a:"`key` нужен React для идентификации элемента между рендерами. Если список `[A, B, C]` отсортируется в `[C, A, B]`, а ключами были индексы `0, 1, 2`, React подумает, что элемент `0` (бывший A) превратился в C, и просто обновит текст, сохранив внутреннее состояние (например, фокус input-а или локальный state). Это приводит к жутким багам UI. Индексы можно использовать **только** если: 1) список статичен, 2) элементы не имеют уникальных ID, 3) список никогда не сортируется и не фильтруется."},{id:`react-25`,q:`Какие возможности предоставляет React DevTools?`,a:`Незаменимый инструмент. Вкладка **Components** показывает иерархию, позволяет кликнуть на элемент и увидеть его props, state, контекст и значения всех хуков. Можно даже редактировать их в реальном времени. Вкладка **Profiler** записывает процесс рендеринга: сколько времени занял каждый компонент, почему он перерендерился (изменились props, hooks или родитель) и помогает находить узкие места производительности.`}]}]},{id:`redux`,title:`Redux`,accent:`#b58df2`,topics:[{id:`basics`,title:`Основы Redux`,questions:[{id:`redux-01`,hot:!0,q:`Что такое Redux и зачем он нужен?`,a:`Redux решает проблему «prop drilling» и хаотичного изменения состояния в больших приложениях. Он основан на трёх принципах: единый источник правды (один Store на всё приложение), состояние доступно только для чтения (изменяется только через dispatch Action), и изменения описываются чистыми функциями (Reducers). Это делает поток данных детерминированным, что упрощает отладку, тестирование и использование таких фич, как «Time Travel».`},{id:`redux-02`,hot:!0,q:`Какие три фундаментальных принципа лежат в основе Redux?`,a:`Эти принципы заимствованы из архитектуры Flux. **Single Source of Truth** упрощает отладку и серверный рендеринг (гидратацию). **Read-Only** гарантирует, что ни один компонент не может случайно мутировать данные напрямую. **Pure Functions** (редьюсеры) означают, что при одинаковых входных данных (state + action) результат всегда будет одинаковым, без побочных эффектов (никаких API-запросов внутри редьюсера).`},{id:`redux-03`,hot:!0,q:`Что такое Store, Action и Reducer?`,a:"Взаимодействие выглядит так: компонент вызывает `store.dispatch(action)`. Store передаёт текущий `state` и `action` в `reducer`. Reducer (обязательно чистая функция!) создаёт **копию** состояния, вносит изменения и возвращает новый объект. Store сохраняет его и уведомляет подписанные компоненты (через `useSelector`), что пора перерендериться."},{id:`redux-16`,q:`В чём разница между Action и Action Creator?`,a:'Action — это просто plain-object, который описывает факт события: `{ type: "todos/add", payload: "Buy milk" }`. Action Creator — это функция, которая инкапсулирует логику создания этого объекта: `const addTodo = (text) => ({ type: "todos/add", payload: text })`. Это позволяет не хардкодить строки `type` и структуру `payload` по всему приложению. В RTK `createSlice` генерирует Action Creators автоматически.'},{id:`redux-23`,q:`Что такое архитектура Flux и как она связана с Redux?`,a:"В оригинальном Flux было несколько сторов и центральный Dispatcher, что было сложно для масштабирования. Дэн Абрамов создал Redux, взяв лучшую идею Flux (однонаправленный поток данных, предсказуемость) и отбросив сложность: он объединил все сторы в один, заменил Dispatcher на простой `dispatch`, а логику вынес в чистые функции (редьюсеры), добавив функциональное программирование и иммутабельность. Redux также находился под сильным влиянием языка Elm."}]},{id:`react-integration`,title:`Связь с React`,questions:[{id:`redux-04`,hot:!0,q:`Как правильно связать Redux с React-приложением?`,a:"`react-redux` использует Context API под капотом, но оптимизирует его. `<Provider>` делает store доступным для всего дерева. Хук `useSelector` подписывается на обновления стора (используя паттерн pub-sub), а `useDispatch` возвращает ссылку на функцию dispatch. Старый HOC `connect` всё ещё работает, но хуки считаются современным стандартом из-за лучшей читаемости и отсутствия «обёрточного ада»."},{id:`redux-05`,hot:!0,q:"Как работают хуки `useSelector` и `useDispatch`?",a:"`useSelector` принимает функцию-селектор: `const count = useSelector(state => state.count)`. Под капотом `react-redux` сравнивает предыдущее и новое значение селектора (по умолчанию через `===`). Если значение изменилось, компонент перерендеривается. **Важно**: если селектор возвращает новый объект/массив при каждом вызове, компонент будет перерендериваться постоянно! Для сложных объектов используйте мемоизированные селекторы (Reselect) или shallow-сравнение."},{id:`redux-21`,hot:!0,q:`Redux vs Context API: когда что использовать?`,a:"Главная проблема Context: если `value` в `<Provider value={...}>` меняется, **все** компоненты, использующие `useContext`, перерендерятся, даже если они читают только ту часть данных, которая не изменилась. Redux использует систему подписок (pub-sub): компонент, читающий `state.user`, не перерендерится при изменении `state.posts`. Используйте Context для инъекции зависимостей и глобальных настроек, а Redux (или Zustand/Jotai) — для бизнес-логики и данных, которые часто мутируют."}]},{id:`middleware`,title:`Middleware и асинхронность`,questions:[{id:`redux-06`,hot:!0,q:`Что такое Middleware в Redux и зачем оно нужно?`,a:"Сам по себе Redux синхронный. Если вам нужно сделать `fetch` перед обновлением стора, редьюсер не подходит (он должен быть чистым). Middleware (например, `redux-thunk` или `redux-logger`) встраивается в `dispatch`. Когда вы делаете `dispatch(myAction)`, сначала экшен проходит через цепочку middleware, которые могут его изменить, отложить, сделать API-запрос или отправить другие экшены, и только потом он попадает в редьюсер."},{id:`redux-07`,hot:!0,q:`Что такое Redux Thunk?`,a:"В «ванильном» Redux `dispatch` принимает только plain-объекты `{ type: ... }`. Thunk проверяет: если передана функция, он вызывает её, передавая аргументами `dispatch` и `getState`. Это позволяет писать асинхронные Action Creators: `const fetchUser = () => async (dispatch) => { dispatch(loading()); const data = await api.get(); dispatch(success(data)); }`. В Redux Toolkit Thunk включён по умолчанию."},{id:`redux-08`,hot:!0,q:`Что такое Redux Saga и чем она отличается от Thunk?`,a:"Saga использует генераторы (`function*`), что позволяет писать асинхронный код, который выглядит как синхронный, и легко прерывается. В отличие от Thunk (где логика «размазана» по экшен-креаторам), Sagas — это отдельные фоновые потоки, которые «слушают» экшены (`takeEvery`, `takeLatest`) и реагируют на них. Sagas легко тестируются (так как эффекты — это просто объекты) и идеально подходят для сложных сценариев вроде «отправить запрос, но если пользователь нажал отмену — прервать его»."},{id:`redux-20`,q:"Что такое `createListenerMiddleware` в RTK?",a:"Оно позволяет описывать сайд-эффекты декларативно: `listenerMiddleware.startListening({ actionCreator: todoAdded, effect: async (action, listenerApi) => { ... } }`. В отличие от Saga, оно использует стандартные `async/await` и промисы (не генераторы), имеет встроенную отмену предыдущих задач (как `takeLatest`) и отлично интегрируется с TypeScript. Это рекомендуемый способ для сложной асинхронной логики в новых проектах на RTK."}]},{id:`toolkit`,title:`Redux Toolkit (RTK)`,questions:[{id:`redux-09`,hot:!0,q:`Что такое Redux Toolkit (RTK) и почему он стал стандартом?`,a:"Исторически Redux критиковали за многословность (создание файлов для экшенов, констант, редьюсеров, ручное копирование объектов `...state`). RTK решает это: `configureStore` автоматически настраивает Thunk и DevTools; `createSlice` генерирует экшены и редьюсеры из одного объекта; а встроенная библиотека **Immer** позволяет писать код в редьюсерах так, будто вы мутируете стейт напрямую (`state.value = 1`), хотя под капотом Immer создаёт иммутабельную копию."},{id:`redux-10`,hot:!0,q:"Что такое `createSlice` в RTK?",a:'Пример: `const counterSlice = createSlice({ name: "counter", initialState: 0, reducers: { increment: (state) => state + 1 } })`. RTK автоматически создаст `counterSlice.actions.increment` (экшен-креатор) и `counterSlice.reducer`. Это убирает необходимость вручную писать строковые константы вроде `const INCREMENT = "counter/increment"` и объекты экшенов. Благодаря Immer внутри `createSlice` можно безопасно «мутировать» `state`.'},{id:`redux-11`,q:"Как работает `combineReducers`?",a:"Если у вас есть `todosReducer` и `userReducer`, вы делаете `const rootReducer = combineReducers({ todos: todosReducer, user: userReducer })`. В результате глобальный `state` будет иметь вид `{ todos: [...], user: {...} }`. Когда приходит экшен, `combineReducers` прогоняет его через все дочерние редьюсеры, передавая каждому только его «кусочек» стейта. В RTK `configureStore` делает это автоматически, если передать ему объект редьюсеров."},{id:`redux-14`,hot:!0,q:"Что делает `createAsyncThunk` в RTK?",a:'Вместо ручного написания трёх экшенов (`FETCH_LOADING`, `FETCH_SUCCESS`, `FETCH_ERROR`) и Thunk-функции, вы пишете: `createAsyncThunk("users/fetch", async () => (await api.get()).data)`. RTK сам создаст Thunk, который при вызове диспатчит `pending`, затем выполняет промис, и диспатчит `fulfilled` (с данными) или `rejected` (с ошибкой). В `createSlice` вы просто реагируете на эти статусы в `extraReducers`.'},{id:`redux-15`,hot:!0,q:`Что такое RTK Query и какие проблемы он решает?`,a:'RTK Query устраняет тонны boilerplate-кода. Вы описываете эндпоинты (`getPosts: builder.query({ query: () => "/posts" })`), а RTK генерирует React-хуки (`useGetPostsQuery()`). Он сам делает запрос, возвращает `data` и `isLoading`, кэширует результат (если другой компонент запросит те же посты, запроса не будет), показывает спиннеры и умеет автоматически обновлять кэш после мутаций (POST/DELETE). Для серверных данных RTK Query теперь предпочтительнее, чем ручные Thunks.'},{id:`redux-19`,q:"Для чего используется `createEntityAdapter` в RTK?",a:"Вместо того чтобы вручную писать логику нормализации и обновления словарей (`byId`, `allIds`), вы используете адаптер: `const usersAdapter = createEntityAdapter()`. Он даёт вам селекторы (`getSelectors`) и редьюсеры (`addOne`, `removeAll`, `updateOne`), которые корректно работают с нормализованным состоянием. Это стандарт индустрии для хранения списков сущностей (пользователей, товаров, постов) в Redux."}]},{id:`patterns`,title:`Паттерны и оптимизация`,questions:[{id:`redux-12`,hot:!0,q:`Почему состояние в Redux должно быть иммутабельным (Immutable)?`,a:'Если вы измените свойство существующего объекта (`state.user.name = "John"`), ссылка на объект останется прежней. `useSelector` или `React.memo` при проверке `prev === next` получат `true` и решат, что ничего не изменилось, пропустив ре-рендер. Возвращая **новый** объект (`return { ...state, user: { ...state.user, name: "John" } }`), вы меняете ссылку, и система понимает, что нужно обновить UI. RTK решает эту боль, используя библиотеку Immer, которая делает иммутабельные обновления за вас.'},{id:`redux-13`,hot:!0,q:`Что такое нормализация состояния (Normalization) в Redux?`,a:"Если хранить `posts: [{ id: 1, comments: [{id: 10, ...}] }]`, то обновление одного комментария потребует глубокого клонирования массивов и объектов (сложно и медленно). При нормализации состояние выглядит так: `posts: { byId: { 1: { commentIds: [10] } }, allIds: [1] }`, `comments: { byId: { 10: {...} } }`. Теперь обновить комментарий — это просто заменить объект по ключу `10`. RTK предоставляет `createEntityAdapter` для автоматизации этого паттерна."},{id:`redux-18`,hot:!0,q:"Что такое `createSelector` (библиотека Reselect) и зачем она нужна?",a:"Если `useSelector` возвращает новый массив при каждом вызове (например, `state => state.items.filter(...)`), компонент будет перерендериваться при **любом** изменении стора, даже если `items` не менялись. `createSelector` запоминает входные аргументы и результат. Если входы те же — возвращается кэшированный результат (сохраняя ссылку `===`), и компонент не перерендеривается. В RTK `createSelector` встроен и доступен из коробки."},{id:`redux-22`,q:`Что такое Redux Persist и как он работает?`,a:"По умолчанию Redux-стор живёт только в RAM и очищается при обновлении страницы. `redux-persist` перехватывает обновления и асинхронно пишет их в хранилище (localStorage, IndexedDB, AsyncStorage в React Native). При запуске приложения он «восстанавливает» (rehydrates) стор до прихода данных с сервера, что даёт мгновенный UI. Важно: нельзя персистить несериализуемые данные (функции, промисы, классы) и чувствительные данные (токены лучше хранить в HttpOnly куках)."}]},{id:`debugging`,title:`Отладка и тестирование`,questions:[{id:`redux-17`,hot:!0,q:`Что такое Redux DevTools и как работает «Time Travel Debugging»?`,a:`Так как редьюсеры — чистые функции, а состояние иммутабельно, DevTools может сохранить снимок стора после каждого экшена. Вы можете кликнуть на любой прошлый экшен в списке, и приложение мгновенно «отмотается» в то состояние (перерендерив UI). Вы также можете «пропустить» (skip) экшен, чтобы посмотреть, как работало бы приложение без него, или «переиграть» (replay) историю после изменения кода редьюсера. Это киллер-фича Redux.`}]}]}],Dw=(e,t,n)=>({...e,hot:!!e.hot,q:e.q,a:e.a,title:e.q,text:e.q,question:e.q,answer:e.a,fullAnswer:e.a,shortAnswer:e.a,explanation:e.a,section:t.id,sectionTitle:t.title,topic:n.id,topicTitle:n.title}),Ow=Ew.map(e=>({id:e.id,title:e.title,color:e.color,topics:(e.topics||[]).map(t=>({id:t.id,title:t.title,questions:(t.questions||[]).map(n=>Dw(n,e,t))}))})),kw=Ow.flatMap(e=>e.topics.flatMap(e=>e.questions)),Aw={sections:Ow},jw=864e5,Mw=[{key:0,label:`Не знаю`,days:0,color:`#ff6b6b`},{key:1,label:`Немного знаю`,days:1,color:`#ffc857`},{key:2,label:`Хорошо знаю`,days:3,color:`#43d2ff`},{key:3,label:`Полностью знаю`,days:7,color:`#3dd68c`}],Nw=e=>e<=Date.now()?`сейчас`:new Date(e).toLocaleDateString(`ru-RU`,{day:`numeric`,month:`short`}),Pw=(0,_.createContext)(),Fw=({children:e})=>{let{user:t}=Tw(),[n,r]=(0,_.useState)({}),[i,a]=(0,_.useState)(!0);(0,_.useEffect)(()=>{if(!t){r({}),a(!1);return}let e=K_(vw,`users`,t.uid),n=pw(e,async t=>{if(t.exists()){let n=t.data();if(!n.cards&&(n.learned?.length||n.incorrect?.length)){let t=Date.now(),r={};(n.learned||[]).forEach(e=>{r[e]={lvl:3,next:t+7*jw,seen:1,last:t}}),(n.incorrect||[]).forEach(e=>{r[e]={lvl:0,next:t+jw,seen:1,last:t}}),await fw(e,{cards:r,learned:vv(),incorrect:vv()});return}r(n.cards||{})}else await dw(e,{cards:{}}),r({});a(!1)});return()=>n()},[t]);let o=(0,_.useCallback)(async(e,n)=>{if(!t)return;let r=Date.now();await fw(K_(vw,`users`,t.uid),{[`cards.${e}`]:{lvl:n,next:r+Mw[n].days*jw,seen:yv(1),last:r}})},[t]),s=(0,_.useCallback)(e=>{let t=n[e];return t?t.next<=Date.now()?`due`:`scheduled`:`new`},[n]),c=(0,_.useMemo)(()=>{let e=Date.now(),t=0,r=0,i=0,a=Aw.sections.map(a=>{let o=0,s=0,c=0,l=a.topics.map(t=>{let r=0,i=0,a=0;return t.questions.forEach(t=>{let o=n[t.id];o?o.next<=e?r++:a++:i++}),o+=r,s+=i,c+=a,{id:t.id,title:t.title,total:t.questions.length,due:r,fresh:i,learned:a,hot:t.questions.filter(e=>e.hot).length}});return t+=o,r+=s,i+=c,{id:a.id,title:a.title,accent:a.accent,total:a.topics.reduce((e,t)=>e+t.questions.length,0),due:o,fresh:s,learned:c,topics:l}});return{total:kw.length,due:t,fresh:r,learned:i,sections:a}},[n]);return(0,$.jsx)(Pw.Provider,{value:{cards:n,loading:i,rateCard:o,statusOf:s,stats:c},children:e})},Iw=()=>(0,_.useContext)(Pw),Lw=[{id:`task-debounce`,topic:`closures`,topicName:`Замыкания и функции`,difficulty:`medium`,title:`Реализация Debounce`,description:"Напишите функцию `debounce(func, delay)`, которая задерживает вызов функции до тех пор, пока не пройдёт `delay` миллисекунд с момента последнего вызова.\n**Требования:**\n- Возвращает новую функцию\n- Если вызовы идут чаще, чем `delay`, таймер сбрасывается\n- Функция должна сохранять контекст `this` и принимать аргументы",starterCode:`function debounce(func, delay) {
+Бандлеры (Vite, Webpack) работают с обоими.`}]}]},{id:`http`,title:`HTTP и безопасность`,accent:`#3dd68c`,topics:[{id:`basics`,title:`Основы протокола`,questions:[{id:`http-01`,hot:!0,q:`Что такое HTTP и HTTPS?`,a:`HTTP (HyperText Transfer Protocol) - протокол передачи данных.
+Работает поверх TCP, передает данные в открытом виде.
+
+HTTPS добавляет слой шифрования TLS/SSL.
+
+HTTPS защищает от:
+- перехвата данных (MITM-атаки)
+- подмены контента
+- прослушивания трафика
+
+Браузеры помечают HTTP-сайты как небезопасные.
+Многие API (Geolocation, Service Workers) работают только через HTTPS.`},{id:`http-02`,hot:!0,q:`Какие основные методы HTTP?`,a:`GET - получение данных. Идемпотентный, параметры в URL.
+
+POST - создание данных. Не идемпотентный, данные в теле.
+
+PUT - полная замена ресурса. Идемпотентный.
+
+PATCH - частичное изменение ресурса.
+
+DELETE - удаление ресурса. Идемпотентный.
+
+HEAD - как GET, но без тела ответа.
+Для проверки существования ресурса.
+
+OPTIONS - для CORS preflight-запросов.
+
+Идемпотентный = повторный запрос дает тот же результат.`},{id:`http-03`,hot:!0,q:`Что такое статусы ответа HTTP?`,a:`1xx - информационные (100 Continue)
+
+2xx - успех:
+- 200 OK
+- 201 Created
+- 204 No Content
+
+3xx - перенаправление:
+- 301 Moved Permanently
+- 302 Found (временно)
+- 304 Not Modified (кэш)
+
+4xx - ошибка клиента:
+- 400 Bad Request
+- 401 Unauthorized (нет логина)
+- 403 Forbidden (нет прав)
+- 404 Not Found
+- 429 Too Many Requests
+
+5xx - ошибка сервера:
+- 500 Internal Server Error
+- 502 Bad Gateway
+- 503 Service Unavailable`},{id:`http-20`,hot:!0,q:`В чем принципиальная разница между 401 и 403?`,a:`401 Unauthorized:
+Сервер не знает кто вы.
+Нет токена, нет сессии, токен истек.
+Решение: авторизуйтесь.
+
+403 Forbidden:
+Сервер знает кто вы, но у вас нет прав.
+Токен валидный, но роль не позволяет.
+Решение: обратитесь к администратору.
+
+Простая аналогия:
+401 - вас нет в списке гостей.
+403 - вы в списке, но в VIP-зону нельзя.`}]},{id:`browser`,title:`Браузер и сеть`,questions:[{id:`http-25`,hot:!0,q:`Что происходит когда вводишь URL в браузер?`,a:`1. DNS-резолвинг:
+Браузер узнает IP-адрес домена.
+Проверяет кэш, затем DNS-серверы.
+
+2. TCP-соединение:
+Three-way handshake (SYN, SYN-ACK, ACK).
+Для HTTPS добавляется TLS-рукопожатие.
+
+3. HTTP-запрос:
+Браузер отправляет GET-запрос с заголовками.
+
+4. Ответ сервера:
+HTML-документ + статус код.
+
+5. Парсинг HTML:
+Построение DOM-дерева.
+Встреченные CSS и JS загружаются.
+
+6. Построение CSSOM и Render Tree.
+
+7. Layout (расчет позиций) и Paint (отрисовка).
+
+8. JavaScript выполняется и может изменить DOM.`}]},{id:`caching`,title:`Кэширование`,questions:[{id:`http-11`,hot:!0,q:`Как работает кэширование в HTTP?`,a:`Заголовок \`Cache-Control\` управляет кэшем:
+
+- \`max-age=31536000\` - кэшировать на год
+- \`no-cache\` - кэшировать, но проверять каждый раз
+- \`no-store\` - не кэшировать вообще
+- \`public\` / \`private\` - кто может кэшировать
+
+ETag - уникальный идентификатор версии ресурса.
+
+Как работает проверка:
+1. Браузер шлет запрос с \`If-None-Match: "etag"\`
+2. Если файл не менялся - сервер отвечает 304
+3. Браузер использует кэш, экономит трафик
+
+Для статики с хэшем в имени (app.abc123.js):
+Ставьте max-age на год. При изменении изменится имя файла.`}]},{id:`auth`,title:`Куки и авторизация`,questions:[{id:`http-05`,hot:!0,q:`Что такое куки и как они работают?`,a:`Куки - небольшие фрагменты данных (~4 КБ).
+Сервер устанавливает через заголовок \`Set-Cookie\`.
+Браузер отправляет с каждым запросом на этот домен.
+
+Флаги безопасности:
+- \`HttpOnly\` - недоступны из JavaScript
+- \`Secure\` - только по HTTPS
+- \`SameSite\` - защита от CSRF
+- \`Max-Age\` / \`Expires\` - срок жизни
+
+В отличие от localStorage:
+- автоматически отправляются с запросами
+- имеют срок жизни
+- ограничены по размеру
+- могут быть HttpOnly (защита от XSS)`},{id:`http-06`,hot:!0,q:`Что такое JWT и как он устроен?`,a:`JWT (JSON Web Token) - токен для авторизации.
+
+Состоит из трех частей через точку:
+\`header.payload.signature\`
+
+Header:
+Алгоритм подписи (HS256, RS256) и тип токена.
+
+Payload:
+Данные пользователя: id, роль, срок жизни.
+Закодирован в Base64, НЕ зашифрован.
+
+Signature:
+Подпись для проверки целостности.
+Создается секретным ключом сервера.
+
+Сервер проверяет подпись, не обращаясь к БД.
+Это делает JWT идеальным для микросервисов.
+
+Минус: сложно отозвать до истечения срока жизни.`}]},{id:`security`,title:`Безопасность`,questions:[{id:`http-08`,hot:!0,q:`Что такое XSS и как защититься?`,a:`XSS (Cross-Site Scripting) - внедрение вредоносного JS.
+
+Виды:
+- Stored: скрипт хранится в БД (комментарий)
+- Reflected: скрипт в URL, отражается в ответе
+- DOM-based: скрипт меняет DOM через JS
+
+Что может хакер:
+- украсть куки
+- сделать действие от имени пользователя
+- перенаправить на фишинг
+
+Защита:
+- никогда не использовать innerHTML с сырыми данными
+- применять textContent
+- флаг HttpOnly у кук
+- CSP заголовок
+- экранирование пользовательского ввода`},{id:`http-09`,hot:!0,q:`Что такое CSRF и как защититься?`,a:`CSRF (Cross-Site Request Forgery) - подмена запроса.
+
+Если пользователь залогинен на bank.com,
+хакер на evil.com может незаметно отправить запрос на bank.com.
+Браузер автоматически добавит куки банка.
+
+Защита:
+- SameSite=Lax/Strict у кук
+  Запрещает отправку при кросс-доменных переходах
+- CSRF-токены
+  Сервер генерирует уникальный токен для формы
+- Проверка заголовка Origin/Referer
+
+SameSite=Lax - хорошая защита по умолчанию.`},{id:`http-07`,hot:!0,q:`Что такое CORS и как его настроить?`,a:`CORS (Cross-Origin Resource Sharing) - политика безопасности.
+Запрещает чтение данных с другого домена без разрешения.
+
+Настройка на сервере:
+\`Access-Control-Allow-Origin: https://my-site.com\`
+Или \`*\` для публичных API.
+
+Preflight запрос:
+Для нестандартных запросов (PUT, DELETE, JSON)
+браузер сначала шлет OPTIONS запрос.
+Сервер отвечает разрешающими заголовками.
+Только потом браузер шлет настоящий запрос.
+
+На клиенте CORS настроить нельзя.
+Только на сервере.`}]},{id:`realtime`,title:`Реалтайм и версии HTTP`,questions:[{id:`http-14`,hot:!0,q:`Что такое WebSocket и чем отличается от HTTP?`,a:`HTTP - запрос-ответ. Клиент всегда инициирует.
+WebSocket - двусторонняя связь.
+
+Как работает:
+1. Клиент шлет HTTP-запрос с Upgrade: websocket
+2. Сервер соглашается (101 Switching Protocols)
+3. TCP-сокет остается открытым
+4. Обе стороны шлют данные в любой момент
+
+Используется для:
+- чатов
+- биржевых котировок
+- онлайн-игр
+- уведомлений
+
+Альтернативы:
+- SSE (Server-Sent Events) - только сервер к клиенту
+- Long Polling - имитация через HTTP запросы`},{id:`http-17`,hot:!0,q:`В чем разница между HTTP/1.1, HTTP/2 и HTTP/3?`,a:`HTTP/1.1:
+- одно соединение - один запрос за раз
+- браузеры открывали 6 соединений на домен
+- заголовки отправлялись каждый раз полностью
+
+HTTP/2:
+- мультиплексирование: все файлы в одном потоке
+- сжатие заголовков (HPACK)
+- server push
+- но TCP head-of-line blocking остался
+
+HTTP/3:
+- использует UDP вместо TCP (протокол QUIC)
+- нет head-of-line blocking
+- TLS встроен в QUIC
+- быстрее установка соединения`}]}]},{id:`ts`,title:`TypeScript`,accent:`#4a9eff`,topics:[{id:`basics`,title:`Основы TypeScript`,questions:[{id:`ts-01`,hot:!0,q:`Что такое TypeScript и зачем он нужен?`,a:`TypeScript - типизированное надмножество JavaScript.
+Любой валидный JS является валидным TS.
+
+Польза:
+- ошибки ловятся на этапе компиляции
+- автодополнение в IDE
+- безопасный рефакторинг
+- код самодокументируется
+
+TS компилируется в чистый JS.
+Работает в любом браузере и Node.js.
+Типы существуют только на этапе компиляции.`},{id:`ts-02`,hot:!0,q:`Какие базовые типы есть в TypeScript?`,a:"Примитивы:\n`string`, `number`, `boolean`, `bigint`, `symbol`, `null`, `undefined`\n\nСпециальные:\n- `any` - отключает проверку типов\n- `unknown` - безопасный аналог any\n- `void` - функция ничего не возвращает\n- `never` - функция никогда не завершается\n\nСоставные:\n- `Array<T>` или `T[]` - массив\n- `object` - объект\n- union: `string | number`\n- intersection: `A & B`\n\nТакже: enum, tuple, литеральные типы."},{id:`ts-03`,hot:!0,q:`В чем разница между interface и type?`,a:`Оба создают именованные типы.
+
+interface:
+- идеален для объектов и классов
+- поддерживает extends
+- declaration merging: если объявить дважды, поля объединятся
+- можно расширять сторонние библиотеки
+
+type:
+- более гибкий
+- может описывать примитивы: \`type ID = string | number\`
+- union и intersection типы
+- кортежи
+- mapped types
+
+Оба удаляются при компиляции.
+Выбор: interface для API объектов, type для всего остального.`},{id:`ts-10`,hot:!0,q:`Какие ключевые опции есть в tsconfig.json?`,a:"`target` - ECMAScript-версия вывода.\nES5, ES2020, ESNext.\n\n`module` - система модулей.\nCommonJS для Node.js, ESNext для бандлеров.\n\n`strict: true` - включает все строгие проверки.\nОбязательно для production.\n\nВнутри strict:\n- `strictNullChecks` - null и undefined не совместимы с другими типами\n- `noImplicitAny` - запрещает неявный any\n- `strictFunctionTypes` - строгая проверка типов функций\n\n`paths` и `baseUrl` - алиасы импортов.\n`esModuleInterop` - совместимость CommonJS и ESM."}]},{id:`generics`,title:`Дженерики и операторы типов`,questions:[{id:`ts-05`,hot:!0,q:`Что такое дженерики и зачем они нужны?`,a:`Дженерики позволяют создавать переиспользуемые компоненты.
+Тип определяется при вызове, а не при объявлении.
+
+Пример:
+\`function identity<T>(arg: T): T { return arg; }\`
+\`identity<string>('hello')\` - T становится string
+
+Без дженериков пришлось бы использовать any.
+И терять типизацию.
+
+Ограничения:
+\`<T extends Comparable>\` - T должен быть сравнимым
+
+Значения по умолчанию:
+\`<T = string>\` - если тип не указан
+
+Дженерики работают в функциях, классах, интерфейсах.`},{id:`ts-08`,hot:!0,q:`Что делают операторы keyof и typeof?`,a:"`keyof` - оператор на уровне типов.\nВозвращает union всех ключей объекта.\n`type UserKeys = keyof User;` даст `'name' | 'age'`\n\nИспользование:\n`function getProperty<T, K extends keyof T>(obj: T, key: K): T[K]`\nTS знает что вернется тип поля key.\n\n`typeof` в типах - извлекает тип из значения.\n`type UserType = typeof user;`\n\nКомбинация:\n`type Keys = keyof typeof configObject;`\nПолучить ключи из реального объекта."},{id:`ts-25`,hot:!0,q:`Что такое Utility Types (Partial, Pick, Omit, Record)?`,a:`Встроенные типы для трансформации существующих.
+
+\`Partial<User>\` - все поля становятся необязательными.
+Полезно для обновления: обновляем только часть полей.
+
+\`Required<User>\` - все поля становятся обязательными.
+
+\`Readonly<User>\` - все поля только для чтения.
+
+\`Pick<User, 'name' | 'age'>\` - новый тип только с указанными полями.
+
+\`Omit<User, 'password'>\` - все поля кроме указанных.
+
+\`Record<string, User>\` - словарь с ключами string и значениями User.
+
+\`ReturnType<typeof fn>\` - тип возврата функции.
+
+Они избавляют от дублирования интерфейсов.`}]},{id:`advanced`,title:`Продвинутые типы`,questions:[{id:`ts-12`,hot:!0,q:`В чем разница между unknown и any?`,a:`\`any\` - отключает все проверки типов.
+Можно делать что угодно: \`anyVar.foo.bar()\`
+Скомпилируется, но упадет в рантайме.
+
+\`unknown\` - безопасный аналог.
+TS не даст выполнить операцию пока не сузите тип.
+\`if (typeof x === 'string') { x.toUpperCase(); }\`
+
+Использование unknown:
+- catch-блоки: \`catch (e: unknown)\`
+- парсинг внешних данных: JSON.parse
+- API где тип заранее неизвестен
+
+Правило: никогда не используйте any без крайней необходимости.`},{id:`ts-18`,hot:!0,q:`Что такое Type Guards?`,a:`Type Guard сужает тип внутри блока кода.
+
+Встроенные:
+- \`typeof x === 'string'\` - для примитивов
+- \`x instanceof Date\` - для классов
+- \`'name' in x\` - проверка наличия свойства
+
+Пользовательский guard:
+\`function isUser(x: any): x is User { return 'name' in x; }\`
+Конструкция \`x is User\` говорит TS:
+если функция вернула true, то x имеет тип User.
+
+Это ключевой механизм работы с union-типами.
+Без него TS не знает какое поле доступно.`},{id:`ts-19`,hot:!0,q:`Что такое Discriminated Unions?`,a:`Union-тип с общим полем-дискриминатором.
+
+Пример:
+\`type Result<T> = { status: 'success'; data: T } | { status: 'error'; error: Error };\`
+
+Поле \`status\` - дискриминатор.
+
+В коде:
+\`if (result.status === 'success') { result.data; }\`
+TS знает что в этой ветке есть \`data\`.
+
+В switch с exhaustiveness checking:
+Если добавить новый вариант в union,
+компилятор заставит его обработать.
+
+Используется в Redux actions, result-типах, состояниях UI.`},{id:`ts-23`,hot:!0,q:`Что делает as const?`,a:`\`as const\` делает значение максимально узким и readonly.
+
+Без as const:
+\`const arr = [1, 2, 3]\` имеет тип \`number[]\`
+
+С as const:
+\`const arr = [1, 2, 3] as const\` имеет тип \`readonly [1, 2, 3]\`
+
+Для объектов:
+\`const config = { mode: 'dark' } as const\`
+Дает тип \`{ readonly mode: 'dark' }\`, а не \`{ mode: string }\`
+
+Использование:
+- создание enum-подобных структур
+- вывод литеральных типов
+- типобезопасные конфиги
+
+Важно: делает readonly верхний уровень и вложенные объекты.`},{id:`ts-24`,q:`Что делает оператор satisfies?`,a:`\`satisfies\` проверяет соответствие типу, но сохраняет узкий вывод.
+
+Проблема без satisfies:
+\`const palette: Record<string, string | number[]> = { ... }\`
+TS забудет что red - массив, а green - строка.
+
+С satisfies:
+\`const palette = { ... } satisfies Record<string, string | number[]>;\`
+TS проверит соответствие, но сохранит узкие типы.
+\`palette.red[0]\` работает, \`palette.green.toUpperCase()\` работает.
+
+Идеально для конфигов и маппингов.
+Появился в TypeScript 4.9.`}]},{id:`modules`,title:`Модули и declaration файлы`,questions:[{id:`ts-15`,q:`Что такое .d.ts файлы?`,a:`Файлы деклараций типов (.d.ts) содержат только типы.
+Без реализации.
+
+Используются для:
+- описания типов JS-библиотек
+- браузерных API
+- глобальных переменных
+
+Ключевое слово \`declare\`:
+\`declare const $: JQueryStatic;\`
+\`declare function myGlobalFn(): void;\`
+
+Сообщество публикует тысячи .d.ts файлов в DefinitelyTyped.
+\`@types/react\`, \`@types/lodash\`, \`@types/node\`
+
+Можно писать свои для CSS-модулей, изображений, глобальных переменных.`},{id:`ts-26`,q:`Что такое Function Overloads?`,a:`Перегрузка позволяет функции иметь несколько сигнатур.
+
+Пример:
+\`function createElement(tag: 'img'): HTMLImageElement;\`
+\`function createElement(tag: 'input'): HTMLInputElement;\`
+\`function createElement(tag: string): HTMLElement { ... }\`
+
+При вызове \`createElement('img')\`
+TS знает что вернется HTMLImageElement.
+Даст доступ к специфичным свойствам.
+
+Реализация функции должна быть совместима со всеми сигнатурами.
+
+Используется в document.querySelector и подобных API.`}]}]},{id:`react`,title:`React`,accent:`#61dafb`,topics:[{id:`basics`,title:`Основы React`,questions:[{id:`react-01`,hot:!0,q:`Что такое React и его основные принципы?`,a:`React - библиотека для построения пользовательских интерфейсов.
+Не фреймворк, отвечает только за View.
+
+Основные принципы:
+- компонентный подход: UI разбивается на независимые куски
+- Virtual DOM: легковесная копия DOM в памяти
+- однонаправленный поток данных: сверху вниз через props
+- декларативность: описываете что показать, React решает как
+
+React не знает про роутинг, HTTP-запросы, стилизацию.
+Для этого используют экосистему: React Router, Axios, CSS-modules.`},{id:`react-02`,hot:!0,q:`Что такое JSX и как он работает?`,a:`JSX - синтаксический сахар для создания React-элементов.
+
+\`<div className="box">Hi</div>\`
+Компилируется в:
+\`React.createElement('div', {className: 'box'}, 'Hi')\`
+
+Результат - обычный JS-объект (React Element).
+Описывает узел дерева.
+
+Правила JSX:
+- выражения в фигурных скобках \`{}\`
+- нет if/for, используйте тернарники и map
+- class становится className
+- for становится htmlFor
+
+JSX не обязателен, но делает код читабельнее.`},{id:`react-04`,hot:!0,q:`Что такое props и можно ли их изменять?`,a:`Props - механизм передачи данных от родителя к потомку.
+
+Однонаправленный поток: данные текут сверху вниз.
+
+Props иммутабельны.
+Компонент не может изменить свои props.
+
+Если нужно изменить данные:
+Вызвать колбэк из props, чтобы родитель обновил свой state.
+Родитель передаст новые props вниз.
+
+Прямая мутация props ломает предсказуемость React.
+И приводит к багам.`}]},{id:`state-hooks`,title:`Хуки состояния`,questions:[{id:`react-05`,hot:!0,q:`Как работает useState?`,a:`\`const [val, setVal] = useState(0);\`
+
+Вызов setVal не меняет val в текущей области видимости.
+React ставит обновление в очередь.
+
+Батчинг:
+Если вызвать setVal 5 раз подряд,
+React сделает только один ре-рендер.
+
+Функциональная форма:
+\`setVal(prev => prev + 1)\`
+Используйте когда новое значение зависит от предыдущего.
+
+Для сложных объектов используйте useReducer.
+Или обновляйте поля отдельно.`},{id:`react-10`,hot:!0,q:`В чем особенность useRef?`,a:`\`useRef\` возвращает объект \`{ current: initialValue }\`.
+
+Два использования:
+
+1. Доступ к DOM-узлам:
+\`<input ref={myRef} />\`
+\`myRef.current.focus()\`
+
+2. Хранение мутируемых значений:
+ID таймеров, флаги isMounted, предыдущие props.
+Изменение \`ref.current\` не вызывает ре-рендер.
+
+Это лазейка из парадигмы иммутабельности React.
+Аналог полей экземпляра в классовых компонентах.
+
+Значение сохраняется между ре-рендерами.`}]},{id:`effects`,title:`useEffect и побочные эффекты`,questions:[{id:`react-06`,hot:!0,q:`Что такое useEffect и когда выполняется cleanup?`,a:`\`useEffect(fn, deps)\` запускается после обновления DOM.
+
+Идеальное место для:
+- fetch-запросов
+- addEventListener
+- setInterval
+- подписок
+
+Cleanup функция:
+Возвращается из эффекта.
+Вызывается перед повторным запуском и при unmount.
+Отменяет предыдущий эффект: clearInterval, removeEventListener.
+
+Зависимости:
+- пустой массив: эффект один раз при mount
+- массив с переменными: эффект при их изменении
+- без массива: эффект после каждого рендера
+
+В React 18 Strict Mode эффекты намеренно
+монтируются, размонтируются и снова монтируются.`},{id:`react-07`,hot:!0,q:`Почему хуки нельзя вызывать внутри условий?`,a:`React использует связный список для хранения хуков.
+При каждом рендере проходит по списку в том же порядке.
+
+Если один хук вызовется в if, а другой нет:
+Порядок сдвинется.
+useState вернет значение чужого хука.
+
+Правила хуков:
+- только на верхнем уровне компонента
+- не внутри if, for, while
+- не внутри колбэков
+- не в обычных функциях (только компоненты и кастомные хуки)
+
+ESLint плагин eslint-plugin-react-hooks
+автоматически ловит нарушения.`},{id:`react-40`,hot:!0,q:`Что такое проблема stale closure?`,a:`Каждый рендер создает новое замыкание.
+Функции видят только те props и state, которые были в этом рендере.
+
+Пример проблемы:
+\`useEffect(() => { const id = setInterval(() => console.log(count), 1000); }, []);\`
+Таймер будет вечно печатать 0.
+Потому что замкнул первый рендер.
+
+Решения:
+1. Добавить count в зависимости
+2. Функциональный сеттер: \`setCount(c => c + 1)\`
+3. useRef для хранения актуального значения`}]},{id:`optimization`,title:`Оптимизация`,questions:[{id:`react-11`,hot:!0,q:`В чем разница между useMemo и useCallback?`,a:`\`useMemo(() => compute(a), [a])\`
+Возвращает кэшированный результат функции.
+Пересчитывает только при изменении зависимостей.
+
+\`useCallback(() => doSomething(a), [a])\`
+Возвращает кэшированную ссылку на функцию.
+
+Фактически:
+\`useCallback(fn, deps)\` эквивалентен \`useMemo(() => fn, deps)\`
+
+Когда использовать:
+- передача колбэков в мемоизированные дети
+- дорогие вычисления
+- зависимости useEffect
+
+Не используйте без профилирования.
+Чаще всего это преждевременная оптимизация.`},{id:`react-12`,hot:!0,q:`Как работает React.memo?`,a:`\`React.memo\` делает поверхностное сравнение props.
+Если props не изменились - пропускает ре-рендер.
+
+Проблема:
+Если родитель передает \`<Child style={{ color: 'red' }} />\`
+Объект style создается заново при каждом рендере.
+Ссылки разные, memo пропустит оптимизацию.
+
+Решение:
+Мемоизировать props в родителе через useMemo и useCallback.
+
+Не используйте React.memo без профилирования.
+Для простых компонентов он может замедлить.`},{id:`react-08`,hot:!0,q:`Как useContext влияет на ре-рендеры?`,a:`Если значение контекста меняется:
+Все компоненты, читающие этот контекст, перерендериваются.
+
+Проблема:
+Если в контексте \`{ user, theme }\` и меняется только theme,
+компоненты читающие user тоже перерендерятся.
+
+Решения:
+1. Разделять контексты: UserContext и ThemeContext отдельно
+2. Мемоизировать value через useMemo
+3. Использовать селекторы (Zustand, Redux)
+4. Библиотеки: use-context-selector
+
+Context не замена стейт-менеджеру.`}]},{id:`reconciliation`,title:`Reconciliation и паттерны`,questions:[{id:`react-13`,hot:!0,q:`Что такое алгоритм согласования (Reconciliation)?`,a:`Когда state меняется, React создает новое дерево элементов.
+Сравнивать деревья в лоб - O(n cubed), слишком дорого.
+
+React использует эвристики - O(n):
+
+1. Элементы разных типов уничтожаются и строятся заново.
+   div станет span - все дети пересоздаются.
+
+2. Элементы одного типа обновляются по месту.
+
+3. Ключи (keys) помогают понять какие элементы
+   перемещены, добавлены или удалены.
+   Сохраняют внутреннее состояние.
+
+Это делает обновления предсказуемыми и быстрыми.`},{id:`react-24`,hot:!0,q:`Почему индекс массива в качестве key - плохая практика?`,a:`key нужен React для идентификации элемента между рендерами.
+
+Если список пересортируется:
+С ключами-индексами React подумает что элемент 0 превратился в другой.
+Просто обновит текст, сохранив внутреннее состояние.
+Это приводит к багам: фокус input, локальный state.
+
+Индексы можно использовать только если:
+- список статичен
+- элементы не имеют уникальных ID
+- список никогда не сортируется и не фильтруется
+
+Лучше использовать уникальные ID из данных.`},{id:`react-15`,hot:!0,q:`В чем разница между контролируемыми и неконтролируемыми компонентами?`,a:`Controlled (управляемые):
+React - единый источник правды.
+\`<input value={val} onChange={e => setVal(e.target.value)} />\`
+
+Преимущества:
+- мгновенная валидация
+- форматирование текста
+- блокировка кнопок
+
+Uncontrolled (неуправляемые):
+DOM сам хранит значение.
+\`<input defaultValue="test" ref={myRef} />\`
+Значение читается только при отправке формы.
+
+Uncontrolled проще для интеграции с не-React кодом.
+Но дает меньше контроля над UI.`}]},{id:`error-suspense`,title:`Error Boundaries и Suspense`,questions:[{id:`react-19`,hot:!0,q:`Что такое Error Boundaries?`,a:`Error Boundary ловит ошибки в дереве компонентов.
+Показывает запасной UI вместо падения всего приложения.
+
+Создается только через класс:
+\`static getDerivedStateFromError()\` или \`componentDidCatch()\`
+
+Что НЕ ловят:
+- ошибки внутри onClick (используйте try/catch)
+- асинхронный код (setTimeout, Promise)
+- ошибки в самом Error Boundary
+- SSR
+
+Библиотека react-error-boundary
+дает удобную обертку с хуками.`},{id:`react-20`,hot:!0,q:`Как работают React.lazy и Suspense?`,a:`React.lazy загружает компонент только когда он нужен.
+
+\`const LazyComp = React.lazy(() => import('./HeavyComponent'));\`
+
+Обертка в Suspense:
+\`<Suspense fallback={<Spinner />}> <LazyComp /> </Suspense>\`
+
+Пока JS-файл грузится - пользователь видит спиннер.
+
+Это критически важно для уменьшения размера бандла.
+Initial Load становится быстрее.
+
+Suspense также используется для data fetching
+в Relay, React Query, SWR.`}]},{id:`react18`,title:`React 18+`,questions:[{id:`react-30`,hot:!0,q:`Что делают useTransition и useDeferredValue?`,a:`useTransition:
+Возвращает \`[isPending, startTransition]\`
+Обернув setState в startTransition:
+React может прервать это обновление если пользователь
+начнет печатать что-то более срочное.
+
+useDeferredValue:
+Принимает значение и возвращает его отложенную версию.
+Обновится когда у браузера появится свободное время.
+
+Пример: поле поиска с фильтром списка из 10000 элементов.
+Ввод текста (срочно) не лагает.
+Список (не срочно) обновляется чуть позже.
+
+Это фичи Concurrent Mode.`},{id:`react-33`,hot:!0,q:`Что такое Concurrent Mode?`,a:`Исторически рендеринг в React был синхронным и блокирующим.
+Начав рендерить большое дерево, JS-поток зависал.
+Анимации и ввод лагали.
+
+Concurrent Mode делает рендеринг прерываемым.
+
+React может:
+- вычислить часть Virtual DOM
+- увидеть что пользователь нажал кнопку
+- отбросить текущий черновик
+- отрендерить кнопку
+- вернуться к фоновым вычислениям
+
+Это фундамент для useTransition, useDeferredValue
+и Suspense для данных.`},{id:`react-39`,hot:!0,q:`Что такое кастомные хуки?`,a:`Кастомный хук - функция, начинающаяся с use.
+Инкапсулирует переиспользуемую логику.
+
+Пример:
+\`function useWindowSize() { ... }\`
+
+Если в 5 компонентах повторяется логика подписки на WebSocket
+или отслеживания размера окна:
+Выносите в кастомный хук.
+
+В отличие от HOC и Render Props:
+- не добавляют лишних узлов в дерево
+- не создают wrapper hell
+
+Каждый вызов кастомного хука создает изолированное состояние.
+useMyHook() в компоненте А и Б не поделят данные.`}]}]},{id:`redux`,title:`Redux`,accent:`#b58df2`,topics:[{id:`basics`,title:`Основы Redux`,questions:[{id:`redux-01`,hot:!0,q:`Что такое Redux и зачем он нужен?`,a:`Redux решает проблему prop drilling и хаотичного изменения состояния.
+
+Три принципа:
+1. Единый источник правды - один Store на все приложение
+2. Состояние только для чтения - изменяется через dispatch Action
+3. Изменения описываются чистыми функциями - Reducers
+
+Это делает поток данных детерминированным.
+Упрощает отладку, тестирование, Time Travel Debugging.
+
+Redux не всегда нужен.
+Для простых приложений достаточно useState и Context.`},{id:`redux-03`,hot:!0,q:`Что такое Store, Action и Reducer?`,a:`Взаимодействие:
+
+1. Компонент вызывает \`store.dispatch(action)\`
+
+2. Store передает текущий state и action в reducer
+
+3. Reducer - чистая функция.
+   Создает копию состояния, вносит изменения.
+   Возвращает новый объект.
+
+4. Store сохраняет новое состояние.
+   Уведомляет подписанные компоненты через useSelector.
+
+Action - объект с полем type:
+\`{ type: 'todos/add', payload: 'Buy milk' }\`
+
+Reducer не должен мутировать state напрямую.`},{id:`redux-21`,hot:!0,q:`Redux vs Context API: когда что использовать?`,a:`Главная проблема Context:
+Если value в Provider меняется,
+все компоненты с useContext перерендериваются.
+Даже если читают только ту часть, которая не изменилась.
+
+Redux использует систему подписок (pub-sub):
+Компонент читающий state.user
+не перерендерится при изменении state.posts.
+
+Когда Context:
+- инъекция зависимостей
+- глобальные настройки (тема, локализация)
+- редко меняющиеся данные
+
+Когда Redux:
+- бизнес-логика
+- данные которые часто мутируют
+- сложные взаимодействия между компонентами`}]},{id:`middleware`,title:`Middleware и асинхронность`,questions:[{id:`redux-06`,hot:!0,q:`Что такое Middleware в Redux?`,a:`Сам по себе Redux синхронный.
+Для API-запросов нужен middleware.
+
+Middleware встраивается в dispatch.
+Когда вы делаете dispatch(action):
+Сначала экшен проходит через цепочку middleware.
+Каждый может его изменить, отложить, сделать запрос.
+Только потом он попадает в reducer.
+
+Примеры middleware:
+- redux-thunk - асинхронные экшены
+- redux-logger - логирование
+- redux-saga - сложные сценарии
+
+В Redux Toolkit thunk включен по умолчанию.`},{id:`redux-07`,hot:!0,q:`Что такое Redux Thunk?`,a:`В ванильном Redux dispatch принимает только объекты.
+
+Thunk проверяет: если передана функция,
+вызывает ее, передавая dispatch и getState.
+
+Пример:
+\`const fetchUser = () => async (dispatch) => { dispatch(loading()); const data = await api.get(); dispatch(success(data)); }\`
+
+Это позволяет писать асинхронные Action Creators.
+
+В Redux Toolkit Thunk включен по умолчанию.
+Не нужно устанавливать отдельно.`},{id:`redux-08`,hot:!0,q:`Что такое Redux Saga?`,a:`Saga использует генераторы (function*) для асинхронной логики.
+
+В отличие от Thunk:
+Sagas - отдельные фоновые потоки.
+Они слушают экшены и реагируют на них.
+
+Эффекты:
+- takeEvery - реагировать на каждый экшен
+- takeLatest - только последний (отменяет предыдущие)
+- call - вызвать функцию
+- put - диспатчить экшен
+- select - прочитать state
+
+Sagas легко тестируются.
+Эффекты - просто объекты, без реальных вызовов.
+
+Идеальны для сложных сценариев: отмена запросов, retry, debounce.`}]},{id:`toolkit`,title:`Redux Toolkit (RTK)`,questions:[{id:`redux-09`,hot:!0,q:`Что такое Redux Toolkit?`,a:`RTK решает проблему многословности Redux.
+
+Что включает:
+- configureStore - автоматически настраивает Thunk и DevTools
+- createSlice - генерирует экшены и редьюсеры из одного объекта
+- createAsyncThunk - для асинхронных операций
+- Immer внутри - можно мутировать state напрямую
+
+Без RTK приходилось:
+- создавать файлы для экшенов, констант, редьюсеров
+- вручную копировать объекты через spread
+- настраивать middleware вручную
+
+RTK - официальный стандарт для новых проектов.`},{id:`redux-10`,hot:!0,q:`Что такое createSlice в RTK?`,a:`createSlice объединяет экшены и редьюсеры в одном объекте.
+
+Пример:
+\`const counterSlice = createSlice({ name: 'counter', initialState: 0, reducers: { increment: (state) => state + 1 } })\`
+
+RTK автоматически создаст:
+- counterSlice.actions.increment - экшен-креатор
+- counterSlice.reducer - редьюсер
+
+Благодаря Immer внутри createSlice:
+Можно безопасно мутировать state.
+\`state.value = 1\` вместо \`return { ...state, value: 1 }\`
+
+Immer создает иммутабельную копию под капотом.`},{id:`redux-15`,hot:!0,q:`Что такое RTK Query?`,a:`RTK Query устраняет boilerplate для серверных данных.
+
+Вы описываете эндпоинты:
+\`getPosts: builder.query({ query: () => '/posts' })\`
+
+RTK генерирует React-хуки:
+\`useGetPostsQuery()\`
+
+Что делает автоматически:
+- запрос данных
+- возвращает data и isLoading
+- кэширует результат
+- если другой компонент запросит те же посты - запроса не будет
+- автоматически обновляет кэш после мутаций
+
+Для серверных данных RTK Query предпочтительнее
+чем ручные Thunks.`}]},{id:`patterns`,title:`Паттерны и оптимизация`,questions:[{id:`redux-12`,hot:!0,q:`Почему состояние в Redux должно быть иммутабельным?`,a:`Если изменить свойство существующего объекта:
+\`state.user.name = 'John'\`
+Ссылка на объект останется прежней.
+
+useSelector при проверке prev === next получит true.
+Решит что ничего не изменилось.
+Пропустит ре-рендер.
+
+Возвращая новый объект:
+\`return { ...state, user: { ...state.user, name: 'John' } }\`
+Вы меняете ссылку.
+Система понимает что нужно обновить UI.
+
+RTK решает эту боль через Immer.
+Можно писать как мутацию, но под капотом создается копия.`},{id:`redux-13`,hot:!0,q:`Что такое нормализация состояния?`,a:`Проблема вложенных данных:
+Если пост содержит комментарии,
+обновление одного комментария требует глубокого клонирования.
+
+Нормализация:
+Хранить данные как в реляционной БД.
+
+\`posts: { byId: { 1: { commentIds: [10] } }, allIds: [1] }\`
+\`comments: { byId: { 10: { ... } } }\`
+
+Теперь обновить комментарий:
+Просто заменить объект по ключу 10.
+Без глубокого клонирования.
+
+RTK предоставляет createEntityAdapter
+для автоматизации этого паттерна.`},{id:`redux-18`,hot:!0,q:`Что такое createSelector (Reselect)?`,a:`Если useSelector возвращает новый массив при каждом вызове:
+\`state => state.items.filter(...)\`
+Компонент перерендеривается при любом изменении стора.
+Даже если items не менялись.
+
+createSelector запоминает входные аргументы и результат.
+Если входы те же - возвращает кэшированный результат.
+Сохраняя ссылку ===.
+Компонент не перерендеривается.
+
+В RTK createSelector встроен и доступен из коробки.
+
+Используйте для сложных вычислений на основе state.`},{id:`redux-17`,hot:!0,q:`Что такое Redux DevTools и Time Travel Debugging?`,a:`Redux DevTools показывает каждый экшен и изменение state.
+
+Time Travel Debugging:
+Так как редьюсеры чистые, а состояние иммутабельно,
+DevTools сохраняет снимок стора после каждого экшена.
+
+Вы можете:
+- кликнуть на прошлый экшен и отмотать состояние
+- пропустить экшен чтобы посмотреть без него
+- переиграть историю после изменения кода
+
+Это киллер-фича Redux.
+Ни один другой стейт-менеджер не дает такого уровня отладки.`}]}]}],Dw=(e,t,n)=>({...e,hot:!!e.hot,q:e.q,a:e.a,title:e.q,text:e.q,question:e.q,answer:e.a,fullAnswer:e.a,shortAnswer:e.a,explanation:e.a,section:t.id,sectionTitle:t.title,topic:n.id,topicTitle:n.title}),Ow=Ew.map(e=>({id:e.id,title:e.title,color:e.color,topics:(e.topics||[]).map(t=>({id:t.id,title:t.title,questions:(t.questions||[]).map(n=>Dw(n,e,t))}))})),kw=Ow.flatMap(e=>e.topics.flatMap(e=>e.questions)),Aw={sections:Ow},jw=864e5,Mw=[{key:0,label:`Не знаю`,days:0,color:`#ff6b6b`},{key:1,label:`Немного знаю`,days:1,color:`#ffc857`},{key:2,label:`Хорошо знаю`,days:3,color:`#43d2ff`},{key:3,label:`Полностью знаю`,days:7,color:`#3dd68c`}],Nw=e=>e<=Date.now()?`сейчас`:new Date(e).toLocaleDateString(`ru-RU`,{day:`numeric`,month:`short`}),Pw=(0,_.createContext)(),Fw=({children:e})=>{let{user:t}=Tw(),[n,r]=(0,_.useState)({}),[i,a]=(0,_.useState)(!0);(0,_.useEffect)(()=>{if(!t){r({}),a(!1);return}let e=K_(vw,`users`,t.uid),n=pw(e,async t=>{if(t.exists()){let n=t.data();if(!n.cards&&(n.learned?.length||n.incorrect?.length)){let t=Date.now(),r={};(n.learned||[]).forEach(e=>{r[e]={lvl:3,next:t+7*jw,seen:1,last:t}}),(n.incorrect||[]).forEach(e=>{r[e]={lvl:0,next:t+jw,seen:1,last:t}}),await fw(e,{cards:r,learned:vv(),incorrect:vv()});return}r(n.cards||{})}else await dw(e,{cards:{}}),r({});a(!1)});return()=>n()},[t]);let o=(0,_.useCallback)(async(e,n)=>{if(!t)return;let r=Date.now();await fw(K_(vw,`users`,t.uid),{[`cards.${e}`]:{lvl:n,next:r+Mw[n].days*jw,seen:yv(1),last:r}})},[t]),s=(0,_.useCallback)(e=>{let t=n[e];return t?t.next<=Date.now()?`due`:`scheduled`:`new`},[n]),c=(0,_.useMemo)(()=>{let e=Date.now(),t=0,r=0,i=0,a=Aw.sections.map(a=>{let o=0,s=0,c=0,l=a.topics.map(t=>{let r=0,i=0,a=0;return t.questions.forEach(t=>{let o=n[t.id];o?o.next<=e?r++:a++:i++}),o+=r,s+=i,c+=a,{id:t.id,title:t.title,total:t.questions.length,due:r,fresh:i,learned:a,hot:t.questions.filter(e=>e.hot).length}});return t+=o,r+=s,i+=c,{id:a.id,title:a.title,accent:a.accent,total:a.topics.reduce((e,t)=>e+t.questions.length,0),due:o,fresh:s,learned:c,topics:l}});return{total:kw.length,due:t,fresh:r,learned:i,sections:a}},[n]);return(0,$.jsx)(Pw.Provider,{value:{cards:n,loading:i,rateCard:o,statusOf:s,stats:c},children:e})},Iw=()=>(0,_.useContext)(Pw),Lw=[{id:`task-debounce`,topic:`closures`,topicName:`Замыкания и функции`,difficulty:`medium`,title:`Реализация Debounce`,description:"Напишите функцию `debounce(func, delay)`, которая задерживает вызов функции до тех пор, пока не пройдёт `delay` миллисекунд с момента последнего вызова.\n**Требования:**\n- Возвращает новую функцию\n- Если вызовы идут чаще, чем `delay`, таймер сбрасывается\n- Функция должна сохранять контекст `this` и принимать аргументы",starterCode:`function debounce(func, delay) {
   // ваш код здесь
 }`,hints:[`Вам понадобится переменная для хранения ID таймера (setTimeout) в замыкании`,`При каждом вызове возвращаемой функции очищайте предыдущий таймер через clearTimeout`,`Затем устанавливайте новый таймер, который вызовет func через delay мс`,`Используйте apply для сохранения контекста this и передачи аргументов`],testCases:[{input:[()=>`test`,100],expected:`function`,description:`Возвращает функцию`}],solution:`function debounce(func, delay) {
   let timerId;
