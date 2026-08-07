@@ -119,7 +119,7 @@ export default function ReviewPage() {
             </span>
           )}
         </span>
-        
+
         {/* Кнопка переключения режима, если есть запланированные */}
         {stats.scheduled > 0 && (
           <button
@@ -134,10 +134,11 @@ export default function ReviewPage() {
                 : "border-ink-600 text-mist-400 hover:border-mist-400 hover:text-mist-100"
             }`}
           >
-            {reviewScheduled ? "✕ Только созревшие" : `📅 +${stats.scheduled} запланированных`}
+            {reviewScheduled
+              ? "✕ Только созревшие"
+              : `📅 +${stats.scheduled} запланированных`}
           </button>
         )}
-     
       </div>
 
       {/* Карточка вопроса */}
@@ -157,7 +158,23 @@ export default function ReviewPage() {
             )}
           </p>
         </button>
-
+        <div className="mt-4 flex justify-between">
+          <button
+            type="button"
+            onClick={prev}
+            className="rounded-lg px-3 py-2 text-sm text-mist-400 transition hover:text-mist-100"
+          >
+            ← Назад
+          </button>
+          .
+          <button
+            type="button"
+            onClick={next}
+            className="rounded-lg px-3 py-2 text-sm text-mist-400 transition hover:text-mist-100"
+          >
+            Пропустить →
+          </button>
+        </div>
         {showAnswer && (
           <div className="border-t border-ink-600 bg-ink-850 p-5">
             {full && (
@@ -192,24 +209,6 @@ export default function ReviewPage() {
                   </span>
                 </button>
               ))}
-            </div>
-
-            <div className="mt-4 flex justify-between">
-              <button
-                type="button"
-                onClick={prev}
-                className="rounded-lg px-3 py-2 text-sm text-mist-400 transition hover:text-mist-100"
-              >
-                ← Назад
-              </button>
-.
-              <button
-                type="button"
-                onClick={next}
-                className="rounded-lg px-3 py-2 text-sm text-mist-400 transition hover:text-mist-100"
-              >
-                Пропустить →
-              </button>
             </div>
           </div>
         )}
