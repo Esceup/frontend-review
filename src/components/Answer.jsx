@@ -1,11 +1,10 @@
 export default function Answer({ text = "" }) {
-  // Дополнительная страховка: если передали явно null или undefined
   if (!text) return null;
 
   const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
 
   return (
-    <p className="text-[15px] leading-relaxed text-mist-300">
+    <p className="whitespace-pre-line text-[15px] leading-relaxed text-mist-300">
       {parts.map((p, i) => {
         if (p.startsWith("**") && p.endsWith("**")) {
           return (

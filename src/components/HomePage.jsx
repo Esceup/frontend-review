@@ -22,7 +22,7 @@ export default function HomePage() {
         </h1>
         <p className="mb-6 max-w-xl text-sm leading-relaxed text-mist-400">
           Отвечай вслух, сверяйся с ответом, оценивай себя честно. Система сама
-          подскажет, когда повторить: 1 → 2 → 3 → 7 дней.
+          подскажет, когда повторить: сразу → 2 дня → 3 дня → 7 дней.
         </p>
         <div className="flex flex-wrap items-center gap-4">
           <Link
