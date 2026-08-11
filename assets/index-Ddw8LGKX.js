@@ -3187,227 +3187,393 @@ DevTools сохраняет снимок стора после каждого э
         .ce-builtin { color: #89dceb; }
         .ce-function { color: #89b4fa; }
       `}),(0,$.jsx)(`div`,{ref:o,className:`ce-line-numbers`,children:Array.from({length:Math.max(u,15)},(e,t)=>(0,$.jsx)(`div`,{style:{height:`1.6em`},children:t+1},t))}),(0,$.jsx)(`div`,{ref:a,className:`ce-highlight`,dangerouslySetInnerHTML:{__html:oT(e)+`
-`}}),(0,$.jsx)(`textarea`,{ref:i,className:`ce-textarea`,value:e,onChange:e=>t(e.target.value),onKeyDown:l,onScroll:c,readOnly:n,spellCheck:!1,autoComplete:`off`,autoCorrect:`off`,autoCapitalize:`off`})]})}function cT(e,t){if(e===t)return!0;if(e===null||t===null)return e===t;if(typeof e!=typeof t)return!1;if(typeof e==`number`&&isNaN(e)&&isNaN(t))return!0;if(Array.isArray(e))return!Array.isArray(t)||e.length!==t.length?!1:e.every((e,n)=>cT(e,t[n]));if(typeof e==`object`){let n=Object.keys(e),r=Object.keys(t);return n.length===r.length&&n.every(n=>cT(e[n],t[n]))}return!1}function lT(e){if(e===void 0)return`undefined`;if(e===null)return`null`;if(typeof e==`number`&&isNaN(e))return`NaN`;try{return JSON.stringify(e)}catch{return String(e)}}var uT={easy:{label:`Easy`,color:`bg-lvl-3/10 text-lvl-3 border-lvl-3/30`},medium:{label:`Medium`,color:`bg-lvl-1/10 text-lvl-1 border-lvl-1/30`},hard:{label:`Hard`,color:`bg-lvl-0/10 text-lvl-0 border-lvl-0/30`}};function dT(){let{taskId:e}=Dt(),{user:t}=Tw(),n=(0,_.useMemo)(()=>Lw.find(t=>t.id===e),[e]),[r,i]=(0,_.useState)(``),[a,o]=(0,_.useState)(null),[s,c]=(0,_.useState)(!1),[l,u]=(0,_.useState)(0),[d,f]=(0,_.useState)(!1),[p,m]=(0,_.useState)(!1),[h,g]=(0,_.useState)([]),[v,y]=(0,_.useState)(0),[b,x]=(0,_.useState)(null),[ee,te]=(0,_.useState)(!0);(0,_.useEffect)(()=>{!t||!n||S()},[t,n]),(0,_.useEffect)(()=>{n&&i(b||n.starterCode)},[n,b]);let S=async()=>{try{let n=await uw(K_(vw,`users`,t.uid,`tasks_progress`,e));if(n.exists()){let e=n.data();f(e.completed||!1),x(e.userSolution||null),y(e.attemptsCount||0),e.completed&&c(!0)}}catch(e){console.error(e)}finally{te(!1)}},ne=async n=>{if(t)try{await dw(K_(vw,`users`,t.uid,`tasks_progress`,e),n,{merge:!0})}catch(e){console.error(e)}},re=e=>{let t=e.match(/function\s+([a-zA-Z_$][\w$]*)\s*\(/);if(t)return t[1];let n=e.match(/(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=/);return n?n[1]:`solution`},ie=(0,_.useCallback)(()=>{if(!n||p)return;m(!0),o(null),g([]);let e=[],t=[],i=!0,a=v+1;y(a);let s=console.log;console.log=(...t)=>{e.push(t.map(e=>typeof e==`object`?JSON.stringify(e):String(e)).join(` `)),s.apply(console,t)};try{let e=re(r),a=`${r}\nreturn typeof ${e} === 'function' ? ${e} : null;`,c;try{c=Function(a)()}catch{c=null}if(!c||typeof c!=`function`){o([{index:0,description:`Компиляция`,passed:!1,error:`Не удалось найти функцию. Проверьте синтаксис.`}]),m(!1),console.log=s;return}for(let e=0;e<n.testCases.length;e++){let r=n.testCases[e];try{let n=c(...r.input),a=cT(n,r.expected);t.push({index:e,description:r.description,passed:a,expected:r.expected,actual:n}),a||(i=!1)}catch(n){t.push({index:e,description:r.description,passed:!1,error:n.message}),i=!1}}}catch(e){t.push({index:0,description:`Ошибка выполнения`,passed:!1,error:e.message}),i=!1}console.log=s,g(e),o(t),i&&t.length>0?(f(!0),c(!0),ne({completed:!0,userSolution:r,solvedAt:new Date().toISOString(),attemptsCount:a})):ne({completed:!1,lastCode:r,attemptsCount:a}),m(!1)},[r,n,v,t,e]),ae=async()=>{confirm(`Сбросить задачу? Ваше решение будет удалено.`)&&(i(n.starterCode),o(null),c(!1),u(0),f(!1),g([]),y(0),x(null),t&&await dw(K_(vw,`users`,t.uid,`tasks_progress`,e),{completed:!1,userSolution:null,attemptsCount:0}))};if(!n)return(0,$.jsxs)(`div`,{className:`flex min-h-[50vh] flex-col items-center justify-center`,children:[(0,$.jsx)(`div`,{className:`mb-4 text-5xl`,children:`❓`}),(0,$.jsx)(`h1`,{className:`mb-2 font-display text-xl font-bold text-mist-100`,children:`Задача не найдена`}),(0,$.jsx)(Wn,{to:`/tasks`,className:`font-mono text-sm text-accent-js transition hover:underline`,children:`← Назад к задачам`})]});if(ee)return(0,$.jsx)(`div`,{className:`flex min-h-[50vh] items-center justify-center font-mono text-mist-400`,children:`Загрузка...`});let C=uT[n.difficulty],oe=a?.filter(e=>e.passed).length||0,se=n.testCases.length;return(0,$.jsxs)(`div`,{className:`space-y-6`,children:[(0,$.jsxs)(`div`,{className:`card flex flex-wrap items-center justify-between gap-3 p-5`,children:[(0,$.jsxs)(`div`,{children:[(0,$.jsxs)(`div`,{className:`mb-1 flex flex-wrap items-center gap-2`,children:[(0,$.jsx)(`span`,{className:`rounded border px-2 py-1 font-mono text-xs font-medium ${C.color}`,children:C.label}),d&&(0,$.jsx)(`span`,{className:`rounded border border-lvl-3/30 bg-lvl-3/10 px-2 py-1 font-mono text-xs font-medium text-lvl-3`,children:`✅ Решено`}),v>0&&(0,$.jsxs)(`span`,{className:`font-mono text-xs text-mist-500`,children:[`Попыток: `,v]})]}),(0,$.jsx)(`h1`,{className:`font-display text-2xl font-bold text-mist-100`,children:n.title}),(0,$.jsx)(`p`,{className:`mt-1 font-mono text-sm text-mist-400`,children:n.topicName})]}),(0,$.jsx)(Wn,{to:`/tasks`,className:`rounded-lg border border-ink-600 bg-ink-800 px-4 py-2 font-mono text-sm text-mist-400 transition hover:border-accent-js hover:text-accent-js`,children:`← К списку задач`})]}),(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsx)(`h2`,{className:`mb-3 flex items-center gap-2 font-display text-lg font-semibold text-mist-100`,children:`📋 Условие задачи`}),(0,$.jsx)(`div`,{className:`whitespace-pre-line text-sm leading-relaxed text-mist-300`,children:n.description}),(0,$.jsxs)(`div`,{className:`mt-5 border-t border-ink-600 pt-5`,children:[(0,$.jsx)(`h3`,{className:`mb-3 font-mono text-xs font-semibold uppercase tracking-widest text-mist-500`,children:`Примеры тестов`}),(0,$.jsx)(`div`,{className:`grid gap-2 sm:grid-cols-2 lg:grid-cols-3`,children:n.testCases.slice(0,6).map((e,t)=>(0,$.jsxs)(`div`,{className:`rounded-lg border border-ink-600 bg-ink-850 p-3 font-mono text-xs`,children:[(0,$.jsxs)(`div`,{children:[(0,$.jsx)(`span`,{className:`text-mist-500`,children:`Вход: `}),(0,$.jsx)(`span`,{className:`text-accent-js`,children:JSON.stringify(e.input)})]}),(0,$.jsxs)(`div`,{children:[(0,$.jsx)(`span`,{className:`text-mist-500`,children:`Выход: `}),(0,$.jsx)(`span`,{className:`text-lvl-3`,children:JSON.stringify(e.expected)})]}),(0,$.jsxs)(`div`,{className:`mt-1 text-mist-500`,children:[`// `,e.description]})]},t))}),n.testCases.length>6&&(0,$.jsxs)(`div`,{className:`mt-2 py-1 text-center font-mono text-xs text-mist-500`,children:[`+ ещё `,n.testCases.length-6,` тестов (скрыты)`]})]})]}),(0,$.jsxs)(`div`,{className:`card overflow-hidden p-5`,children:[(0,$.jsxs)(`div`,{className:`mb-3 flex items-center justify-between`,children:[(0,$.jsx)(`h3`,{className:`font-mono text-sm font-semibold uppercase tracking-widest text-mist-400`,children:`💻 Редактор кода`}),(0,$.jsxs)(`div`,{className:`flex items-center gap-3 font-mono text-[11px] text-mist-500`,children:[(0,$.jsxs)(`span`,{children:[(0,$.jsx)(`kbd`,{className:`rounded bg-ink-700 px-1.5 py-0.5 text-mist-300`,children:`Tab`}),` отступ`]}),(0,$.jsxs)(`span`,{children:[(0,$.jsx)(`kbd`,{className:`rounded bg-ink-700 px-1.5 py-0.5 text-mist-300`,children:`Shift+Tab`}),` убрать`]}),(0,$.jsxs)(`span`,{children:[(0,$.jsx)(`kbd`,{className:`rounded bg-ink-700 px-1.5 py-0.5 text-mist-300`,children:`Enter`}),` авто-отступ`]})]})]}),(0,$.jsx)(sT,{value:r,onChange:i,height:`400px`}),(0,$.jsxs)(`div`,{className:`mt-4 flex flex-wrap items-center gap-3`,children:[(0,$.jsx)(`button`,{onClick:ie,disabled:p,className:`flex-1 rounded-lg bg-accent-js px-6 py-3 font-display text-sm font-bold text-ink-950 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:min-w-[200px]`,children:p?`⏳ Проверяю...`:`▶ Запустить тесты`}),d&&(0,$.jsx)(`button`,{onClick:ae,className:`rounded-lg border border-ink-600 bg-ink-800 px-4 py-3 font-display text-sm font-semibold text-mist-300 transition hover:border-lvl-0 hover:text-lvl-0`,children:`🔄 Сброс`})]})]}),a&&(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsxs)(`div`,{className:`mb-3 flex items-center justify-between`,children:[(0,$.jsx)(`h2`,{className:`font-display text-lg font-semibold text-mist-100`,children:`Результаты тестов`}),(0,$.jsxs)(`span`,{className:`font-mono text-sm font-bold ${oe===se?`text-lvl-3`:`text-lvl-0`}`,children:[oe,`/`,se]})]}),(0,$.jsx)(`div`,{className:`mb-4 h-2 w-full overflow-hidden rounded-full bg-ink-700`,children:(0,$.jsx)(`div`,{className:`h-full transition-all ${oe===se?`bg-lvl-3`:`bg-lvl-1`}`,style:{width:`${oe/se*100}%`}})}),(0,$.jsx)(`div`,{className:`grid gap-2 sm:grid-cols-2`,children:a.map((e,t)=>(0,$.jsxs)(`div`,{className:`rounded-lg border-2 p-3 text-sm ${e.passed?`border-lvl-3/30 bg-lvl-3/5`:`border-lvl-0/30 bg-lvl-0/5`}`,children:[(0,$.jsxs)(`div`,{className:`flex items-center gap-2 font-semibold`,children:[(0,$.jsx)(`span`,{children:e.passed?`✅`:`❌`}),(0,$.jsx)(`span`,{className:`text-mist-100`,children:e.description})]}),!e.passed&&(0,$.jsx)(`div`,{className:`mt-2 space-y-1 pl-6 font-mono text-xs text-mist-300`,children:e.error?(0,$.jsxs)(`div`,{className:`text-lvl-0`,children:[`Ошибка: `,e.error]}):(0,$.jsxs)($.Fragment,{children:[(0,$.jsxs)(`div`,{children:[`Ожидалось: `,(0,$.jsx)(`span`,{className:`text-lvl-3`,children:lT(e.expected)})]}),(0,$.jsxs)(`div`,{children:[`Получено: `,(0,$.jsx)(`span`,{className:`text-lvl-0`,children:lT(e.actual)})]})]})})]},t))}),h.length>0&&(0,$.jsxs)(`div`,{className:`mt-4 border-t border-ink-600 pt-4`,children:[(0,$.jsx)(`h4`,{className:`mb-2 font-mono text-xs font-semibold uppercase tracking-widest text-mist-500`,children:`Console Output`}),(0,$.jsx)(`div`,{className:`max-h-40 overflow-auto rounded-lg bg-ink-950 p-3 font-mono text-xs text-mist-300`,children:h.map((e,t)=>(0,$.jsxs)(`div`,{children:[`> `,e]},t))})]})]}),(0,$.jsxs)(`div`,{className:`grid gap-6 lg:grid-cols-2`,children:[(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsxs)(`div`,{className:`mb-3 flex items-center justify-between`,children:[(0,$.jsxs)(`h2`,{className:`flex items-center gap-2 font-display text-lg font-semibold text-mist-100`,children:[`💡 Подсказки`,(0,$.jsxs)(`span`,{className:`font-mono text-sm font-normal text-mist-500`,children:[`(`,l,`/`,n.hints.length,`)`]})]}),(0,$.jsx)(`button`,{onClick:()=>u(e=>Math.min(e+1,n.hints.length)),disabled:l>=n.hints.length,className:`rounded-lg border border-lvl-1/30 bg-lvl-1/10 px-3 py-1.5 font-mono text-sm text-lvl-1 transition hover:bg-lvl-1/20 disabled:cursor-not-allowed disabled:opacity-40`,children:`Показать подсказку`})]}),l===0?(0,$.jsx)(`p`,{className:`text-sm text-mist-400`,children:`Застряли? Нажмите кнопку, чтобы получить наводящую подсказку.`}):(0,$.jsx)(`div`,{className:`space-y-2`,children:n.hints.slice(0,l).map((e,t)=>(0,$.jsxs)(`div`,{className:`rounded-lg border border-lvl-1/30 bg-lvl-1/5 p-3 text-sm text-mist-200`,children:[(0,$.jsxs)(`span`,{className:`mr-2 font-bold text-lvl-1`,children:[t+1,`.`]}),e]},t))})]}),s&&d?(0,$.jsxs)(`div`,{className:`card border-2 border-lvl-3/30 p-5`,children:[(0,$.jsx)(`h2`,{className:`mb-3 flex items-center gap-2 font-display text-lg font-semibold text-lvl-3`,children:`🎉 Эталонное решение`}),(0,$.jsx)(`div`,{className:`overflow-auto rounded-lg bg-ink-950 p-4`,children:(0,$.jsx)(`pre`,{className:`whitespace-pre-wrap font-mono text-sm text-mist-300`,children:n.solution})}),n.explanation&&(0,$.jsxs)(`div`,{className:`mt-4 rounded-lg border border-accent-js/30 bg-accent-js/5 p-4`,children:[(0,$.jsx)(`h4`,{className:`mb-2 font-semibold text-accent-js`,children:`📖 Объяснение`}),(0,$.jsx)(`p`,{className:`text-sm leading-relaxed text-mist-300`,children:n.explanation})]})]}):(0,$.jsx)(`div`,{className:`card flex items-center justify-center p-5`,children:(0,$.jsx)(`p`,{className:`text-center font-mono text-sm text-mist-500`,children:`🔒 Решите задачу, чтобы увидеть эталонное решение`})})]})]})}var fT=[{id:`memory-leak-interval`,category:`memory-leak`,severity:`hard`,title:`Утечка памяти: setInterval без очистки`,description:`useEffect создаёт интервал, но не возвращает cleanup-функцию`,hint:`Подумайте: что произойдёт при размонтировании компонента? Интервал продолжит работать. Нужно вернуть функцию очистки из useEffect.`,fixExplanation:`Добавьте return () => clearInterval(timerId) в конце useEffect`,buggyCode:`useEffect(() => {
-  const timerId = setInterval(() => {
-    setCount(prev => prev + {{INCREMENT}});
+`}}),(0,$.jsx)(`textarea`,{ref:i,className:`ce-textarea`,value:e,onChange:e=>t(e.target.value),onKeyDown:l,onScroll:c,readOnly:n,spellCheck:!1,autoComplete:`off`,autoCorrect:`off`,autoCapitalize:`off`})]})}function cT(e,t){if(e===t)return!0;if(e===null||t===null)return e===t;if(typeof e!=typeof t)return!1;if(typeof e==`number`&&isNaN(e)&&isNaN(t))return!0;if(Array.isArray(e))return!Array.isArray(t)||e.length!==t.length?!1:e.every((e,n)=>cT(e,t[n]));if(typeof e==`object`){let n=Object.keys(e),r=Object.keys(t);return n.length===r.length&&n.every(n=>cT(e[n],t[n]))}return!1}function lT(e){if(e===void 0)return`undefined`;if(e===null)return`null`;if(typeof e==`number`&&isNaN(e))return`NaN`;try{return JSON.stringify(e)}catch{return String(e)}}var uT={easy:{label:`Easy`,color:`bg-lvl-3/10 text-lvl-3 border-lvl-3/30`},medium:{label:`Medium`,color:`bg-lvl-1/10 text-lvl-1 border-lvl-1/30`},hard:{label:`Hard`,color:`bg-lvl-0/10 text-lvl-0 border-lvl-0/30`}};function dT(){let{taskId:e}=Dt(),{user:t}=Tw(),n=(0,_.useMemo)(()=>Lw.find(t=>t.id===e),[e]),[r,i]=(0,_.useState)(``),[a,o]=(0,_.useState)(null),[s,c]=(0,_.useState)(!1),[l,u]=(0,_.useState)(0),[d,f]=(0,_.useState)(!1),[p,m]=(0,_.useState)(!1),[h,g]=(0,_.useState)([]),[v,y]=(0,_.useState)(0),[b,x]=(0,_.useState)(null),[ee,te]=(0,_.useState)(!0);(0,_.useEffect)(()=>{!t||!n||S()},[t,n]),(0,_.useEffect)(()=>{n&&i(b||n.starterCode)},[n,b]);let S=async()=>{try{let n=await uw(K_(vw,`users`,t.uid,`tasks_progress`,e));if(n.exists()){let e=n.data();f(e.completed||!1),x(e.userSolution||null),y(e.attemptsCount||0),e.completed&&c(!0)}}catch(e){console.error(e)}finally{te(!1)}},ne=async n=>{if(t)try{await dw(K_(vw,`users`,t.uid,`tasks_progress`,e),n,{merge:!0})}catch(e){console.error(e)}},re=e=>{let t=e.match(/function\s+([a-zA-Z_$][\w$]*)\s*\(/);if(t)return t[1];let n=e.match(/(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=/);return n?n[1]:`solution`},ie=(0,_.useCallback)(()=>{if(!n||p)return;m(!0),o(null),g([]);let e=[],t=[],i=!0,a=v+1;y(a);let s=console.log;console.log=(...t)=>{e.push(t.map(e=>typeof e==`object`?JSON.stringify(e):String(e)).join(` `)),s.apply(console,t)};try{let e=re(r),a=`${r}\nreturn typeof ${e} === 'function' ? ${e} : null;`,c;try{c=Function(a)()}catch{c=null}if(!c||typeof c!=`function`){o([{index:0,description:`Компиляция`,passed:!1,error:`Не удалось найти функцию. Проверьте синтаксис.`}]),m(!1),console.log=s;return}for(let e=0;e<n.testCases.length;e++){let r=n.testCases[e];try{let n=c(...r.input),a=cT(n,r.expected);t.push({index:e,description:r.description,passed:a,expected:r.expected,actual:n}),a||(i=!1)}catch(n){t.push({index:e,description:r.description,passed:!1,error:n.message}),i=!1}}}catch(e){t.push({index:0,description:`Ошибка выполнения`,passed:!1,error:e.message}),i=!1}console.log=s,g(e),o(t),i&&t.length>0?(f(!0),c(!0),ne({completed:!0,userSolution:r,solvedAt:new Date().toISOString(),attemptsCount:a})):ne({completed:!1,lastCode:r,attemptsCount:a}),m(!1)},[r,n,v,t,e]),ae=async()=>{confirm(`Сбросить задачу? Ваше решение будет удалено.`)&&(i(n.starterCode),o(null),c(!1),u(0),f(!1),g([]),y(0),x(null),t&&await dw(K_(vw,`users`,t.uid,`tasks_progress`,e),{completed:!1,userSolution:null,attemptsCount:0}))};if(!n)return(0,$.jsxs)(`div`,{className:`flex min-h-[50vh] flex-col items-center justify-center`,children:[(0,$.jsx)(`div`,{className:`mb-4 text-5xl`,children:`❓`}),(0,$.jsx)(`h1`,{className:`mb-2 font-display text-xl font-bold text-mist-100`,children:`Задача не найдена`}),(0,$.jsx)(Wn,{to:`/tasks`,className:`font-mono text-sm text-accent-js transition hover:underline`,children:`← Назад к задачам`})]});if(ee)return(0,$.jsx)(`div`,{className:`flex min-h-[50vh] items-center justify-center font-mono text-mist-400`,children:`Загрузка...`});let C=uT[n.difficulty],oe=a?.filter(e=>e.passed).length||0,se=n.testCases.length;return(0,$.jsxs)(`div`,{className:`space-y-6`,children:[(0,$.jsxs)(`div`,{className:`card flex flex-wrap items-center justify-between gap-3 p-5`,children:[(0,$.jsxs)(`div`,{children:[(0,$.jsxs)(`div`,{className:`mb-1 flex flex-wrap items-center gap-2`,children:[(0,$.jsx)(`span`,{className:`rounded border px-2 py-1 font-mono text-xs font-medium ${C.color}`,children:C.label}),d&&(0,$.jsx)(`span`,{className:`rounded border border-lvl-3/30 bg-lvl-3/10 px-2 py-1 font-mono text-xs font-medium text-lvl-3`,children:`✅ Решено`}),v>0&&(0,$.jsxs)(`span`,{className:`font-mono text-xs text-mist-500`,children:[`Попыток: `,v]})]}),(0,$.jsx)(`h1`,{className:`font-display text-2xl font-bold text-mist-100`,children:n.title}),(0,$.jsx)(`p`,{className:`mt-1 font-mono text-sm text-mist-400`,children:n.topicName})]}),(0,$.jsx)(Wn,{to:`/tasks`,className:`rounded-lg border border-ink-600 bg-ink-800 px-4 py-2 font-mono text-sm text-mist-400 transition hover:border-accent-js hover:text-accent-js`,children:`← К списку задач`})]}),(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsx)(`h2`,{className:`mb-3 flex items-center gap-2 font-display text-lg font-semibold text-mist-100`,children:`📋 Условие задачи`}),(0,$.jsx)(`div`,{className:`whitespace-pre-line text-sm leading-relaxed text-mist-300`,children:n.description}),(0,$.jsxs)(`div`,{className:`mt-5 border-t border-ink-600 pt-5`,children:[(0,$.jsx)(`h3`,{className:`mb-3 font-mono text-xs font-semibold uppercase tracking-widest text-mist-500`,children:`Примеры тестов`}),(0,$.jsx)(`div`,{className:`grid gap-2 sm:grid-cols-2 lg:grid-cols-3`,children:n.testCases.slice(0,6).map((e,t)=>(0,$.jsxs)(`div`,{className:`rounded-lg border border-ink-600 bg-ink-850 p-3 font-mono text-xs`,children:[(0,$.jsxs)(`div`,{children:[(0,$.jsx)(`span`,{className:`text-mist-500`,children:`Вход: `}),(0,$.jsx)(`span`,{className:`text-accent-js`,children:JSON.stringify(e.input)})]}),(0,$.jsxs)(`div`,{children:[(0,$.jsx)(`span`,{className:`text-mist-500`,children:`Выход: `}),(0,$.jsx)(`span`,{className:`text-lvl-3`,children:JSON.stringify(e.expected)})]}),(0,$.jsxs)(`div`,{className:`mt-1 text-mist-500`,children:[`// `,e.description]})]},t))}),n.testCases.length>6&&(0,$.jsxs)(`div`,{className:`mt-2 py-1 text-center font-mono text-xs text-mist-500`,children:[`+ ещё `,n.testCases.length-6,` тестов (скрыты)`]})]})]}),(0,$.jsxs)(`div`,{className:`card overflow-hidden p-5`,children:[(0,$.jsxs)(`div`,{className:`mb-3 flex items-center justify-between`,children:[(0,$.jsx)(`h3`,{className:`font-mono text-sm font-semibold uppercase tracking-widest text-mist-400`,children:`💻 Редактор кода`}),(0,$.jsxs)(`div`,{className:`flex items-center gap-3 font-mono text-[11px] text-mist-500`,children:[(0,$.jsxs)(`span`,{children:[(0,$.jsx)(`kbd`,{className:`rounded bg-ink-700 px-1.5 py-0.5 text-mist-300`,children:`Tab`}),` отступ`]}),(0,$.jsxs)(`span`,{children:[(0,$.jsx)(`kbd`,{className:`rounded bg-ink-700 px-1.5 py-0.5 text-mist-300`,children:`Shift+Tab`}),` убрать`]}),(0,$.jsxs)(`span`,{children:[(0,$.jsx)(`kbd`,{className:`rounded bg-ink-700 px-1.5 py-0.5 text-mist-300`,children:`Enter`}),` авто-отступ`]})]})]}),(0,$.jsx)(sT,{value:r,onChange:i,height:`400px`}),(0,$.jsxs)(`div`,{className:`mt-4 flex flex-wrap items-center gap-3`,children:[(0,$.jsx)(`button`,{onClick:ie,disabled:p,className:`flex-1 rounded-lg bg-accent-js px-6 py-3 font-display text-sm font-bold text-ink-950 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:min-w-[200px]`,children:p?`⏳ Проверяю...`:`▶ Запустить тесты`}),d&&(0,$.jsx)(`button`,{onClick:ae,className:`rounded-lg border border-ink-600 bg-ink-800 px-4 py-3 font-display text-sm font-semibold text-mist-300 transition hover:border-lvl-0 hover:text-lvl-0`,children:`🔄 Сброс`})]})]}),a&&(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsxs)(`div`,{className:`mb-3 flex items-center justify-between`,children:[(0,$.jsx)(`h2`,{className:`font-display text-lg font-semibold text-mist-100`,children:`Результаты тестов`}),(0,$.jsxs)(`span`,{className:`font-mono text-sm font-bold ${oe===se?`text-lvl-3`:`text-lvl-0`}`,children:[oe,`/`,se]})]}),(0,$.jsx)(`div`,{className:`mb-4 h-2 w-full overflow-hidden rounded-full bg-ink-700`,children:(0,$.jsx)(`div`,{className:`h-full transition-all ${oe===se?`bg-lvl-3`:`bg-lvl-1`}`,style:{width:`${oe/se*100}%`}})}),(0,$.jsx)(`div`,{className:`grid gap-2 sm:grid-cols-2`,children:a.map((e,t)=>(0,$.jsxs)(`div`,{className:`rounded-lg border-2 p-3 text-sm ${e.passed?`border-lvl-3/30 bg-lvl-3/5`:`border-lvl-0/30 bg-lvl-0/5`}`,children:[(0,$.jsxs)(`div`,{className:`flex items-center gap-2 font-semibold`,children:[(0,$.jsx)(`span`,{children:e.passed?`✅`:`❌`}),(0,$.jsx)(`span`,{className:`text-mist-100`,children:e.description})]}),!e.passed&&(0,$.jsx)(`div`,{className:`mt-2 space-y-1 pl-6 font-mono text-xs text-mist-300`,children:e.error?(0,$.jsxs)(`div`,{className:`text-lvl-0`,children:[`Ошибка: `,e.error]}):(0,$.jsxs)($.Fragment,{children:[(0,$.jsxs)(`div`,{children:[`Ожидалось: `,(0,$.jsx)(`span`,{className:`text-lvl-3`,children:lT(e.expected)})]}),(0,$.jsxs)(`div`,{children:[`Получено: `,(0,$.jsx)(`span`,{className:`text-lvl-0`,children:lT(e.actual)})]})]})})]},t))}),h.length>0&&(0,$.jsxs)(`div`,{className:`mt-4 border-t border-ink-600 pt-4`,children:[(0,$.jsx)(`h4`,{className:`mb-2 font-mono text-xs font-semibold uppercase tracking-widest text-mist-500`,children:`Console Output`}),(0,$.jsx)(`div`,{className:`max-h-40 overflow-auto rounded-lg bg-ink-950 p-3 font-mono text-xs text-mist-300`,children:h.map((e,t)=>(0,$.jsxs)(`div`,{children:[`> `,e]},t))})]})]}),(0,$.jsxs)(`div`,{className:`grid gap-6 lg:grid-cols-2`,children:[(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsxs)(`div`,{className:`mb-3 flex items-center justify-between`,children:[(0,$.jsxs)(`h2`,{className:`flex items-center gap-2 font-display text-lg font-semibold text-mist-100`,children:[`💡 Подсказки`,(0,$.jsxs)(`span`,{className:`font-mono text-sm font-normal text-mist-500`,children:[`(`,l,`/`,n.hints.length,`)`]})]}),(0,$.jsx)(`button`,{onClick:()=>u(e=>Math.min(e+1,n.hints.length)),disabled:l>=n.hints.length,className:`rounded-lg border border-lvl-1/30 bg-lvl-1/10 px-3 py-1.5 font-mono text-sm text-lvl-1 transition hover:bg-lvl-1/20 disabled:cursor-not-allowed disabled:opacity-40`,children:`Показать подсказку`})]}),l===0?(0,$.jsx)(`p`,{className:`text-sm text-mist-400`,children:`Застряли? Нажмите кнопку, чтобы получить наводящую подсказку.`}):(0,$.jsx)(`div`,{className:`space-y-2`,children:n.hints.slice(0,l).map((e,t)=>(0,$.jsxs)(`div`,{className:`rounded-lg border border-lvl-1/30 bg-lvl-1/5 p-3 text-sm text-mist-200`,children:[(0,$.jsxs)(`span`,{className:`mr-2 font-bold text-lvl-1`,children:[t+1,`.`]}),e]},t))})]}),s&&d?(0,$.jsxs)(`div`,{className:`card border-2 border-lvl-3/30 p-5`,children:[(0,$.jsx)(`h2`,{className:`mb-3 flex items-center gap-2 font-display text-lg font-semibold text-lvl-3`,children:`🎉 Эталонное решение`}),(0,$.jsx)(`div`,{className:`overflow-auto rounded-lg bg-ink-950 p-4`,children:(0,$.jsx)(`pre`,{className:`whitespace-pre-wrap font-mono text-sm text-mist-300`,children:n.solution})}),n.explanation&&(0,$.jsxs)(`div`,{className:`mt-4 rounded-lg border border-accent-js/30 bg-accent-js/5 p-4`,children:[(0,$.jsx)(`h4`,{className:`mb-2 font-semibold text-accent-js`,children:`📖 Объяснение`}),(0,$.jsx)(`p`,{className:`text-sm leading-relaxed text-mist-300`,children:n.explanation})]})]}):(0,$.jsx)(`div`,{className:`card flex items-center justify-center p-5`,children:(0,$.jsx)(`p`,{className:`text-center font-mono text-sm text-mist-500`,children:`🔒 Решите задачу, чтобы увидеть эталонное решение`})})]})]})}var fT=[{id:`leak-interval`,category:`memory-leak`,severity:`medium`,slots:[`SLOT_TIMER`],title:`Интервал без очистки`,description:`setInterval создан в useEffect, но cleanup не возвращён.`,hint:`Верните из useEffect функцию, которая вызовет clearInterval.`,hintCode:`useEffect(() => {
+  const {{TIMER}} = setInterval(() => {{SET_NUMBER}}(p => p + 1), 1000);
+  return () => clearInterval({{TIMER}});
+}, []);`,fixExplanation:`Без cleanup интервал продолжает работать после размонтирования — утечка памяти.`,buggyCode:`useEffect(() => {
+  const {{TIMER}} = setInterval(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
+  }, 1000);
+}, []);`,fixedCode:`useEffect(() => {
+  const {{TIMER}} = setInterval(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
+  }, 1000);
+  return () => clearInterval({{TIMER}});
+}, []);`,validation:{mustContain:[`return\\s*\\(\\)\\s*=>\\s*clearInterval\\({{TIMER}}\\)`],mustNotContain:[]}},{id:`leak-timeout`,category:`memory-leak`,severity:`easy`,slots:[`SLOT_TIMER`],title:`Таймаут без отмены`,description:`setTimeout не очищается при размонтировании.`,hint:`Верните cleanup с clearTimeout.`,hintCode:`useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {{SET_NUMBER}}(p => p + 1), {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, []);`,fixExplanation:`Если компонент размонтируется до срабатывания таймера, setState вызовется на мёртвом компоненте.`,buggyCode:`useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
   }, {{DELAY}});
 }, []);`,fixedCode:`useEffect(() => {
-  const timerId = setInterval(() => {
-    setCount(prev => prev + {{INCREMENT}});
+  const {{TIMER}} = setTimeout(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
   }, {{DELAY}});
-  return () => clearInterval(timerId);
-}, []);`,validation:{mustContain:[/return\s*\(\)\s*=>\s*clearInterval/,/clearInterval\s*\(/],mustNotContain:[]}},{id:`memory-leak-listener`,category:`memory-leak`,severity:`medium`,title:`Утечка памяти: addEventListener без removeEventListener`,description:`Событие подписано, но не отписано при размонтировании`,hint:`Каждый addEventListener должен иметь пару removeEventListener. Где в useEffect должна быть функция очистки?`,fixExplanation:`Верните cleanup: return () => window.removeEventListener('resize', handler)`,buggyCode:`useEffect(() => {
-  const handleResize = () => {
-    setWidth(window.innerWidth);
-  };
-  window.addEventListener("resize", handleResize);
+  return () => clearTimeout({{TIMER}});
+}, []);`,validation:{mustContain:[`clearTimeout\\({{TIMER}}\\)`],mustNotContain:[]}},{id:`leak-listener`,category:`memory-leak`,severity:`medium`,slots:[`SLOT_LISTENER`],title:`Событие без отписки`,description:`addEventListener есть, removeEventListener — нет.`,hint:`Каждый addEventListener должен иметь пару removeEventListener в cleanup.`,hintCode:`useEffect(() => {
+  const {{HANDLER}} = () => {{SET_NUMBER}}(window.innerWidth);
+  window.addEventListener("resize", {{HANDLER}});
+  return () => window.removeEventListener("resize", {{HANDLER}});
+}, []);`,fixExplanation:`Колбэк остаётся в памяти браузера и вызывается для уже мёртвого компонента.`,buggyCode:`useEffect(() => {
+  const {{HANDLER}} = () => {{SET_NUMBER}}(window.innerWidth);
+  window.addEventListener("resize", {{HANDLER}});
 }, []);`,fixedCode:`useEffect(() => {
-  const handleResize = () => {
-    setWidth(window.innerWidth);
-  };
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);`,validation:{mustContain:[/removeEventListener/,/return\s*\(\)\s*=>/],mustNotContain:[]}},{id:`memory-leak-subscription`,category:`memory-leak`,severity:`hard`,title:`Утечка памяти: подписка без отписки`,description:`Подписка на WebSocket/EventEmitter не очищается`,hint:`Подписка создаёт постоянную связь. При размонтировании нужно отписаться, иначе колбэк будет вызываться для мёртвого компонента.`,fixExplanation:`Верните cleanup: return () => subscription.unsubscribe()`,buggyCode:`useEffect(() => {
-  const subscription = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
-    setMessages(prev => [...prev, data]);
+  const {{HANDLER}} = () => {{SET_NUMBER}}(window.innerWidth);
+  window.addEventListener("resize", {{HANDLER}});
+  return () => window.removeEventListener("resize", {{HANDLER}});
+}, []);`,validation:{mustContain:[`removeEventListener\\(`],mustNotContain:[]}},{id:`leak-subscription`,category:`memory-leak`,severity:`hard`,slots:[`SLOT_SUB`],title:`Подписка без отписки`,description:`Компонент подписывается на события, но не отписывается.`,hint:`Верните cleanup, который вызовет unsubscribe.`,hintCode:`useEffect(() => {
+  const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", cb);
+  return () => {{SUBSCRIPTION}}.unsubscribe();
+}, []);`,fixExplanation:`Подписка держит ссылку на колбэк — сборщик мусора не может освободить компонент.`,buggyCode:`useEffect(() => {
+  const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+    {{SET_ARRAY}}((prev) => [...prev, data]);
   });
 }, []);`,fixedCode:`useEffect(() => {
-  const subscription = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
-    setMessages(prev => [...prev, data]);
+  const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+    {{SET_ARRAY}}((prev) => [...prev, data]);
   });
-  return () => subscription.unsubscribe();
-}, []);`,validation:{mustContain:[/unsubscribe/,/return\s*\(\)\s*=>/],mustNotContain:[]}},{id:`direct-state-mutation-array`,category:`state-mutation`,severity:`medium`,title:`Прямая мутация state: push в массив`,description:`Массив в state мутируется через push вместо создания нового`,hint:`React не увидит изменение, потому что ссылка на массив не поменялась. Нужно создать НОВЫЙ массив.`,fixExplanation:`Замените items.push(x) на setItems(prev => [...prev, x])`,buggyCode:`const addItem = (newItem) => {
-  items.push(newItem);
-  setItems(items);
-};`,fixedCode:`const addItem = (newItem) => {
-  setItems(prev => [...prev, newItem]);
-};`,validation:{mustContain:[/\.\.\./,/setItems/],mustNotContain:[/items\.push/]}},{id:`direct-state-mutation-object`,category:`state-mutation`,severity:`medium`,title:`Прямая мутация state: изменение свойства объекта`,description:`Объект в state мутируется напрямую`,hint:`user.name = 'x' меняет тот же объект. React сравнивает ссылки — ре-рендер не произойдёт. Создайте новый объект через spread.`,fixExplanation:`Замените на setUser(prev => ({ ...prev, name: value }))`,buggyCode:`const updateName = (value) => {
-  user.name = value;
-  setUser(user);
-};`,fixedCode:`const updateName = (value) => {
-  setUser(prev => ({ ...prev, name: value }));
-};`,validation:{mustContain:[/setUser/,/\.\.\./],mustNotContain:[/user\.name\s*=/]}},{id:`direct-state-mutation-nested`,category:`state-mutation`,severity:`hard`,title:`Мутация вложенного объекта в state`,description:`Изменяется вложенное свойство без создания новых ссылок`,hint:`Нужно создать новый объект на КАЖДОМ уровне вложенности, где есть изменения. Используйте spread или structuredClone.`,fixExplanation:`setForm(prev => ({ ...prev, address: { ...prev.address, city } }))`,buggyCode:`const updateCity = (city) => {
-  form.address.city = city;
-  setForm(form);
-};`,fixedCode:`const updateCity = (city) => {
-  setForm(prev => ({
+  return () => {{SUBSCRIPTION}}.unsubscribe();
+}, []);`,validation:{mustContain:[`unsubscribe\\(\\)`],mustNotContain:[]}},{id:`leak-websocket`,category:`memory-leak`,severity:`hard`,slots:[`SLOT_SUB`],title:`WebSocket без close`,description:`Сокет открыт, но не закрывается при размонтировании.`,hint:`Верните cleanup с вызовом socket.close().`,hintCode:`useEffect(() => {
+  const {{SUBSCRIPTION}} = new WebSocket(url);
+  return () => {{SUBSCRIPTION}}.close();
+}, []);`,fixExplanation:`Открытый сокет держит соединение и обработчики — утечка и лишняя нагрузка на сервер.`,buggyCode:`useEffect(() => {
+  const {{SUBSCRIPTION}} = new WebSocket("wss://example.com/{{EVENT_NAME}}");
+  {{SUBSCRIPTION}}.onmessage = (e) => {
+    {{SET_ARRAY}}((prev) => [...prev, e.data]);
+  };
+}, []);`,fixedCode:`useEffect(() => {
+  const {{SUBSCRIPTION}} = new WebSocket("wss://example.com/{{EVENT_NAME}}");
+  {{SUBSCRIPTION}}.onmessage = (e) => {
+    {{SET_ARRAY}}((prev) => [...prev, e.data]);
+  };
+  return () => {{SUBSCRIPTION}}.close();
+}, []);`,validation:{mustContain:[`\\.close\\(\\)`],mustNotContain:[]}},{id:`mutate-push`,category:`state-mutation`,severity:`medium`,slots:[`SLOT_ADD`],title:`push() в массив state`,description:`Массив мутируется через push — React не увидит изменение.`,hint:`Создайте новый массив: setX(prev => [...prev, item]).`,hintCode:`const {{FN_ADD}} = (item) => {
+  {{SET_ARRAY}}((prev) => [...prev, item]);
+};`,fixExplanation:`push меняет тот же массив — ссылка та же — ре-рендер не произойдёт.`,buggyCode:`const {{FN_ADD}} = (newItem) => {
+  {{ARRAY}}.push(newItem);
+  {{SET_ARRAY}}({{ARRAY}});
+};`,fixedCode:`const {{FN_ADD}} = (newItem) => {
+  {{SET_ARRAY}}((prev) => [...prev, newItem]);
+};`,validation:{mustContain:[`\\.\\.\\.`],mustNotContain:[`{{ARRAY}}\\.push`]}},{id:`mutate-pop`,category:`state-mutation`,severity:`medium`,slots:[`SLOT_REMOVE`],title:`pop() вместо удаления`,description:`pop() мутирует исходный массив state.`,hint:`Используйте filter для создания нового массива.`,hintCode:`const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
+};`,fixExplanation:`pop изменяет исходный массив. filter создаёт новый.`,buggyCode:`const {{FN_REMOVE}} = (id) => {
+  {{ARRAY}}.pop();
+  {{SET_ARRAY}}({{ARRAY}});
+};`,fixedCode:`const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
+};`,validation:{mustContain:[`filter\\(`],mustNotContain:[`\\.pop\\(\\)`]}},{id:`mutate-splice`,category:`state-mutation`,severity:`medium`,slots:[`SLOT_REMOVE`],title:`splice для удаления`,description:`splice мутирует исходный массив.`,hint:`Замените splice на filter.`,hintCode:`const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
+};`,fixExplanation:`splice изменяет массив на месте. filter возвращает новый.`,buggyCode:`const {{FN_REMOVE}} = (id) => {
+  const index = {{ARRAY}}.findIndex(({{ITEM}}) => {{ITEM}}.id === id);
+  {{ARRAY}}.splice(index, 1);
+  {{SET_ARRAY}}({{ARRAY}});
+};`,fixedCode:`const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
+};`,validation:{mustContain:[`filter\\(`],mustNotContain:[`splice\\(`]}},{id:`mutate-object-field`,category:`state-mutation`,severity:`medium`,slots:[`SLOT_UPDATE`],title:`Прямая запись в объект state`,description:`Поле объекта в state меняется напрямую.`,hint:`Используйте spread: setX(prev => ({ ...prev, field: value })).`,hintCode:`const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({ ...prev, {{FIELD}}: value }));
+};`,fixExplanation:`Прямое присваивание меняет существующий объект — ссылка не меняется.`,buggyCode:`const {{FN_UPDATE}} = (value) => {
+  {{OBJECT}}.{{FIELD}} = value;
+  {{SET_OBJECT}}({{OBJECT}});
+};`,fixedCode:`const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({ ...prev, {{FIELD}}: value }));
+};`,validation:{mustContain:[`\\.\\.\\.`],mustNotContain:[`{{OBJECT}}\\.{{FIELD}}\\s*=`]}},{id:`mutate-nested`,category:`state-mutation`,severity:`hard`,slots:[`SLOT_UPDATE`],title:`Мутация вложенного объекта`,description:`Вложенное свойство меняется без новых ссылок на каждом уровне.`,hint:`Создайте новый объект на каждом уровне вложенности через spread.`,hintCode:`const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({
     ...prev,
-    address: { ...prev.address, city },
+    {{NESTED}}: { ...prev.{{NESTED}}, {{NESTED_FIELD}}: value },
   }));
-};`,validation:{mustContain:[/setForm/,/\.\.\.prev/],mustNotContain:[/form\.address\.city\s*=/]}},{id:`stale-closure`,category:`stale-closure`,severity:`hard`,title:`Stale closure в useEffect`,description:`Эффект замкнул начальное значение state`,hint:`С пустым массивом зависимостей [] колбэк навсегда запомнит count = 0. Добавьте count в зависимости или используйте функциональный сеттер.`,fixExplanation:`Добавьте [count] в зависимости или используйте setCount(c => c + 1)`,buggyCode:`useEffect(() => {
-  const id = setInterval(() => {
-    console.log("Count:", count);
-  }, 1000);
-  return () => clearInterval(id);
-}, []);`,fixedCode:`useEffect(() => {
-  const id = setInterval(() => {
-    console.log("Count:", count);
-  }, 1000);
-  return () => clearInterval(id);
-}, [count]);`,validation:{mustContain:[/\[count\]/],mustNotContain:[]}},{id:`missing-key`,category:`rendering`,severity:`easy`,title:`Отсутствие key при рендере списка`,description:`Элементы списка рендерятся без атрибута key`,hint:`React использует key для идентификации элементов при reconciliation. Без него обновления будут некорректными.`,fixExplanation:`Добавьте key={item.id} к каждому элементу списка`,buggyCode:`{items.map(item => (
-  <div className="item">
-    {item.name}
-  </div>
-))}`,fixedCode:`{items.map(item => (
-  <div key={item.id} className="item">
-    {item.name}
-  </div>
-))}`,validation:{mustContain:[/key=\{/],mustNotContain:[]}},{id:`index-as-key`,category:`rendering`,severity:`medium`,title:`Индекс массива как key`,description:`Используется index как key для динамического списка`,hint:`При сортировке/фильтрации индексы смещаются, и React путает элементы. Используйте уникальный ID из данных.`,fixExplanation:`Замените key={index} на key={item.id}`,buggyCode:`{items.map((item, index) => (
-  <div key={index} className="item">
-    {item.name}
-  </div>
-))}`,fixedCode:`{items.map(item => (
-  <div key={item.id} className="item">
-    {item.name}
-  </div>
-))}`,validation:{mustContain:[/key=\{item\.id\}/],mustNotContain:[/key=\{index\}/]}},{id:`infinite-rerender`,category:`rendering`,severity:`medium`,title:`Бесконечный ре-рендер`,description:`setState вызывается прямо в теле рендера`,hint:`Если setX() вызывается не в обработчике и не в useEffect, а прямо в JSX/теле функции — каждый рендер вызовет новый рендер.`,fixExplanation:`Оберните в useEffect или в обработчик события`,buggyCode:`function Counter() {
-  const [count, setCount] = useState(0);
-  setCount(count + 1); // ← вызов в теле рендера!
-  return <div>{count}</div>;
-}`,fixedCode:`function Counter() {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    setCount(count + 1);
-  }, []);
-  return <div>{count}</div>;
-}`,validation:{mustContain:[/useEffect/],mustNotContain:[]}},{id:`mutating-props`,category:`state-mutation`,severity:`medium`,title:`Мутация props`,description:`Компонент напрямую изменяет полученный prop`,hint:`Props иммутабельны. Для изменения вызовите колбэк из props, чтобы родитель обновил свой state.`,fixExplanation:`Замените props.x = y на вызов props.onChange(y)`,buggyCode:`function Child({ data, onUpdate }) {
-  const handleClick = () => {
-    data.value = "changed";
-  };
-  return <button onClick={handleClick}>Update</button>;
-}`,fixedCode:`function Child({ data, onUpdate }) {
-  const handleClick = () => {
-    onUpdate({ ...data, value: "changed" });
-  };
-  return <button onClick={handleClick}>Update</button>;
-}`,validation:{mustContain:[/onUpdate/],mustNotContain:[/data\.value\s*=/]}},{id:`async-state-after-unmount`,category:`memory-leak`,severity:`hard`,title:`setState после размонтирования`,description:`Асинхронный запрос завершается после размонтирования компонента`,hint:`Если компонент размонтируется до завершения fetch, setState вызовется на мёртвом компоненте. Используйте AbortController или флаг isMounted.`,fixExplanation:`Добавьте AbortController и очищайте в cleanup`,buggyCode:`useEffect(() => {
-  fetch("/api/data")
-    .then(res => res.json())
-    .then(data => setData(data));
-}, []);`,fixedCode:`useEffect(() => {
-  const controller = new AbortController();
-  fetch("/api/data", { signal: controller.signal })
-    .then(res => res.json())
-    .then(data => setData(data))
-    .catch(err => {
-      if (err.name !== "AbortError") throw err;
-    });
-  return () => controller.abort();
-}, []);`,validation:{mustContain:[/AbortController|isMounted|return\s*\(\)/],mustNotContain:[]}},{id:`missing-deps-effect`,category:`stale-closure`,severity:`medium`,title:`Пропущенная зависимость useEffect`,description:`Эффект использует переменную, но не указал её в зависимостях`,hint:`Если эффект читает userId, он должен перезапускаться при изменении userId. Добавьте в массив зависимостей.`,fixExplanation:`Добавьте [userId] вместо []`,buggyCode:`useEffect(() => {
-  fetchUser(userId).then(data => setUser(data));
-}, []);`,fixedCode:`useEffect(() => {
-  fetchUser(userId).then(data => setUser(data));
-}, [userId]);`,validation:{mustContain:[/\[userId\]/],mustNotContain:[]}}],pT=[{id:`counter-component`,name:`Счётчик`,template:`import { useState, useEffect } from "react";
-
-function {{COMPONENT_NAME}}() {
-  const [count, setCount] = useState(0);
-  const [items, setItems] = useState([]);
-  const [width, setWidth] = useState(window.innerWidth);
-
-  {{BUG_SLOT_1}}
-
-  {{BUG_SLOT_2}}
-
-  const addItem = (newItem) => {
-    {{BUG_SLOT_3}}
-  };
-
-  return (
-    <div>
-      <h1>{{COMPONENT_NAME}}: {count}</h1>
-      <p>Width: {width}</p>
-      <button onClick={() => addItem({ id: Date.now(), name: "Item" })}>
-        Add
-      </button>
-      <ul>
-        {{BUG_SLOT_4}}
-      </ul>
-    </div>
-  );
-}
-
-export default {{COMPONENT_NAME}};`,requiredSlots:[`BUG_SLOT_1`]},{id:`data-fetcher`,name:`Загрузка данных`,template:`import { useState, useEffect } from "react";
-
-function {{COMPONENT_NAME}}() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState(1);
-
-  {{BUG_SLOT_1}}
-
-  {{BUG_SLOT_2}}
-
-  return (
-    <div>
-      {loading ? <Spinner /> : <DataView data={data} />}
-      <button onClick={() => setUserId(prev => prev + 1)}>
-        Next User
-      </button>
-    </div>
-  );
-}
-
-export default {{COMPONENT_NAME}};`,requiredSlots:[`BUG_SLOT_1`]},{id:`list-manager`,name:`Список элементов`,template:`import { useState, useEffect } from "react";
-
-function {{COMPONENT_NAME}}({ items: initialItems }) {
-  const [items, setItems] = useState(initialItems);
-  const [filter, setFilter] = useState("");
-
-  {{BUG_SLOT_1}}
-
-  const removeItem = (id) => {
-    {{BUG_SLOT_2}}
-  };
-
-  const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  return (
-    <div>
-      <input value={filter} onChange={e => setFilter(e.target.value)} />
-      <ul>
-        {{BUG_SLOT_3}}
-      </ul>
-    </div>
-  );
-}
-
-export default {{COMPONENT_NAME}};`,requiredSlots:[`BUG_SLOT_3`]},{id:`form-handler`,name:`Форма`,template:`import { useState } from "react";
-
-function {{COMPONENT_NAME}}({ onSubmit }) {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    address: { city: "", street: "" },
+};`,fixExplanation:`Нужна новая ссылка на каждом уровне: новый объект и новый вложенный объект.`,buggyCode:`const {{FN_UPDATE}} = (value) => {
+  {{OBJECT}}.{{NESTED}}.{{NESTED_FIELD}} = value;
+  {{SET_OBJECT}}({{OBJECT}});
+};`,fixedCode:`const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({
+    ...prev,
+    {{NESTED}}: { ...prev.{{NESTED}}, {{NESTED_FIELD}}: value },
+  }));
+};`,validation:{mustContain:[`\\.\\.\\.`],mustNotContain:[`{{OBJECT}}\\.{{NESTED}}\\.{{NESTED_FIELD}}\\s*=`]}},{id:`mutate-shallow-nested`,category:`state-mutation`,severity:`hard`,slots:[`SLOT_UPDATE`],title:`Поверхностная копия + мутация вложенного`,description:`Сделан spread верхнего уровня, но вложенный объект всё ещё общий и мутирует.`,hint:`Spread копирует только первый уровень. Вложенный объект тоже нужно скопировать.`,hintCode:`const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({
+    ...prev,
+    {{NESTED}}: { ...prev.{{NESTED}}, {{NESTED_FIELD}}: value },
+  }));
+};`,fixExplanation:`{...obj} делает поверхностную копию: вложенный объект остаётся тем же. Его мутируют — меняется и оригинал.`,buggyCode:`const {{FN_UPDATE}} = (value) => {
+  const updated = { ...{{OBJECT}} };
+  updated.{{NESTED}}.{{NESTED_FIELD}} = value;
+  {{SET_OBJECT}}(updated);
+};`,fixedCode:`const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({
+    ...prev,
+    {{NESTED}}: { ...prev.{{NESTED}}, {{NESTED_FIELD}}: value },
+  }));
+};`,validation:{mustContain:[`\\.\\.\\.`],mustNotContain:[`updated\\.{{NESTED}}\\.{{NESTED_FIELD}}\\s*=`]}},{id:`mutate-delete`,category:`state-mutation`,severity:`hard`,slots:[`SLOT_UPDATE`],title:`delete на поле state`,description:`Оператор delete мутирует объект state.`,hint:`Вместо delete создайте новый объект без поля через деструктуризацию и rest.`,hintCode:`const {{FN_UPDATE}} = () => {
+  {{SET_OBJECT}}((prev) => {
+    const { {{FIELD}}, ...rest } = prev;
+    return rest;
   });
-
-  const updateField = (field, value) => {
-    {{BUG_SLOT_1}}
+};`,fixExplanation:`delete изменяет существующий объект. Нужно создать новый без этого поля.`,buggyCode:`const {{FN_UPDATE}} = () => {
+  delete {{OBJECT}}.{{FIELD}};
+  {{SET_OBJECT}}({{OBJECT}});
+};`,fixedCode:`const {{FN_UPDATE}} = () => {
+  {{SET_OBJECT}}((prev) => {
+    const { {{FIELD}}, ...rest } = prev;
+    return rest;
+  });
+};`,validation:{mustContain:[`\\.\\.\\.`],mustNotContain:[`delete\\s+{{OBJECT}}\\.{{FIELD}}`]}},{id:`missing-dep`,category:`stale-closure`,severity:`medium`,slots:[`SLOT_FETCH`],title:`Пропущенная зависимость useEffect`,description:`Эффект использует значение, но массив зависимостей пуст.`,hint:`Добавьте используемое значение в массив зависимостей.`,hintCode:`useEffect(() => {
+  fetchUser({{DEP}}).then((r) => r.json()).then({{SET_OBJECT}});
+}, [{{DEP}}]);`,fixExplanation:`С пустым [] эффект выполнится один раз и запомнит начальное значение.`,buggyCode:`useEffect(() => {
+  fetchUser({{DEP}})
+    .then((res) => res.json())
+    .then((data) => {{SET_OBJECT}}(data));
+}, []);`,fixedCode:`useEffect(() => {
+  fetchUser({{DEP}})
+    .then((res) => res.json())
+    .then((data) => {{SET_OBJECT}}(data));
+}, [{{DEP}}]);`,validation:{mustContain:[`\\[{{DEP}}\\]`],mustNotContain:[]}},{id:`stale-interval`,category:`stale-closure`,severity:`hard`,slots:[`SLOT_TIMER`],title:`Stale closure в setInterval`,description:`Интервал замкнул начальное значение и всегда видит его.`,hint:`Добавьте значение в зависимости useEffect.`,hintCode:`useEffect(() => {
+  const {{TIMER}} = setInterval(() => console.log({{NUMBER}}), 1000);
+  return () => clearInterval({{TIMER}});
+}, [{{NUMBER}}]);`,fixExplanation:`С пустым [] колбэк навсегда запоминает значение из первого рендера.`,buggyCode:`useEffect(() => {
+  const {{TIMER}} = setInterval(() => {
+    console.log("Значение:", {{NUMBER}});
+  }, 1000);
+  return () => clearInterval({{TIMER}});
+}, []);`,fixedCode:`useEffect(() => {
+  const {{TIMER}} = setInterval(() => {
+    console.log("Значение:", {{NUMBER}});
+  }, 1000);
+  return () => clearInterval({{TIMER}});
+}, [{{NUMBER}}]);`,validation:{mustContain:[`\\[{{NUMBER}}\\]`],mustNotContain:[]}},{id:`stale-timeout`,category:`stale-closure`,severity:`hard`,slots:[`SLOT_TIMER`],title:`Stale closure в setTimeout`,description:`Таймаут использует устаревшее значение из замыкания.`,hint:`Либо добавьте значение в зависимости, либо используйте функциональный сеттер.`,hintCode:`useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {{SET_NUMBER}}({{NUMBER}} + 1), {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, [{{NUMBER}}]);`,fixExplanation:`Колбэк setTimeout запоминает значение на момент создания эффекта.`,buggyCode:`useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {
+    {{SET_NUMBER}}({{NUMBER}} + 1);
+  }, {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, []);`,fixedCode:`useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {
+    {{SET_NUMBER}}({{NUMBER}} + 1);
+  }, {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, [{{NUMBER}}]);`,validation:{mustContain:[`(\\[{{NUMBER}}\\]|{{SET_NUMBER}}\\(\\s*\\(\\s*\\w+\\s*\\)\\s*=>)`],mustNotContain:[]}},{id:`stale-event-handler`,category:`stale-closure`,severity:`hard`,slots:[`SLOT_LISTENER`],title:`Устаревший обработчик события`,description:`Обработчик зарегистрирован один раз и видит старое значение.`,hint:`Добавьте значение в зависимости, чтобы переподписываться при изменении.`,hintCode:`useEffect(() => {
+  const {{HANDLER}} = () => console.log({{NUMBER}});
+  window.addEventListener("click", {{HANDLER}});
+  return () => window.removeEventListener("click", {{HANDLER}});
+}, [{{NUMBER}}]);`,fixExplanation:`С пустым [] подписка создаётся один раз и навсегда замыкает начальное значение.`,buggyCode:`useEffect(() => {
+  const {{HANDLER}} = () => console.log({{NUMBER}});
+  window.addEventListener("click", {{HANDLER}});
+  return () => window.removeEventListener("click", {{HANDLER}});
+}, []);`,fixedCode:`useEffect(() => {
+  const {{HANDLER}} = () => console.log({{NUMBER}});
+  window.addEventListener("click", {{HANDLER}});
+  return () => window.removeEventListener("click", {{HANDLER}});
+}, [{{NUMBER}}]);`,validation:{mustContain:[`\\[{{NUMBER}}\\]`],mustNotContain:[]}},{id:`stale-usecallback`,category:`stale-closure`,severity:`hard`,slots:[`SLOT_CALLBACK`],title:`useCallback с пустыми зависимостями`,description:`Колбэк в useCallback использует значение, но зависимости пусты.`,hint:`Добавьте используемое значение в массив зависимостей useCallback.`,hintCode:`const handleClick = useCallback(() => {
+  {{SET_NUMBER}}({{NUMBER}} + 1);
+}, [{{NUMBER}}]);`,fixExplanation:`useCallback с [] запоминает начальное значение навсегда.`,buggyCode:`const handleClick = useCallback(() => {
+  {{SET_NUMBER}}({{NUMBER}} + 1);
+}, []);`,fixedCode:`const handleClick = useCallback(() => {
+  {{SET_NUMBER}}({{NUMBER}} + 1);
+}, [{{NUMBER}}]);`,validation:{mustContain:[`\\[{{NUMBER}}\\]`],mustNotContain:[]}},{id:`stale-usememo`,category:`stale-closure`,severity:`hard`,slots:[`SLOT_MEMO`],title:`useMemo с пустыми зависимостями`,description:`useMemo не пересчитывается при изменении исходных данных.`,hint:`Перечислите в зависимостях все значения, которые использует вычисление.`,hintCode:`const filtered = useMemo(
+  () => {{ARRAY}}.filter(({{ITEM}}) => {{ITEM}}.name.includes({{TEXT}})),
+  [{{ARRAY}}, {{TEXT}}]
+);`,fixExplanation:`С пустым [] результат вычисляется один раз и больше не обновляется.`,buggyCode:`const filtered = useMemo(
+  () => {{ARRAY}}.filter(({{ITEM}}) => {{ITEM}}.name.includes({{TEXT}})),
+  []
+);`,fixedCode:`const filtered = useMemo(
+  () => {{ARRAY}}.filter(({{ITEM}}) => {{ITEM}}.name.includes({{TEXT}})),
+  [{{ARRAY}}, {{TEXT}}]
+);`,validation:{mustContain:[`\\[{{ARRAY}},\\s*{{TEXT}}\\]`],mustNotContain:[]}},{id:`missing-key`,category:`rendering`,severity:`easy`,slots:[`SLOT_LIST`],title:`Отсутствие key в списке`,description:`Элементы списка рендерятся без key.`,hint:`Добавьте key={item.id} к каждому элементу в map.`,hintCode:`{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id }>...</li>
+))}`,fixExplanation:`Без key React не понимает, какой элемент изменился, и может перепутать состояния.`,buggyCode:`{filtered.map(({{ITEM}}) => (
+  <li className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
+))}`,fixedCode:`{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id } className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
+))}`,validation:{mustContain:[`key=\\{`],mustNotContain:[]}},{id:`index-key`,category:`rendering`,severity:`medium`,slots:[`SLOT_LIST`],title:`Индекс массива как key`,description:`key={index} ломается при удалении/сортировке/фильтрации.`,hint:`Замените key={index} на key={item.id}.`,hintCode:`{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id }>...</li>
+))}`,fixExplanation:`При удалении элемента индексы сдвигаются, и React путает элементы и их состояние.`,buggyCode:`{filtered.map(({{ITEM}}, index) => (
+  <li key={index} className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
+))}`,fixedCode:`{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id } className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
+))}`,validation:{mustContain:[`key=\\{\\s*{{ITEM}}\\.id`],mustNotContain:[`key=\\{index\\}`]}},{id:`zero-and`,category:`rendering`,severity:`medium`,slots:[`SLOT_BADGE`],title:`Число && в рендере`,description:`Выражение {count && <div/>} при count=0 отрендерит «0», а не ничего.`,hint:`Приведите условие к boolean: {count > 0 && <div/>}.`,hintCode:`{ {{NUMBER}} > 0 && <div className="badge">...</div> }`,fixExplanation:`0 — falsy, но React рендерит его как текст. Нужно явное булево условие.`,buggyCode:`{ {{NUMBER}} && <div className="badge">Выполнено: { {{NUMBER}} }</div> }`,fixedCode:`{ {{NUMBER}} > 0 && <div className="badge">Выполнено: { {{NUMBER}} }</div> }`,validation:{mustContain:[`{{NUMBER}}\\s*>\\s*0\\s*&&`],mustNotContain:[`\\{\\s*{{NUMBER}}\\s*&&`]}},{id:`hook-in-condition`,category:`hooks-rules`,severity:`medium`,slots:[`SLOT_HOOKCOND`],title:`Хук внутри условия`,description:`useState вызывается внутри if — нарушает правила хуков.`,hint:`Хуки должны вызываться на верхнем уровне, вне условий и циклов.`,hintCode:`const [{{LOCAL_A}}, {{SET_LOCAL_A}}] = useState("");`,fixExplanation:`Порядок хуков должен быть одинаковым на каждом рендере. if ломает этот порядок.`,buggyCode:`if ({{FLAG}}) {
+  const [{{LOCAL_A}}, {{SET_LOCAL_A}}] = useState("");
+}`,fixedCode:`const [{{LOCAL_A}}, {{SET_LOCAL_A}}] = useState("");`,validation:{mustContain:[`useState\\(`],mustNotContain:[`if\\s*\\([^{]*\\{[^}]*useState`]}},{id:`async-useeffect`,category:`async`,severity:`medium`,slots:[`SLOT_FETCH`],title:`async прямо в useEffect`,description:`Колбэк useEffect сделан async — он вернёт промис вместо cleanup.`,hint:`Создайте внутреннюю async-функцию и вызовите её, либо используйте .then().`,hintCode:`useEffect(() => {
+  const load = async () => {
+    const data = await fetchUser({{DEP}});
+    {{SET_OBJECT}}(data);
   };
-
-  const updateCity = (city) => {
-    {{BUG_SLOT_2}}
+  load();
+}, [{{DEP}}]);`,fixExplanation:`useEffect ожидает функцию или cleanup, а async-функция возвращает промис.`,buggyCode:`useEffect(async () => {
+  const data = await fetchUser({{DEP}});
+  {{SET_OBJECT}}(data);
+}, [{{DEP}}]);`,fixedCode:`useEffect(() => {
+  const load = async () => {
+    const data = await fetchUser({{DEP}});
+    {{SET_OBJECT}}(data);
   };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(form);
+  load();
+}, [{{DEP}}]);`,validation:{mustContain:[`useEffect\\s*\\(\\s*\\(\\)\\s*=>`],mustNotContain:[`useEffect\\s*\\(\\s*async`]}},{id:`race-condition`,category:`async`,severity:`hard`,slots:[`SLOT_FETCH`],title:`Race condition при смене зависимости`,description:`Быстрые смены зависимости приводят к тому, что старый ответ перезаписывает новый.`,hint:`Используйте AbortController или флаг ignore, чтобы отбрасывать устаревшие ответы.`,hintCode:`useEffect(() => {
+  let ignore = false;
+  fetchUser({{DEP}}).then((d) => { if (!ignore) {{SET_OBJECT}}(d); });
+  return () => { ignore = true; };
+}, [{{DEP}}]);`,fixExplanation:`Запросы завершаются в непредсказуемом порядке. Без отмены старый ответ может прийти позже нового.`,buggyCode:`useEffect(() => {
+  fetchUser({{DEP}})
+    .then((res) => res.json())
+    .then((data) => {{SET_OBJECT}}(data));
+}, [{{DEP}}]);`,fixedCode:`useEffect(() => {
+  let ignore = false;
+  fetchUser({{DEP}})
+    .then((res) => res.json())
+    .then((data) => {
+      if (!ignore) {{SET_OBJECT}}(data);
+    });
+  return () => {
+    ignore = true;
   };
+}, [{{DEP}}]);`,validation:{mustContain:[`(ignore\\s*=\\s*true|abort\\(\\))`],mustNotContain:[]}},{id:`no-error-handling`,category:`async`,severity:`easy`,slots:[`SLOT_FETCH`],title:`Нет обработки ошибки запроса`,description:`Promise-цепочка без catch — ошибка проглатывается.`,hint:`Добавьте .catch() для обработки ошибки.`,hintCode:`fetch(url)
+  .then((r) => r.json())
+  .then({{SET_ARRAY}})
+  .catch((err) => console.error(err));`,fixExplanation:`Без catch ошибка запроса остаётся необработанной и может уронить логику.`,buggyCode:`useEffect(() => {
+  fetch("/api/{{ARRAY}}")
+    .then((res) => res.json())
+    .then((data) => {{SET_ARRAY}}(data));
+}, []);`,fixedCode:`useEffect(() => {
+  fetch("/api/{{ARRAY}}")
+    .then((res) => res.json())
+    .then((data) => {{SET_ARRAY}}(data))
+    .catch((err) => console.error(err));
+}, []);`,validation:{mustContain:[`\\.catch\\s*\\(`],mustNotContain:[]}}],pT={SLOT_TIMER:{default:`useEffect(() => {
+  const {{TIMER}} = setInterval(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
+  }, 1000);
+  return () => clearInterval({{TIMER}});
+}, []);`},SLOT_LISTENER:{default:`useEffect(() => {
+  const {{HANDLER}} = () => {{SET_NUMBER}}(window.innerWidth);
+  window.addEventListener("resize", {{HANDLER}});
+  return () => window.removeEventListener("resize", {{HANDLER}});
+}, []);`},SLOT_SUB:{default:`useEffect(() => {
+  const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+    {{SET_ARRAY}}((prev) => [...prev, data]);
+  });
+  return () => {{SUBSCRIPTION}}.unsubscribe();
+}, []);`},SLOT_FETCH:{default:`useEffect(() => {
+  const {{CONTROLLER}} = new AbortController();
+  fetchUser({{DEP}}, { signal: {{CONTROLLER}}.signal })
+    .then((res) => res.json())
+    .then((data) => {{SET_OBJECT}}(data))
+    .catch((err) => {
+      if (err.name !== "AbortError") console.error(err);
+    });
+  return () => {{CONTROLLER}}.abort();
+}, [{{DEP}}]);`},SLOT_ADD:{default:`const {{FN_ADD}} = (newItem) => {
+  {{SET_ARRAY}}((prev) => [...prev, newItem]);
+};`},SLOT_REMOVE:{default:`const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
+};`},SLOT_UPDATE:{default:`const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({ ...prev, {{FIELD}}: value }));
+};`},SLOT_TOGGLE:{default:`const {{FN_TOGGLE}} = (id) => {
+  {{SET_ARRAY}}((prev) =>
+    prev.map(({{ITEM}}) =>
+      {{ITEM}}.id === id ? { ...{{ITEM}}, done: !{{ITEM}}.done } : {{ITEM}}
+    )
+  );
+};`},SLOT_MEMO:{default:`const filtered = useMemo(
+  () => {{ARRAY}}.filter(({{ITEM}}) => {{ITEM}}.name.includes({{TEXT}})),
+  [{{ARRAY}}, {{TEXT}}]
+);`},SLOT_CALLBACK:{default:`const handleClick = useCallback(() => {
+  {{SET_NUMBER}}({{NUMBER}} + 1);
+}, [{{NUMBER}}]);`},SLOT_HOOKCOND:{default:`const [{{LOCAL_A}}, {{SET_LOCAL_A}}] = useState("");`},SLOT_BADGE:{default:`{ {{NUMBER}} > 0 && <div className="badge">Выполнено: { {{NUMBER}} }</div> }`},SLOT_LIST:{default:`{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id } className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
+))}`}},mT=`import { useState, useEffect, useMemo, useCallback } from "react";
+
+function {{COMPONENT_NAME}}({ {{DEP}} = 1 }) {
+  const [{{ARRAY}}, {{SET_ARRAY}}] = useState([
+    { id: 1, name: "Настроить CI/CD", done: false },
+    { id: 2, name: "Написать тесты", done: true },
+    { id: 3, name: "Обновить зависимости", done: false },
+  ]);
+  const [{{OBJECT}}, {{SET_OBJECT}}] = useState({
+    {{FIELD}}: "Иван Петров",
+    email: "ivan@example.com",
+    {{NESTED}}: { {{NESTED_FIELD}}: "Москва", street: "ул. Ленина, 1" },
+  });
+  const [{{TEXT}}, {{SET_TEXT}}] = useState("");
+  const [{{NUMBER}}, {{SET_NUMBER}}] = useState(0);
+  const [{{FLAG}}, {{SET_FLAG}}] = useState(true);
+
+  {{SLOT_HOOKCOND}}
+
+  {{SLOT_TIMER}}
+
+  {{SLOT_LISTENER}}
+
+  {{SLOT_SUB}}
+
+  {{SLOT_FETCH}}
+
+  {{SLOT_ADD}}
+
+  {{SLOT_REMOVE}}
+
+  {{SLOT_UPDATE}}
+
+  {{SLOT_TOGGLE}}
+
+  {{SLOT_MEMO}}
+
+  {{SLOT_CALLBACK}}
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div className="app">
+      <header className="header">
+        <h1>{{TITLE}}</h1>
+        <span className="user">{ {{OBJECT}}.{{FIELD}} }</span>
+        <span className="counter">Счётчик: { {{NUMBER}} }</span>
+      </header>
+
       <input
-        value={form.name}
-        onChange={e => updateField("name", e.target.value)}
+        type="text"
+        value={ {{TEXT}} }
+        onChange={(e) => {{SET_TEXT}}(e.target.value)}
+        placeholder="Поиск..."
       />
+
       <input
-        value={form.address.city}
-        onChange={e => updateCity(e.target.value)}
+        type="text"
+        value={ {{OBJECT}}.{{FIELD}} }
+        onChange={(e) => {{FN_UPDATE}}(e.target.value)}
       />
-      <button type="submit">Submit</button>
-    </form>
+
+      <button onClick={() => {{FN_ADD}}({ id: Date.now(), name: "Новый элемент", done: false })}>
+        Добавить
+      </button>
+
+      <button onClick={handleClick}>+1</button>
+
+      {{SLOT_BADGE}}
+
+      <ul className="list">
+        {{SLOT_LIST}}
+      </ul>
+    </div>
   );
 }
 
-export default {{COMPONENT_NAME}};`,requiredSlots:[`BUG_SLOT_1`]}],mT=[`Dashboard`,`UserProfile`,`TodoList`,`ChatWidget`,`NotificationPanel`,`SearchResults`,`SettingsForm`,`ProductCard`,`OrderTracker`,`AnalyticsView`],hT={EVENT_NAME:[`message`,`update`,`notification`,`data_change`,`sync`],DELAY:[500,1e3,1500,2e3,3e3],INCREMENT:[1,2,5,10]};function gT(e){let t=[...e];for(let e=t.length-1;e>0;e--){let n=Math.floor(Math.random()*(e+1));[t[e],t[n]]=[t[n],t[e]]}return t}function _T(e){return e[Math.floor(Math.random()*e.length)]}function vT(e){let t=e;for(let[e,n]of Object.entries(hT))t=t.replace(RegExp(`{{${e}}}`,`g`),_T(n));return t}function yT(e={}){let{bugCount:t=3,categories:n=[],difficulty:r=`mixed`}=e,i=_T(pT),a=_T(mT),o=[...fT];n.length>0&&(o=o.filter(e=>n.includes(e.category))),r!==`mixed`&&(o=o.filter(e=>e.severity===r));let s=gT(o).slice(0,Math.min(t,o.length)),c=/\{\{BUG_SLOT_(\d+)\}\}/g,l=gT([...i.template.matchAll(c)].map(e=>e[0])).slice(0,s.length),u=i.template,d=i.template;u=u.replace(/\{\{COMPONENT_NAME\}\}/g,a),d=d.replace(/\{\{COMPONENT_NAME\}\}/g,a);let f=[];return s.forEach((e,t)=>{let n=l[t];if(!n)return;let r=vT(e.buggyCode),i=vT(e.fixedCode);u=u.replace(n,r),d=d.replace(n,i),f.push({id:e.id,category:e.category,severity:e.severity,title:e.title,description:e.description,hint:e.hint,fixExplanation:e.fixExplanation,validation:e.validation,slotIndex:t+1})}),u=u.replace(c,`// ...`),d=d.replace(c,`// ...`),{id:`trainer-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,code:u,solution:d,bugs:f,bugCount:f.length,componentName:a,templateName:i.name,difficulty:r,generatedAt:new Date().toISOString()}}function bT(e,t){let n=t.map(t=>{let{mustContain:n,mustNotContain:r}=t.validation,i=n.every(t=>t.test(e)),a=r.every(t=>!t.test(e));return{bugId:t.id,title:t.title,fixed:i&&a,details:{mustContain:n.map(t=>({pattern:t.toString(),found:t.test(e)})),mustNotContain:r.map(t=>({pattern:t.toString(),stillPresent:t.test(e)}))}}}),r=n.filter(e=>e.fixed).length;return{allFixed:r===t.length,fixedCount:r,totalBugs:t.length,results:n}}function xT({task:e,onRegenerate:t}){let[n,r]=(0,_.useState)(e.code),[i,a]=(0,_.useState)(null),[o,s]=(0,_.useState)(0),[c,l]=(0,_.useState)(!1),[u,d]=(0,_.useState)(0),f=(0,_.useCallback)(()=>{let t=bT(n,e.bugs);a(t),d(e=>e+1)},[n,e.bugs]),p=i?.fixedCount??0,m=e.bugCount;return(0,$.jsxs)(`div`,{className:`space-y-6`,children:[(0,$.jsxs)(`div`,{className:`card flex items-center justify-between p-4`,children:[(0,$.jsxs)(`div`,{className:`flex items-center gap-4`,children:[(0,$.jsx)(`span`,{className:`font-display text-lg font-bold text-accent-react`,children:e.componentName}),(0,$.jsxs)(`span`,{className:`font-mono text-sm text-mist-500`,children:[`🐛 `,m,` баг`,m===1?``:m<5?`а`:`ов`]}),i&&(0,$.jsxs)(`span`,{className:`font-mono text-sm font-bold ${i.allFixed?`text-lvl-3`:`text-lvl-1`}`,children:[`✅ `,p,`/`,m,` исправлено`]})]}),(0,$.jsxs)(`div`,{className:`flex gap-2`,children:[(0,$.jsx)(`button`,{onClick:f,className:`rounded-lg bg-lvl-3 px-4 py-2 text-sm font-bold text-ink-950`,children:`▶ Проверить`}),(0,$.jsx)(`button`,{onClick:t,className:`rounded-lg border border-ink-600 px-4 py-2 text-sm text-mist-400`,children:`🔄 Новая задача`})]})]}),(0,$.jsxs)(`div`,{className:`card overflow-hidden p-4`,children:[(0,$.jsxs)(`div`,{className:`mb-3 flex items-center justify-between`,children:[(0,$.jsxs)(`h3`,{className:`font-mono text-sm text-mist-400`,children:[`💻 Найди и исправь `,m,` проблем:`]}),(0,$.jsx)(`div`,{className:`flex gap-2 font-mono text-xs text-mist-500`,children:(0,$.jsxs)(`span`,{children:[`Подсказки: `,o,`/`,m]})})]}),(0,$.jsx)(sT,{value:n,onChange:r,height:`450px`})]}),i&&(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsx)(`h3`,{className:`mb-3 font-display text-lg font-semibold`,children:`Результаты проверки`}),(0,$.jsx)(`div`,{className:`mb-4 h-3 overflow-hidden rounded-full bg-ink-700`,children:(0,$.jsx)(`div`,{className:`h-full rounded-full bg-lvl-3 transition-all`,style:{width:`${p/m*100}%`}})}),(0,$.jsx)(`div`,{className:`space-y-2`,children:i.results.map((t,n)=>(0,$.jsxs)(`div`,{className:`rounded-lg border p-3 ${t.fixed?`border-lvl-3/30 bg-lvl-3/5`:`border-lvl-0/30 bg-lvl-0/5`}`,children:[(0,$.jsxs)(`div`,{className:`flex items-center gap-2`,children:[(0,$.jsx)(`span`,{children:t.fixed?`✅`:`❌`}),(0,$.jsx)(`span`,{className:`text-sm font-medium`,children:t.title})]}),!t.fixed&&o>n&&(0,$.jsxs)(`p`,{className:`mt-2 pl-6 text-xs text-mist-400`,children:[`💡 `,e.bugs[n].fixExplanation]})]},t.bugId))}),o<m&&!i.allFixed&&(0,$.jsxs)(`button`,{onClick:()=>s(e=>e+1),className:`mt-4 rounded-lg border border-lvl-1/30 bg-lvl-1/10 px-4 py-2 text-sm text-lvl-1`,children:[`💡 Показать подсказку (`,o+1,`/`,m,`)`]}),i.allFixed&&(0,$.jsxs)(`div`,{className:`mt-4 rounded-lg border border-lvl-3/30 bg-lvl-3/10 p-4 text-center`,children:[(0,$.jsx)(`p`,{className:`text-2xl`,children:`🎉`}),(0,$.jsxs)(`p`,{className:`font-display font-bold text-lvl-3`,children:[`Все баги исправлены за `,u,` попыт`,u===1?`ку`:`ки`,`!`]}),(0,$.jsx)(`button`,{onClick:()=>l(!0),className:`mt-2 text-xs text-mist-400 underline`,children:`Показать эталонное решение`})]})]}),o>0&&(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsxs)(`h3`,{className:`mb-3 font-display text-lg font-semibold text-lvl-1`,children:[`💡 Подсказки (`,o,`/`,m,`)`]}),(0,$.jsx)(`div`,{className:`space-y-3`,children:e.bugs.slice(0,o).map((e,t)=>(0,$.jsxs)(`div`,{className:`rounded-lg border border-lvl-1/20 bg-lvl-1/5 p-4`,children:[(0,$.jsxs)(`p`,{className:`mb-1 text-sm font-semibold text-lvl-1`,children:[`Баг #`,t+1,`: `,e.title]}),(0,$.jsx)(`p`,{className:`text-sm text-mist-300`,children:e.hint}),(0,$.jsxs)(`p`,{className:`mt-2 text-xs font-mono text-mist-500`,children:[`Категория: `,e.category,` · Сложность: `,e.severity]})]},e.id))})]}),c&&(0,$.jsxs)(`div`,{className:`card border-2 border-lvl-3/30 p-5`,children:[(0,$.jsx)(`h3`,{className:`mb-3 font-display text-lg font-semibold text-lvl-3`,children:`📋 Эталонное решение`}),(0,$.jsx)(sT,{value:e.solution,onChange:()=>{},readOnly:!0,height:`400px`})]})]})}var ST=[{id:`easy`,label:`Лёгкие`,icon:`🟢`},{id:`medium`,label:`Средние`,icon:`🟡`},{id:`hard`,label:`Сложные`,icon:`🔴`},{id:`mixed`,label:`Микс`,icon:`🎲`}];function CT(){let[e,t]=(0,_.useState)(null),[n,r]=(0,_.useState)({bugCount:3,difficulty:`mixed`,categories:[]}),i=()=>{let e=yT(n);t(e)};return(0,$.jsxs)(`div`,{children:[(0,$.jsxs)(`div`,{className:`card mb-6 p-6`,children:[(0,$.jsx)(`h1`,{className:`mb-2 font-display text-2xl font-bold text-accent-react`,children:`⚛️ React Code Trainer`}),(0,$.jsx)(`p`,{className:`mb-4 text-sm text-mist-400`,children:`Случайно сгенерированный код с багами. Найди и исправь все нарушения!`}),(0,$.jsxs)(`div`,{className:`mb-4 flex flex-wrap gap-4`,children:[(0,$.jsxs)(`div`,{children:[(0,$.jsx)(`label`,{className:`mb-1 block text-xs text-mist-500`,children:`Багов:`}),(0,$.jsx)(`select`,{className:`field w-auto`,value:n.bugCount,onChange:e=>r(t=>({...t,bugCount:+e.target.value})),children:[1,2,3,4].map(e=>(0,$.jsx)(`option`,{value:e,children:e},e))})]}),(0,$.jsxs)(`div`,{children:[(0,$.jsx)(`label`,{className:`mb-1 block text-xs text-mist-500`,children:`Сложность:`}),(0,$.jsx)(`select`,{className:`field w-auto`,value:n.difficulty,onChange:e=>r(t=>({...t,difficulty:e.target.value})),children:ST.map(e=>(0,$.jsxs)(`option`,{value:e.id,children:[e.icon,` `,e.label]},e.id))})]})]}),(0,$.jsx)(`button`,{onClick:i,className:`rounded-lg bg-accent-react px-6 py-3 font-display text-sm font-bold text-ink-950 transition hover:-translate-y-0.5`,children:e?`🔄 Сгенерировать заново`:`🎯 Начать тренировку`})]}),e&&(0,$.jsx)(xT,{task:e,onRegenerate:i})]})}function wT(){return(0,$.jsx)(ww,{children:(0,$.jsx)(Fw,{children:(0,$.jsx)(Hn,{children:(0,$.jsxs)(en,{children:[(0,$.jsx)(Qt,{path:`/login`,element:(0,$.jsx)(Xw,{})}),(0,$.jsx)(Qt,{path:`/register`,element:(0,$.jsx)(Zw,{})}),(0,$.jsxs)(Qt,{path:`/`,element:(0,$.jsx)(Qw,{children:(0,$.jsx)(Vw,{})}),children:[(0,$.jsx)(Qt,{index:!0,element:(0,$.jsx)(Hw,{})}),(0,$.jsx)(Qt,{path:`section/:section`,element:(0,$.jsx)(qw,{})}),(0,$.jsx)(Qt,{path:`section/:section/:topic`,element:(0,$.jsx)(qw,{})}),(0,$.jsx)(Qt,{path:`review`,element:(0,$.jsx)(Yw,{})}),(0,$.jsx)(Qt,{path:`review/:section`,element:(0,$.jsx)(Yw,{})}),(0,$.jsx)(Qt,{path:`review/:section/:topic`,element:(0,$.jsx)(Yw,{})}),(0,$.jsx)(Qt,{path:`tasks`,element:(0,$.jsx)(eT,{})}),(0,$.jsx)(Qt,{path:`tasks/:taskId`,element:(0,$.jsx)(dT,{})}),(0,$.jsx)(Qt,{path:`react-trainer`,element:(0,$.jsx)(CT,{})})]})]})})})})}(0,v.createRoot)(document.getElementById(`root`)).render((0,$.jsx)(_.StrictMode,{children:(0,$.jsx)(wT,{})}));
+export default {{COMPONENT_NAME}};`,hT=[{id:`task-manager`,name:`Менеджер задач`,template:mT,slots:pT,vars:{ARRAY:`tasks`,SET_ARRAY:`setTasks`,ITEM:`task`,OBJECT:`profile`,SET_OBJECT:`setProfile`,FIELD:`name`,NESTED:`address`,NESTED_FIELD:`city`,NUMBER:`seconds`,SET_NUMBER:`setSeconds`,TEXT:`query`,SET_TEXT:`setQuery`,DEP:`userId`,FLAG:`isReady`,SET_FLAG:`setIsReady`,LOCAL_A:`draft`,SET_LOCAL_A:`setDraft`,FN_ADD:`addTask`,FN_REMOVE:`removeTask`,FN_TOGGLE:`toggleTask`,FN_UPDATE:`updateName`,TITLE:`Менеджер задач`}},{id:`user-dashboard`,name:`Панель пользователей`,template:mT,slots:pT,vars:{ARRAY:`users`,SET_ARRAY:`setUsers`,ITEM:`user`,OBJECT:`account`,SET_OBJECT:`setAccount`,FIELD:`username`,NESTED:`settings`,NESTED_FIELD:`theme`,NUMBER:`score`,SET_NUMBER:`setScore`,TEXT:`search`,SET_TEXT:`setSearch`,DEP:`accountId`,FLAG:`isAdmin`,SET_FLAG:`setIsAdmin`,LOCAL_A:`note`,SET_LOCAL_A:`setNote`,FN_ADD:`addUser`,FN_REMOVE:`removeUser`,FN_TOGGLE:`toggleUser`,FN_UPDATE:`updateUsername`,TITLE:`Панель пользователей`}},{id:`notification-center`,name:`Центр уведомлений`,template:mT,slots:pT,vars:{ARRAY:`alerts`,SET_ARRAY:`setAlerts`,ITEM:`alert`,OBJECT:`config`,SET_OBJECT:`setConfig`,FIELD:`label`,NESTED:`push`,NESTED_FIELD:`enabled`,NUMBER:`unread`,SET_NUMBER:`setUnread`,TEXT:`filterText`,SET_TEXT:`setFilterText`,DEP:`channelId`,FLAG:`isMuted`,SET_FLAG:`setIsMuted`,LOCAL_A:`message`,SET_LOCAL_A:`setMessage`,FN_ADD:`addAlert`,FN_REMOVE:`removeAlert`,FN_TOGGLE:`toggleAlert`,FN_UPDATE:`updateLabel`,TITLE:`Центр уведомлений`}}],gT=[`TodoList`,`UserProfile`,`SettingsForm`,`AnalyticsDashboard`,`NotificationPanel`,`SearchResults`,`OrderTracker`,`ProductCatalog`,`ChatWidget`,`TaskManager`,`ActivityFeed`,`MetricsView`],_T={TIMER:[`timerId`,`intervalRef`,`pollTimer`,`tickHandle`,`loopId`,`ticker`,`pulseId`,`heartbeat`],HANDLER:[`handleResize`,`onWindowChange`,`resizeCallback`,`viewportHandler`,`onLayoutShift`,`screenWatcher`],SUBSCRIPTION:[`subscription`,`listener`,`channel`,`connection`,`stream`,`observer`],CONTROLLER:[`controller`,`abortRef`,`cancelToken`,`signalRef`,`killSwitch`],EVENT_NAME:[`message`,`update`,`notification`,`data_change`,`sync`,`broadcast`],DELAY:[500,800,1e3,1500,2e3,3e3]},vT=e=>e[Math.floor(Math.random()*e.length)],yT=e=>{let t=[...e];for(let e=t.length-1;e>0;e--){let n=Math.floor(Math.random()*(e+1));[t[e],t[n]]=[t[n],t[e]]}return t};function bT(){let e={};for(let[t,n]of Object.entries(_T))e[t]=vT(n);return e}function xT(e,t){let n=e;for(let[e,r]of Object.entries(t))n=n.split(`{{${e}}}`).join(r);return n}var ST={easy:{count:1,severities:[`easy`]},medium:{count:2,severities:[`easy`,`medium`]},hard:{count:4,severities:[`medium`,`hard`]},insane:{count:6,severities:[`medium`,`hard`]},mixed:{count:()=>vT([3,4,5]),severities:null}};function CT(e={}){let{difficulty:t=`mixed`,categories:n=[]}=e,r=ST[t]||ST.mixed,i=typeof r.count==`function`?r.count():r.count,a=vT(hT),o=vT(gT),s=[...fT];n.length&&(s=s.filter(e=>n.includes(e.category))),r.severities&&(s=s.filter(e=>r.severities.includes(e.severity)));let c=yT(s).slice(0,Math.min(i,s.length)),l={...a.vars,...bT(),COMPONENT_NAME:o},u=new Set(Object.keys(a.slots)),d=[];for(let e of c){let t=(e.slots||[]).find(e=>u.has(e));t&&(u.delete(t),d.push({bug:e,slot:t}))}let f=xT(a.template,l),p=f;for(let e of Object.keys(a.slots)){let t=d.find(t=>t.slot===e),n=xT(a.slots[e].default,l);t?(f=f.replace(`{{${e}}}`,xT(t.bug.buggyCode,l)),p=p.replace(`{{${e}}}`,xT(t.bug.fixedCode,l))):(f=f.replace(`{{${e}}}`,n),p=p.replace(`{{${e}}}`,n))}let m=d.map(({bug:e})=>({id:e.id,category:e.category,severity:e.severity,title:e.title,description:e.description,hint:e.hint,hintCode:xT(e.hintCode,l),fixExplanation:e.fixExplanation,validation:{mustContain:(e.validation.mustContain||[]).map(e=>new RegExp(xT(e,l))),mustNotContain:(e.validation.mustNotContain||[]).map(e=>new RegExp(xT(e,l)))}}));return{id:`trainer-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,code:f,solution:p,bugs:m,bugCount:m.length,componentName:o,templateName:a.name,difficulty:t,generatedAt:new Date().toISOString()}}function wT(e,t){let n=t.map(t=>{let{mustContain:n,mustNotContain:r}=t.validation,i=n.every(t=>t.test(e)),a=r.every(t=>!t.test(e));return{bugId:t.id,title:t.title,fixed:i&&a}}),r=n.filter(e=>e.fixed).length;return{allFixed:r===t.length,fixedCount:r,totalBugs:t.length,results:n}}function TT({code:e}){return(0,$.jsx)(`pre`,{className:`mt-2 overflow-x-auto rounded-lg border border-ink-600 bg-ink-950 p-3 font-mono text-[13px] leading-relaxed text-mist-200`,style:{whiteSpace:`pre-wrap`},children:e})}function ET({task:e,onRegenerate:t}){let[n,r]=(0,_.useState)(e.code),[i,a]=(0,_.useState)(null),[o,s]=(0,_.useState)(0),[c,l]=(0,_.useState)(!1),[u,d]=(0,_.useState)(0);(0,_.useEffect)(()=>{r(e.code),a(null),s(0),l(!1),d(0)},[e.id,e.code]);let f=(0,_.useCallback)(()=>{a(wT(n,e.bugs)),d(e=>e+1)},[n,e.bugs]),p=i?.fixedCount??0,m=e.bugCount;return(0,$.jsxs)(`div`,{className:`space-y-6`,children:[(0,$.jsxs)(`div`,{className:`card flex flex-wrap items-center justify-between gap-3 p-4`,children:[(0,$.jsxs)(`div`,{className:`flex items-center gap-4`,children:[(0,$.jsx)(`span`,{className:`font-display text-lg font-bold text-accent-react`,children:e.componentName}),(0,$.jsxs)(`span`,{className:`font-mono text-sm text-mist-500`,children:[`🐛 `,m,` баг`,m===1?``:m<5?`а`:`ов`]}),i&&(0,$.jsxs)(`span`,{className:`font-mono text-sm font-bold ${i.allFixed?`text-lvl-3`:`text-lvl-1`}`,children:[`✅ `,p,`/`,m]})]}),(0,$.jsxs)(`div`,{className:`flex gap-2`,children:[(0,$.jsx)(`button`,{onClick:f,className:`rounded-lg bg-lvl-3 px-4 py-2 text-sm font-bold text-ink-950`,children:`▶ Проверить`}),(0,$.jsx)(`button`,{onClick:t,className:`rounded-lg border border-ink-600 px-4 py-2 text-sm text-mist-400`,children:`🔄 Новая задача`})]})]}),(0,$.jsxs)(`div`,{className:`card overflow-hidden p-4`,children:[(0,$.jsxs)(`div`,{className:`mb-3 flex items-center justify-between`,children:[(0,$.jsxs)(`h3`,{className:`font-mono text-sm text-mist-400`,children:[`💻 Найди и исправь `,m,` проблем:`]}),(0,$.jsxs)(`span`,{className:`font-mono text-xs text-mist-500`,children:[`Подсказки: `,o,`/`,m]})]}),(0,$.jsx)(sT,{value:n,onChange:r,height:`800px`})]}),i&&(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsx)(`h3`,{className:`mb-3 font-display text-lg font-semibold`,children:`Результаты проверки`}),(0,$.jsx)(`div`,{className:`mb-4 h-3 overflow-hidden rounded-full bg-ink-700`,children:(0,$.jsx)(`div`,{className:`h-full rounded-full bg-lvl-3 transition-all`,style:{width:`${p/m*100}%`}})}),(0,$.jsx)(`div`,{className:`space-y-2`,children:i.results.map((t,n)=>(0,$.jsxs)(`div`,{className:`rounded-lg border p-3 ${t.fixed?`border-lvl-3/30 bg-lvl-3/5`:`border-lvl-0/30 bg-lvl-0/5`}`,children:[(0,$.jsxs)(`div`,{className:`flex items-center gap-2`,children:[(0,$.jsx)(`span`,{children:t.fixed?`✅`:`❌`}),(0,$.jsx)(`span`,{className:`text-sm font-medium`,children:t.title})]}),!t.fixed&&(0,$.jsx)(`p`,{className:`mt-1 pl-6 text-xs text-mist-400`,children:t.description||e.bugs[n]?.description})]},t.bugId))}),o<m&&!i.allFixed&&(0,$.jsxs)(`button`,{onClick:()=>s(e=>e+1),className:`mt-4 rounded-lg border border-lvl-1/30 bg-lvl-1/10 px-4 py-2 text-sm text-lvl-1 transition hover:bg-lvl-1/20`,children:[`💡 Показать подсказку (`,o+1,`/`,m,`)`]}),i.allFixed&&(0,$.jsxs)(`div`,{className:`mt-4 rounded-lg border border-lvl-3/30 bg-lvl-3/10 p-4 text-center`,children:[(0,$.jsx)(`p`,{className:`text-2xl`,children:`🎉`}),(0,$.jsxs)(`p`,{className:`font-display font-bold text-lvl-3`,children:[`Все баги исправлены за `,u,` `,u===1?`попытку`:u<5?`попытки`:`попыток`,`!`]}),(0,$.jsx)(`button`,{onClick:()=>l(!0),className:`mt-2 text-xs text-mist-400 underline hover:text-mist-200`,children:`Показать эталонное решение`})]})]}),o>0&&(0,$.jsxs)(`div`,{className:`card p-5`,children:[(0,$.jsxs)(`h3`,{className:`mb-4 font-display text-lg font-semibold text-lvl-1`,children:[`💡 Подсказки (`,o,`/`,m,`)`]}),(0,$.jsx)(`div`,{className:`space-y-4`,children:e.bugs.slice(0,o).map((e,t)=>(0,$.jsxs)(`div`,{className:`rounded-lg border border-lvl-1/20 bg-lvl-1/5 p-4`,children:[(0,$.jsxs)(`p`,{className:`mb-2 text-sm font-semibold text-lvl-1`,children:[`Баг #`,t+1,`: `,e.title]}),(0,$.jsx)(`p`,{className:`mb-2 text-sm leading-relaxed text-mist-300`,children:e.hint}),e.hintCode&&(0,$.jsxs)(`div`,{className:`mt-3`,children:[(0,$.jsx)(`p`,{className:`mb-1 font-mono text-[11px] uppercase tracking-wider text-mist-500`,children:`Пример исправления:`}),(0,$.jsx)(TT,{code:e.hintCode})]}),(0,$.jsxs)(`p`,{className:`mt-2 font-mono text-[11px] text-mist-500`,children:[`Категория: `,e.category,` · Сложность: `,e.severity]})]},e.id))})]}),c&&(0,$.jsxs)(`div`,{className:`card border-2 border-lvl-3/30 p-5`,children:[(0,$.jsx)(`h3`,{className:`mb-3 font-display text-lg font-semibold text-lvl-3`,children:`📋 Эталонное решение`}),(0,$.jsx)(sT,{value:e.solution,onChange:()=>{},readOnly:!0,height:`800px`})]})]})}var DT=[{id:`easy`,label:`Лёгкая`,icon:`🟢`,bugs:`1 баг`},{id:`medium`,label:`Средняя`,icon:`🟡`,bugs:`2 бага`},{id:`hard`,label:`Сложная`,icon:`🔴`,bugs:`4 бага`},{id:`insane`,label:`Хардкор`,icon:`💀`,bugs:`6 багов`},{id:`mixed`,label:`Микс`,icon:`🎲`,bugs:`3–5`}];function OT(){let[e,t]=(0,_.useState)(null),[n,r]=(0,_.useState)(`mixed`),i=()=>{t(CT({difficulty:n}))};return(0,$.jsxs)(`div`,{children:[(0,$.jsxs)(`div`,{className:`card mb-6 p-6`,children:[(0,$.jsx)(`h1`,{className:`mb-2 font-display text-2xl font-bold text-accent-react`,children:`⚛️ React Code Trainer`}),(0,$.jsx)(`p`,{className:`mb-4 text-sm text-mist-400`,children:`Найди баги в реальном коде. Исправь их и проверь результат.`}),(0,$.jsxs)(`div`,{className:`mb-4`,children:[(0,$.jsx)(`label`,{className:`mb-2 block text-xs text-mist-500`,children:`Сложность:`}),(0,$.jsx)(`div`,{className:`flex flex-wrap gap-2`,children:DT.map(e=>(0,$.jsxs)(`button`,{onClick:()=>r(e.id),className:`rounded-lg border px-4 py-2 text-sm transition ${n===e.id?`border-accent-react bg-accent-react/10 text-accent-react`:`border-ink-600 text-mist-400 hover:border-mist-400`}`,children:[e.icon,` `,e.label,(0,$.jsx)(`span`,{className:`ml-2 font-mono text-xs text-mist-500`,children:e.bugs})]},e.id))})]}),(0,$.jsx)(`button`,{onClick:i,className:`rounded-lg bg-accent-react px-6 py-3 font-display text-sm font-bold text-ink-950 transition hover:-translate-y-0.5`,children:e?`🔄 Сгенерировать заново`:`🎯 Начать тренировку`})]}),e&&(0,$.jsx)(ET,{task:e,onRegenerate:i},e.id)]})}function kT(){return(0,$.jsx)(ww,{children:(0,$.jsx)(Fw,{children:(0,$.jsx)(Hn,{children:(0,$.jsxs)(en,{children:[(0,$.jsx)(Qt,{path:`/login`,element:(0,$.jsx)(Xw,{})}),(0,$.jsx)(Qt,{path:`/register`,element:(0,$.jsx)(Zw,{})}),(0,$.jsxs)(Qt,{path:`/`,element:(0,$.jsx)(Qw,{children:(0,$.jsx)(Vw,{})}),children:[(0,$.jsx)(Qt,{index:!0,element:(0,$.jsx)(Hw,{})}),(0,$.jsx)(Qt,{path:`section/:section`,element:(0,$.jsx)(qw,{})}),(0,$.jsx)(Qt,{path:`section/:section/:topic`,element:(0,$.jsx)(qw,{})}),(0,$.jsx)(Qt,{path:`review`,element:(0,$.jsx)(Yw,{})}),(0,$.jsx)(Qt,{path:`review/:section`,element:(0,$.jsx)(Yw,{})}),(0,$.jsx)(Qt,{path:`review/:section/:topic`,element:(0,$.jsx)(Yw,{})}),(0,$.jsx)(Qt,{path:`tasks`,element:(0,$.jsx)(eT,{})}),(0,$.jsx)(Qt,{path:`tasks/:taskId`,element:(0,$.jsx)(dT,{})}),(0,$.jsx)(Qt,{path:`react-trainer`,element:(0,$.jsx)(OT,{})})]})]})})})})}(0,v.createRoot)(document.getElementById(`root`)).render((0,$.jsx)(_.StrictMode,{children:(0,$.jsx)(kT,{})}));
