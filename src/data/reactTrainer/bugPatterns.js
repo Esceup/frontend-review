@@ -1,337 +1,765 @@
 // src/data/reactTrainer/bugPatterns.js
+//
+// Каждый паттерн:
+//  - slots: в какие слоты шаблона может быть вставлен
+//  - buggyCode / fixedCode используют плейсхолдеры {{VAR}}
+//  - validation.mustContain / mustNotContain — строки-regex с плейсхолдерами,
+//    которые резолвятся в генераторе под конкретные имена переменных.
 
 export const BUG_PATTERNS = [
+  // ═══════════════════════════════════════════
+  //  УТЕЧКИ ПАМЯТИ
+  // ═══════════════════════════════════════════
   {
-    id: "memory-leak-interval",
-    category: "memory-leak",
-    severity: "hard",
-    title: "Утечка памяти: setInterval без очистки",
-    description: "useEffect создаёт интервал, но не возвращает cleanup-функцию",
-    hint: "Подумайте: что произойдёт при размонтировании компонента? Интервал продолжит работать. Нужно вернуть функцию очистки из useEffect.",
-    fixExplanation:
-      "Добавьте return () => clearInterval(timerId) в конце useEffect",
-    // Шаблон с багом ({{VAR}} — переменные для рандомизации)
-    buggyCode: `useEffect(() => {
-  const timerId = setInterval(() => {
-    setCount(prev => prev + {{INCREMENT}});
-  }, {{DELAY}});
-}, []);`,
-    // Правильный вариант
-    fixedCode: `useEffect(() => {
-  const timerId = setInterval(() => {
-    setCount(prev => prev + {{INCREMENT}});
-  }, {{DELAY}});
-  return () => clearInterval(timerId);
-}, []);`,
-    // Паттерны для валидации
-    validation: {
-      mustContain: [/return\s*\(\)\s*=>\s*clearInterval/, /clearInterval\s*\(/],
-      mustNotContain: [],
-    },
-  },
-
-  {
-    id: "memory-leak-listener",
+    id: "leak-interval",
     category: "memory-leak",
     severity: "medium",
-    title: "Утечка памяти: addEventListener без removeEventListener",
-    description: "Событие подписано, но не отписано при размонтировании",
-    hint: "Каждый addEventListener должен иметь пару removeEventListener. Где в useEffect должна быть функция очистки?",
+    slots: ["SLOT_TIMER"],
+    title: "Интервал без очистки",
+    description: "setInterval создан в useEffect, но cleanup не возвращён.",
+    hint: "Верните из useEffect функцию, которая вызовет clearInterval.",
+    hintCode: `useEffect(() => {
+  const {{TIMER}} = setInterval(() => {{SET_NUMBER}}(p => p + 1), 1000);
+  return () => clearInterval({{TIMER}});
+}, []);`,
     fixExplanation:
-      "Верните cleanup: return () => window.removeEventListener('resize', handler)",
+      "Без cleanup интервал продолжает работать после размонтирования — утечка памяти.",
     buggyCode: `useEffect(() => {
-  const handleResize = () => {
-    setWidth(window.innerWidth);
-  };
-  window.addEventListener("resize", handleResize);
+  const {{TIMER}} = setInterval(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
+  }, 1000);
 }, []);`,
     fixedCode: `useEffect(() => {
-  const handleResize = () => {
-    setWidth(window.innerWidth);
-  };
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
+  const {{TIMER}} = setInterval(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
+  }, 1000);
+  return () => clearInterval({{TIMER}});
 }, []);`,
     validation: {
-      mustContain: [/removeEventListener/, /return\s*\(\)\s*=>/],
+      mustContain: ["return\\s*\\(\\)\\s*=>\\s*clearInterval\\({{TIMER}}\\)"],
       mustNotContain: [],
     },
   },
-
   {
-    id: "memory-leak-subscription",
+    id: "leak-timeout",
+    category: "memory-leak",
+    severity: "easy",
+    slots: ["SLOT_TIMER"],
+    title: "Таймаут без отмены",
+    description: "setTimeout не очищается при размонтировании.",
+    hint: "Верните cleanup с clearTimeout.",
+    hintCode: `useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {{SET_NUMBER}}(p => p + 1), {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, []);`,
+    fixExplanation:
+      "Если компонент размонтируется до срабатывания таймера, setState вызовется на мёртвом компоненте.",
+    buggyCode: `useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
+  }, {{DELAY}});
+}, []);`,
+    fixedCode: `useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {
+    {{SET_NUMBER}}((prev) => prev + 1);
+  }, {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, []);`,
+    validation: {
+      mustContain: ["clearTimeout\\({{TIMER}}\\)"],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "leak-listener",
+    category: "memory-leak",
+    severity: "medium",
+    slots: ["SLOT_LISTENER"],
+    title: "Событие без отписки",
+    description: "addEventListener есть, removeEventListener — нет.",
+    hint: "Каждый addEventListener должен иметь пару removeEventListener в cleanup.",
+    hintCode: `useEffect(() => {
+  const {{HANDLER}} = () => {{SET_NUMBER}}(window.innerWidth);
+  window.addEventListener("resize", {{HANDLER}});
+  return () => window.removeEventListener("resize", {{HANDLER}});
+}, []);`,
+    fixExplanation:
+      "Колбэк остаётся в памяти браузера и вызывается для уже мёртвого компонента.",
+    buggyCode: `useEffect(() => {
+  const {{HANDLER}} = () => {{SET_NUMBER}}(window.innerWidth);
+  window.addEventListener("resize", {{HANDLER}});
+}, []);`,
+    fixedCode: `useEffect(() => {
+  const {{HANDLER}} = () => {{SET_NUMBER}}(window.innerWidth);
+  window.addEventListener("resize", {{HANDLER}});
+  return () => window.removeEventListener("resize", {{HANDLER}});
+}, []);`,
+    validation: {
+      mustContain: ["removeEventListener\\("],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "leak-subscription",
     category: "memory-leak",
     severity: "hard",
-    title: "Утечка памяти: подписка без отписки",
-    description: "Подписка на WebSocket/EventEmitter не очищается",
-    hint: "Подписка создаёт постоянную связь. При размонтировании нужно отписаться, иначе колбэк будет вызываться для мёртвого компонента.",
-    fixExplanation: "Верните cleanup: return () => subscription.unsubscribe()",
+    slots: ["SLOT_SUB"],
+    title: "Подписка без отписки",
+    description: "Компонент подписывается на события, но не отписывается.",
+    hint: "Верните cleanup, который вызовет unsubscribe.",
+    hintCode: `useEffect(() => {
+  const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", cb);
+  return () => {{SUBSCRIPTION}}.unsubscribe();
+}, []);`,
+    fixExplanation:
+      "Подписка держит ссылку на колбэк — сборщик мусора не может освободить компонент.",
     buggyCode: `useEffect(() => {
-  const subscription = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
-    setMessages(prev => [...prev, data]);
+  const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+    {{SET_ARRAY}}((prev) => [...prev, data]);
   });
 }, []);`,
     fixedCode: `useEffect(() => {
-  const subscription = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
-    setMessages(prev => [...prev, data]);
+  const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+    {{SET_ARRAY}}((prev) => [...prev, data]);
   });
-  return () => subscription.unsubscribe();
+  return () => {{SUBSCRIPTION}}.unsubscribe();
 }, []);`,
     validation: {
-      mustContain: [/unsubscribe/, /return\s*\(\)\s*=>/],
+      mustContain: ["unsubscribe\\(\\)"],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "leak-websocket",
+    category: "memory-leak",
+    severity: "hard",
+    slots: ["SLOT_SUB"],
+    title: "WebSocket без close",
+    description: "Сокет открыт, но не закрывается при размонтировании.",
+    hint: "Верните cleanup с вызовом socket.close().",
+    hintCode: `useEffect(() => {
+  const {{SUBSCRIPTION}} = new WebSocket(url);
+  return () => {{SUBSCRIPTION}}.close();
+}, []);`,
+    fixExplanation:
+      "Открытый сокет держит соединение и обработчики — утечка и лишняя нагрузка на сервер.",
+    buggyCode: `useEffect(() => {
+  const {{SUBSCRIPTION}} = new WebSocket("wss://example.com/{{EVENT_NAME}}");
+  {{SUBSCRIPTION}}.onmessage = (e) => {
+    {{SET_ARRAY}}((prev) => [...prev, e.data]);
+  };
+}, []);`,
+    fixedCode: `useEffect(() => {
+  const {{SUBSCRIPTION}} = new WebSocket("wss://example.com/{{EVENT_NAME}}");
+  {{SUBSCRIPTION}}.onmessage = (e) => {
+    {{SET_ARRAY}}((prev) => [...prev, e.data]);
+  };
+  return () => {{SUBSCRIPTION}}.close();
+}, []);`,
+    validation: {
+      mustContain: ["\\.close\\(\\)"],
       mustNotContain: [],
     },
   },
 
+  // ═══════════════════════════════════════════
+  //  МУТАЦИЯ STATE
+  // ═══════════════════════════════════════════
   {
-    id: "direct-state-mutation-array",
+    id: "mutate-push",
     category: "state-mutation",
     severity: "medium",
-    title: "Прямая мутация state: push в массив",
-    description: "Массив в state мутируется через push вместо создания нового",
-    hint: "React не увидит изменение, потому что ссылка на массив не поменялась. Нужно создать НОВЫЙ массив.",
-    fixExplanation: "Замените items.push(x) на setItems(prev => [...prev, x])",
-    buggyCode: `const addItem = (newItem) => {
-  items.push(newItem);
-  setItems(items);
+    slots: ["SLOT_ADD"],
+    title: "push() в массив state",
+    description: "Массив мутируется через push — React не увидит изменение.",
+    hint: "Создайте новый массив: setX(prev => [...prev, item]).",
+    hintCode: `const {{FN_ADD}} = (item) => {
+  {{SET_ARRAY}}((prev) => [...prev, item]);
 };`,
-    fixedCode: `const addItem = (newItem) => {
-  setItems(prev => [...prev, newItem]);
+    fixExplanation:
+      "push меняет тот же массив — ссылка та же — ре-рендер не произойдёт.",
+    buggyCode: `const {{FN_ADD}} = (newItem) => {
+  {{ARRAY}}.push(newItem);
+  {{SET_ARRAY}}({{ARRAY}});
+};`,
+    fixedCode: `const {{FN_ADD}} = (newItem) => {
+  {{SET_ARRAY}}((prev) => [...prev, newItem]);
 };`,
     validation: {
-      mustContain: [/\.\.\./, /setItems/],
-      mustNotContain: [/items\.push/],
+      mustContain: ["\\.\\.\\."],
+      mustNotContain: ["{{ARRAY}}\\.push"],
     },
   },
-
   {
-    id: "direct-state-mutation-object",
+    id: "mutate-pop",
     category: "state-mutation",
     severity: "medium",
-    title: "Прямая мутация state: изменение свойства объекта",
-    description: "Объект в state мутируется напрямую",
-    hint: "user.name = 'x' меняет тот же объект. React сравнивает ссылки — ре-рендер не произойдёт. Создайте новый объект через spread.",
-    fixExplanation: "Замените на setUser(prev => ({ ...prev, name: value }))",
-    buggyCode: `const updateName = (value) => {
-  user.name = value;
-  setUser(user);
+    slots: ["SLOT_REMOVE"],
+    title: "pop() вместо удаления",
+    description: "pop() мутирует исходный массив state.",
+    hint: "Используйте filter для создания нового массива.",
+    hintCode: `const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
 };`,
-    fixedCode: `const updateName = (value) => {
-  setUser(prev => ({ ...prev, name: value }));
+    fixExplanation: "pop изменяет исходный массив. filter создаёт новый.",
+    buggyCode: `const {{FN_REMOVE}} = (id) => {
+  {{ARRAY}}.pop();
+  {{SET_ARRAY}}({{ARRAY}});
+};`,
+    fixedCode: `const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
 };`,
     validation: {
-      mustContain: [/setUser/, /\.\.\./],
-      mustNotContain: [/user\.name\s*=/],
+      mustContain: ["filter\\("],
+      mustNotContain: ["\\.pop\\(\\)"],
     },
   },
-
   {
-    id: "direct-state-mutation-nested",
+    id: "mutate-splice",
+    category: "state-mutation",
+    severity: "medium",
+    slots: ["SLOT_REMOVE"],
+    title: "splice для удаления",
+    description: "splice мутирует исходный массив.",
+    hint: "Замените splice на filter.",
+    hintCode: `const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
+};`,
+    fixExplanation: "splice изменяет массив на месте. filter возвращает новый.",
+    buggyCode: `const {{FN_REMOVE}} = (id) => {
+  const index = {{ARRAY}}.findIndex(({{ITEM}}) => {{ITEM}}.id === id);
+  {{ARRAY}}.splice(index, 1);
+  {{SET_ARRAY}}({{ARRAY}});
+};`,
+    fixedCode: `const {{FN_REMOVE}} = (id) => {
+  {{SET_ARRAY}}((prev) => prev.filter(({{ITEM}}) => {{ITEM}}.id !== id));
+};`,
+    validation: {
+      mustContain: ["filter\\("],
+      mustNotContain: ["splice\\("],
+    },
+  },
+  {
+    id: "mutate-object-field",
+    category: "state-mutation",
+    severity: "medium",
+    slots: ["SLOT_UPDATE"],
+    title: "Прямая запись в объект state",
+    description: "Поле объекта в state меняется напрямую.",
+    hint: "Используйте spread: setX(prev => ({ ...prev, field: value })).",
+    hintCode: `const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({ ...prev, {{FIELD}}: value }));
+};`,
+    fixExplanation:
+      "Прямое присваивание меняет существующий объект — ссылка не меняется.",
+    buggyCode: `const {{FN_UPDATE}} = (value) => {
+  {{OBJECT}}.{{FIELD}} = value;
+  {{SET_OBJECT}}({{OBJECT}});
+};`,
+    fixedCode: `const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({ ...prev, {{FIELD}}: value }));
+};`,
+    validation: {
+      mustContain: ["\\.\\.\\."],
+      mustNotContain: ["{{OBJECT}}\\.{{FIELD}}\\s*="],
+    },
+  },
+  {
+    id: "mutate-nested",
     category: "state-mutation",
     severity: "hard",
-    title: "Мутация вложенного объекта в state",
-    description: "Изменяется вложенное свойство без создания новых ссылок",
-    hint: "Нужно создать новый объект на КАЖДОМ уровне вложенности, где есть изменения. Используйте spread или structuredClone.",
-    fixExplanation:
-      "setForm(prev => ({ ...prev, address: { ...prev.address, city } }))",
-    buggyCode: `const updateCity = (city) => {
-  form.address.city = city;
-  setForm(form);
-};`,
-    fixedCode: `const updateCity = (city) => {
-  setForm(prev => ({
+    slots: ["SLOT_UPDATE"],
+    title: "Мутация вложенного объекта",
+    description:
+      "Вложенное свойство меняется без новых ссылок на каждом уровне.",
+    hint: "Создайте новый объект на каждом уровне вложенности через spread.",
+    hintCode: `const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({
     ...prev,
-    address: { ...prev.address, city },
+    {{NESTED}}: { ...prev.{{NESTED}}, {{NESTED_FIELD}}: value },
+  }));
+};`,
+    fixExplanation:
+      "Нужна новая ссылка на каждом уровне: новый объект и новый вложенный объект.",
+    buggyCode: `const {{FN_UPDATE}} = (value) => {
+  {{OBJECT}}.{{NESTED}}.{{NESTED_FIELD}} = value;
+  {{SET_OBJECT}}({{OBJECT}});
+};`,
+    fixedCode: `const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({
+    ...prev,
+    {{NESTED}}: { ...prev.{{NESTED}}, {{NESTED_FIELD}}: value },
   }));
 };`,
     validation: {
-      mustContain: [/setForm/, /\.\.\.prev/],
-      mustNotContain: [/form\.address\.city\s*=/],
+      mustContain: ["\\.\\.\\."],
+      mustNotContain: ["{{OBJECT}}\\.{{NESTED}}\\.{{NESTED_FIELD}}\\s*="],
+    },
+  },
+  {
+    id: "mutate-shallow-nested",
+    category: "state-mutation",
+    severity: "hard",
+    slots: ["SLOT_UPDATE"],
+    title: "Поверхностная копия + мутация вложенного",
+    description:
+      "Сделан spread верхнего уровня, но вложенный объект всё ещё общий и мутирует.",
+    hint: "Spread копирует только первый уровень. Вложенный объект тоже нужно скопировать.",
+    hintCode: `const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({
+    ...prev,
+    {{NESTED}}: { ...prev.{{NESTED}}, {{NESTED_FIELD}}: value },
+  }));
+};`,
+    fixExplanation:
+      "{...obj} делает поверхностную копию: вложенный объект остаётся тем же. Его мутируют — меняется и оригинал.",
+    buggyCode: `const {{FN_UPDATE}} = (value) => {
+  const updated = { ...{{OBJECT}} };
+  updated.{{NESTED}}.{{NESTED_FIELD}} = value;
+  {{SET_OBJECT}}(updated);
+};`,
+    fixedCode: `const {{FN_UPDATE}} = (value) => {
+  {{SET_OBJECT}}((prev) => ({
+    ...prev,
+    {{NESTED}}: { ...prev.{{NESTED}}, {{NESTED_FIELD}}: value },
+  }));
+};`,
+    validation: {
+      mustContain: ["\\.\\.\\."],
+      mustNotContain: ["updated\\.{{NESTED}}\\.{{NESTED_FIELD}}\\s*="],
+    },
+  },
+  {
+    id: "mutate-delete",
+    category: "state-mutation",
+    severity: "hard",
+    slots: ["SLOT_UPDATE"],
+    title: "delete на поле state",
+    description: "Оператор delete мутирует объект state.",
+    hint: "Вместо delete создайте новый объект без поля через деструктуризацию и rest.",
+    hintCode: `const {{FN_UPDATE}} = () => {
+  {{SET_OBJECT}}((prev) => {
+    const { {{FIELD}}, ...rest } = prev;
+    return rest;
+  });
+};`,
+    fixExplanation:
+      "delete изменяет существующий объект. Нужно создать новый без этого поля.",
+    buggyCode: `const {{FN_UPDATE}} = () => {
+  delete {{OBJECT}}.{{FIELD}};
+  {{SET_OBJECT}}({{OBJECT}});
+};`,
+    fixedCode: `const {{FN_UPDATE}} = () => {
+  {{SET_OBJECT}}((prev) => {
+    const { {{FIELD}}, ...rest } = prev;
+    return rest;
+  });
+};`,
+    validation: {
+      mustContain: ["\\.\\.\\."],
+      mustNotContain: ["delete\\s+{{OBJECT}}\\.{{FIELD}}"],
     },
   },
 
+  // ═══════════════════════════════════════════
+  //  STALE CLOSURE / ЗАВИСИМОСТИ
+  // ═══════════════════════════════════════════
   {
-    id: "stale-closure",
+    id: "missing-dep",
     category: "stale-closure",
-    severity: "hard",
-    title: "Stale closure в useEffect",
-    description: "Эффект замкнул начальное значение state",
-    hint: "С пустым массивом зависимостей [] колбэк навсегда запомнит count = 0. Добавьте count в зависимости или используйте функциональный сеттер.",
+    severity: "medium",
+    slots: ["SLOT_FETCH"],
+    title: "Пропущенная зависимость useEffect",
+    description: "Эффект использует значение, но массив зависимостей пуст.",
+    hint: "Добавьте используемое значение в массив зависимостей.",
+    hintCode: `useEffect(() => {
+  fetchUser({{DEP}}).then((r) => r.json()).then({{SET_OBJECT}});
+}, [{{DEP}}]);`,
     fixExplanation:
-      "Добавьте [count] в зависимости или используйте setCount(c => c + 1)",
+      "С пустым [] эффект выполнится один раз и запомнит начальное значение.",
     buggyCode: `useEffect(() => {
-  const id = setInterval(() => {
-    console.log("Count:", count);
-  }, 1000);
-  return () => clearInterval(id);
+  fetchUser({{DEP}})
+    .then((res) => res.json())
+    .then((data) => {{SET_OBJECT}}(data));
 }, []);`,
     fixedCode: `useEffect(() => {
-  const id = setInterval(() => {
-    console.log("Count:", count);
-  }, 1000);
-  return () => clearInterval(id);
-}, [count]);`,
+  fetchUser({{DEP}})
+    .then((res) => res.json())
+    .then((data) => {{SET_OBJECT}}(data));
+}, [{{DEP}}]);`,
     validation: {
-      mustContain: [/\[count\]/],
+      mustContain: ["\\[{{DEP}}\\]"],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "stale-interval",
+    category: "stale-closure",
+    severity: "hard",
+    slots: ["SLOT_TIMER"],
+    title: "Stale closure в setInterval",
+    description: "Интервал замкнул начальное значение и всегда видит его.",
+    hint: "Добавьте значение в зависимости useEffect.",
+    hintCode: `useEffect(() => {
+  const {{TIMER}} = setInterval(() => console.log({{NUMBER}}), 1000);
+  return () => clearInterval({{TIMER}});
+}, [{{NUMBER}}]);`,
+    fixExplanation:
+      "С пустым [] колбэк навсегда запоминает значение из первого рендера.",
+    buggyCode: `useEffect(() => {
+  const {{TIMER}} = setInterval(() => {
+    console.log("Значение:", {{NUMBER}});
+  }, 1000);
+  return () => clearInterval({{TIMER}});
+}, []);`,
+    fixedCode: `useEffect(() => {
+  const {{TIMER}} = setInterval(() => {
+    console.log("Значение:", {{NUMBER}});
+  }, 1000);
+  return () => clearInterval({{TIMER}});
+}, [{{NUMBER}}]);`,
+    validation: {
+      mustContain: ["\\[{{NUMBER}}\\]"],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "stale-timeout",
+    category: "stale-closure",
+    severity: "hard",
+    slots: ["SLOT_TIMER"],
+    title: "Stale closure в setTimeout",
+    description: "Таймаут использует устаревшее значение из замыкания.",
+    hint: "Либо добавьте значение в зависимости, либо используйте функциональный сеттер.",
+    hintCode: `useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {{SET_NUMBER}}({{NUMBER}} + 1), {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, [{{NUMBER}}]);`,
+    fixExplanation:
+      "Колбэк setTimeout запоминает значение на момент создания эффекта.",
+    buggyCode: `useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {
+    {{SET_NUMBER}}({{NUMBER}} + 1);
+  }, {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, []);`,
+    fixedCode: `useEffect(() => {
+  const {{TIMER}} = setTimeout(() => {
+    {{SET_NUMBER}}({{NUMBER}} + 1);
+  }, {{DELAY}});
+  return () => clearTimeout({{TIMER}});
+}, [{{NUMBER}}]);`,
+    validation: {
+      mustContain: [
+        "(\\[{{NUMBER}}\\]|{{SET_NUMBER}}\\(\\s*\\(\\s*\\w+\\s*\\)\\s*=>)",
+      ],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "stale-event-handler",
+    category: "stale-closure",
+    severity: "hard",
+    slots: ["SLOT_LISTENER"],
+    title: "Устаревший обработчик события",
+    description: "Обработчик зарегистрирован один раз и видит старое значение.",
+    hint: "Добавьте значение в зависимости, чтобы переподписываться при изменении.",
+    hintCode: `useEffect(() => {
+  const {{HANDLER}} = () => console.log({{NUMBER}});
+  window.addEventListener("click", {{HANDLER}});
+  return () => window.removeEventListener("click", {{HANDLER}});
+}, [{{NUMBER}}]);`,
+    fixExplanation:
+      "С пустым [] подписка создаётся один раз и навсегда замыкает начальное значение.",
+    buggyCode: `useEffect(() => {
+  const {{HANDLER}} = () => console.log({{NUMBER}});
+  window.addEventListener("click", {{HANDLER}});
+  return () => window.removeEventListener("click", {{HANDLER}});
+}, []);`,
+    fixedCode: `useEffect(() => {
+  const {{HANDLER}} = () => console.log({{NUMBER}});
+  window.addEventListener("click", {{HANDLER}});
+  return () => window.removeEventListener("click", {{HANDLER}});
+}, [{{NUMBER}}]);`,
+    validation: {
+      mustContain: ["\\[{{NUMBER}}\\]"],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "stale-usecallback",
+    category: "stale-closure",
+    severity: "hard",
+    slots: ["SLOT_CALLBACK"],
+    title: "useCallback с пустыми зависимостями",
+    description:
+      "Колбэк в useCallback использует значение, но зависимости пусты.",
+    hint: "Добавьте используемое значение в массив зависимостей useCallback.",
+    hintCode: `const handleClick = useCallback(() => {
+  {{SET_NUMBER}}({{NUMBER}} + 1);
+}, [{{NUMBER}}]);`,
+    fixExplanation: "useCallback с [] запоминает начальное значение навсегда.",
+    buggyCode: `const handleClick = useCallback(() => {
+  {{SET_NUMBER}}({{NUMBER}} + 1);
+}, []);`,
+    fixedCode: `const handleClick = useCallback(() => {
+  {{SET_NUMBER}}({{NUMBER}} + 1);
+}, [{{NUMBER}}]);`,
+    validation: {
+      mustContain: ["\\[{{NUMBER}}\\]"],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "stale-usememo",
+    category: "stale-closure",
+    severity: "hard",
+    slots: ["SLOT_MEMO"],
+    title: "useMemo с пустыми зависимостями",
+    description: "useMemo не пересчитывается при изменении исходных данных.",
+    hint: "Перечислите в зависимостях все значения, которые использует вычисление.",
+    hintCode: `const filtered = useMemo(
+  () => {{ARRAY}}.filter(({{ITEM}}) => {{ITEM}}.name.includes({{TEXT}})),
+  [{{ARRAY}}, {{TEXT}}]
+);`,
+    fixExplanation:
+      "С пустым [] результат вычисляется один раз и больше не обновляется.",
+    buggyCode: `const filtered = useMemo(
+  () => {{ARRAY}}.filter(({{ITEM}}) => {{ITEM}}.name.includes({{TEXT}})),
+  []
+);`,
+    fixedCode: `const filtered = useMemo(
+  () => {{ARRAY}}.filter(({{ITEM}}) => {{ITEM}}.name.includes({{TEXT}})),
+  [{{ARRAY}}, {{TEXT}}]
+);`,
+    validation: {
+      mustContain: ["\\[{{ARRAY}},\\s*{{TEXT}}\\]"],
       mustNotContain: [],
     },
   },
 
+  // ═══════════════════════════════════════════
+  //  РЕНДЕРИНГ
+  // ═══════════════════════════════════════════
   {
     id: "missing-key",
     category: "rendering",
     severity: "easy",
-    title: "Отсутствие key при рендере списка",
-    description: "Элементы списка рендерятся без атрибута key",
-    hint: "React использует key для идентификации элементов при reconciliation. Без него обновления будут некорректными.",
-    fixExplanation: "Добавьте key={item.id} к каждому элементу списка",
-    buggyCode: `{items.map(item => (
-  <div className="item">
-    {item.name}
-  </div>
+    slots: ["SLOT_LIST"],
+    title: "Отсутствие key в списке",
+    description: "Элементы списка рендерятся без key.",
+    hint: "Добавьте key={item.id} к каждому элементу в map.",
+    hintCode: `{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id }>...</li>
 ))}`,
-    fixedCode: `{items.map(item => (
-  <div key={item.id} className="item">
-    {item.name}
-  </div>
+    fixExplanation:
+      "Без key React не понимает, какой элемент изменился, и может перепутать состояния.",
+    buggyCode: `{filtered.map(({{ITEM}}) => (
+  <li className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
+))}`,
+    fixedCode: `{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id } className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
 ))}`,
     validation: {
-      mustContain: [/key=\{/],
+      mustContain: ["key=\\{"],
       mustNotContain: [],
     },
   },
-
   {
-    id: "index-as-key",
+    id: "index-key",
     category: "rendering",
     severity: "medium",
+    slots: ["SLOT_LIST"],
     title: "Индекс массива как key",
-    description: "Используется index как key для динамического списка",
-    hint: "При сортировке/фильтрации индексы смещаются, и React путает элементы. Используйте уникальный ID из данных.",
-    fixExplanation: "Замените key={index} на key={item.id}",
-    buggyCode: `{items.map((item, index) => (
-  <div key={index} className="item">
-    {item.name}
-  </div>
+    description: "key={index} ломается при удалении/сортировке/фильтрации.",
+    hint: "Замените key={index} на key={item.id}.",
+    hintCode: `{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id }>...</li>
 ))}`,
-    fixedCode: `{items.map(item => (
-  <div key={item.id} className="item">
-    {item.name}
-  </div>
+    fixExplanation:
+      "При удалении элемента индексы сдвигаются, и React путает элементы и их состояние.",
+    buggyCode: `{filtered.map(({{ITEM}}, index) => (
+  <li key={index} className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
+))}`,
+    fixedCode: `{filtered.map(({{ITEM}}) => (
+  <li key={ {{ITEM}}.id } className="row">
+    <span>{ {{ITEM}}.name }</span>
+    <button onClick={() => {{FN_TOGGLE}}({{ITEM}}.id)}>✓</button>
+    <button onClick={() => {{FN_REMOVE}}({{ITEM}}.id)}>✕</button>
+  </li>
 ))}`,
     validation: {
-      mustContain: [/key=\{item\.id\}/],
-      mustNotContain: [/key=\{index\}/],
+      mustContain: ["key=\\{\\s*{{ITEM}}\\.id"],
+      mustNotContain: ["key=\\{index\\}"],
     },
   },
-
   {
-    id: "infinite-rerender",
+    id: "zero-and",
     category: "rendering",
     severity: "medium",
-    title: "Бесконечный ре-рендер",
-    description: "setState вызывается прямо в теле рендера",
-    hint: "Если setX() вызывается не в обработчике и не в useEffect, а прямо в JSX/теле функции — каждый рендер вызовет новый рендер.",
-    fixExplanation: "Оберните в useEffect или в обработчик события",
-    buggyCode: `function Counter() {
-  const [count, setCount] = useState(0);
-  setCount(count + 1); // ← вызов в теле рендера!
-  return <div>{count}</div>;
-}`,
-    fixedCode: `function Counter() {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    setCount(count + 1);
-  }, []);
-  return <div>{count}</div>;
-}`,
-    validation: {
-      mustContain: [/useEffect/],
-      mustNotContain: [],
-    },
-  },
-
-  {
-    id: "mutating-props",
-    category: "state-mutation",
-    severity: "medium",
-    title: "Мутация props",
-    description: "Компонент напрямую изменяет полученный prop",
-    hint: "Props иммутабельны. Для изменения вызовите колбэк из props, чтобы родитель обновил свой state.",
-    fixExplanation: "Замените props.x = y на вызов props.onChange(y)",
-    buggyCode: `function Child({ data, onUpdate }) {
-  const handleClick = () => {
-    data.value = "changed";
-  };
-  return <button onClick={handleClick}>Update</button>;
-}`,
-    fixedCode: `function Child({ data, onUpdate }) {
-  const handleClick = () => {
-    onUpdate({ ...data, value: "changed" });
-  };
-  return <button onClick={handleClick}>Update</button>;
-}`,
-    validation: {
-      mustContain: [/onUpdate/],
-      mustNotContain: [/data\.value\s*=/],
-    },
-  },
-
-  {
-    id: "async-state-after-unmount",
-    category: "memory-leak",
-    severity: "hard",
-    title: "setState после размонтирования",
+    slots: ["SLOT_BADGE"],
+    title: "Число && в рендере",
     description:
-      "Асинхронный запрос завершается после размонтирования компонента",
-    hint: "Если компонент размонтируется до завершения fetch, setState вызовется на мёртвом компоненте. Используйте AbortController или флаг isMounted.",
-    fixExplanation: "Добавьте AbortController и очищайте в cleanup",
-    buggyCode: `useEffect(() => {
-  fetch("/api/data")
-    .then(res => res.json())
-    .then(data => setData(data));
-}, []);`,
-    fixedCode: `useEffect(() => {
-  const controller = new AbortController();
-  fetch("/api/data", { signal: controller.signal })
-    .then(res => res.json())
-    .then(data => setData(data))
-    .catch(err => {
-      if (err.name !== "AbortError") throw err;
-    });
-  return () => controller.abort();
-}, []);`,
+      "Выражение {count && <div/>} при count=0 отрендерит «0», а не ничего.",
+    hint: "Приведите условие к boolean: {count > 0 && <div/>}.",
+    hintCode: `{ {{NUMBER}} > 0 && <div className="badge">...</div> }`,
+    fixExplanation:
+      "0 — falsy, но React рендерит его как текст. Нужно явное булево условие.",
+    buggyCode: `{ {{NUMBER}} && <div className="badge">Выполнено: { {{NUMBER}} }</div> }`,
+    fixedCode: `{ {{NUMBER}} > 0 && <div className="badge">Выполнено: { {{NUMBER}} }</div> }`,
     validation: {
-      mustContain: [/AbortController|isMounted|return\s*\(\)/],
-      mustNotContain: [],
+      mustContain: ["{{NUMBER}}\\s*>\\s*0\\s*&&"],
+      mustNotContain: ["\\{\\s*{{NUMBER}}\\s*&&"],
     },
   },
 
+  // ═══════════════════════════════════════════
+  //  ПРАВИЛА ХУКОВ
+  // ═══════════════════════════════════════════
   {
-    id: "missing-deps-effect",
-    category: "stale-closure",
+    id: "hook-in-condition",
+    category: "hooks-rules",
     severity: "medium",
-    title: "Пропущенная зависимость useEffect",
-    description: "Эффект использует переменную, но не указал её в зависимостях",
-    hint: "Если эффект читает userId, он должен перезапускаться при изменении userId. Добавьте в массив зависимостей.",
-    fixExplanation: "Добавьте [userId] вместо []",
+    slots: ["SLOT_HOOKCOND"],
+    title: "Хук внутри условия",
+    description: "useState вызывается внутри if — нарушает правила хуков.",
+    hint: "Хуки должны вызываться на верхнем уровне, вне условий и циклов.",
+    hintCode: `const [{{LOCAL_A}}, {{SET_LOCAL_A}}] = useState("");`,
+    fixExplanation:
+      "Порядок хуков должен быть одинаковым на каждом рендере. if ломает этот порядок.",
+    buggyCode: `if ({{FLAG}}) {
+  const [{{LOCAL_A}}, {{SET_LOCAL_A}}] = useState("");
+}`,
+    fixedCode: `const [{{LOCAL_A}}, {{SET_LOCAL_A}}] = useState("");`,
+    validation: {
+      mustContain: ["useState\\("],
+      mustNotContain: ["if\\s*\\([^{]*\\{[^}]*useState"],
+    },
+  },
+
+  // ═══════════════════════════════════════════
+  //  АСИНХРОННОСТЬ
+  // ═══════════════════════════════════════════
+  {
+    id: "async-useeffect",
+    category: "async",
+    severity: "medium",
+    slots: ["SLOT_FETCH"],
+    title: "async прямо в useEffect",
+    description:
+      "Колбэк useEffect сделан async — он вернёт промис вместо cleanup.",
+    hint: "Создайте внутреннюю async-функцию и вызовите её, либо используйте .then().",
+    hintCode: `useEffect(() => {
+  const load = async () => {
+    const data = await fetchUser({{DEP}});
+    {{SET_OBJECT}}(data);
+  };
+  load();
+}, [{{DEP}}]);`,
+    fixExplanation:
+      "useEffect ожидает функцию или cleanup, а async-функция возвращает промис.",
+    buggyCode: `useEffect(async () => {
+  const data = await fetchUser({{DEP}});
+  {{SET_OBJECT}}(data);
+}, [{{DEP}}]);`,
+    fixedCode: `useEffect(() => {
+  const load = async () => {
+    const data = await fetchUser({{DEP}});
+    {{SET_OBJECT}}(data);
+  };
+  load();
+}, [{{DEP}}]);`,
+    validation: {
+      mustContain: ["useEffect\\s*\\(\\s*\\(\\)\\s*=>"],
+      mustNotContain: ["useEffect\\s*\\(\\s*async"],
+    },
+  },
+  {
+    id: "race-condition",
+    category: "async",
+    severity: "hard",
+    slots: ["SLOT_FETCH"],
+    title: "Race condition при смене зависимости",
+    description:
+      "Быстрые смены зависимости приводят к тому, что старый ответ перезаписывает новый.",
+    hint: "Используйте AbortController или флаг ignore, чтобы отбрасывать устаревшие ответы.",
+    hintCode: `useEffect(() => {
+  let ignore = false;
+  fetchUser({{DEP}}).then((d) => { if (!ignore) {{SET_OBJECT}}(d); });
+  return () => { ignore = true; };
+}, [{{DEP}}]);`,
+    fixExplanation:
+      "Запросы завершаются в непредсказуемом порядке. Без отмены старый ответ может прийти позже нового.",
     buggyCode: `useEffect(() => {
-  fetchUser(userId).then(data => setUser(data));
+  fetchUser({{DEP}})
+    .then((res) => res.json())
+    .then((data) => {{SET_OBJECT}}(data));
+}, [{{DEP}}]);`,
+    fixedCode: `useEffect(() => {
+  let ignore = false;
+  fetchUser({{DEP}})
+    .then((res) => res.json())
+    .then((data) => {
+      if (!ignore) {{SET_OBJECT}}(data);
+    });
+  return () => {
+    ignore = true;
+  };
+}, [{{DEP}}]);`,
+    validation: {
+      mustContain: ["(ignore\\s*=\\s*true|abort\\(\\))"],
+      mustNotContain: [],
+    },
+  },
+  {
+    id: "no-error-handling",
+    category: "async",
+    severity: "easy",
+    slots: ["SLOT_FETCH"],
+    title: "Нет обработки ошибки запроса",
+    description: "Promise-цепочка без catch — ошибка проглатывается.",
+    hint: "Добавьте .catch() для обработки ошибки.",
+    hintCode: `fetch(url)
+  .then((r) => r.json())
+  .then({{SET_ARRAY}})
+  .catch((err) => console.error(err));`,
+    fixExplanation:
+      "Без catch ошибка запроса остаётся необработанной и может уронить логику.",
+    buggyCode: `useEffect(() => {
+  fetch("/api/{{ARRAY}}")
+    .then((res) => res.json())
+    .then((data) => {{SET_ARRAY}}(data));
 }, []);`,
     fixedCode: `useEffect(() => {
-  fetchUser(userId).then(data => setUser(data));
-}, [userId]);`,
+  fetch("/api/{{ARRAY}}")
+    .then((res) => res.json())
+    .then((data) => {{SET_ARRAY}}(data))
+    .catch((err) => console.error(err));
+}, []);`,
     validation: {
-      mustContain: [/\[userId\]/],
+      mustContain: ["\\.catch\\s*\\("],
       mustNotContain: [],
     },
   },
 ];
 
-// Категории для фильтрации
 export const CATEGORIES = [
   { id: "memory-leak", label: "Утечки памяти", icon: "💧" },
-  { id: "state-mutation", label: "Мутация state/props", icon: "🔒" },
+  { id: "state-mutation", label: "Мутация state", icon: "🔒" },
   { id: "stale-closure", label: "Stale closure", icon: "⏰" },
   { id: "rendering", label: "Рендеринг", icon: "🖥️" },
+  { id: "hooks-rules", label: "Правила хуков", icon: "📏" },
+  { id: "async", label: "Асинхронность", icon: "⚡" },
 ];

@@ -1,6 +1,9 @@
 Project Structure:
 ├── src
 │   ├── components
+│   │   ├── ReactTrainer
+│   │   │   ├── ReactTrainerPage.jsx
+│   │   │   └── TrainerTask.jsx
 │   │   ├── Answer.jsx
 │   │   ├── Breadcrumbs.jsx
 │   │   ├── CodeEditor.jsx
@@ -28,6 +31,10 @@ Project Structure:
 │   │   │   ├── react.js
 │   │   │   ├── redux.js
 │   │   │   └── ts.js
+│   │   ├── reactTrainer
+│   │   │   ├── bugPatterns.js
+│   │   │   ├── codeTemplates.js
+│   │   │   └── generator.js
 │   │   └── tasks.js
 │   ├── utils
 │   │   ├── generateTicket.js
@@ -4130,6 +4137,8 @@ import Register from "./components/Register";
 import PrivateRoute from "./components/PrivateRoute";
 import TasksPage from "./components/TasksPage";
 import TaskPage from "./components/TaskPage";
+import ReactTrainerPage from "./components/ReactTrainer/ReactTrainerPage";
+
 
 function App() {
   return (
@@ -4158,6 +4167,7 @@ function App() {
               <Route path="review/:section/:topic" element={<ReviewPage />} />
               <Route path="tasks" element={<TasksPage />} />
               <Route path="tasks/:taskId" element={<TaskPage />} />
+              <Route path="react-trainer" element={<ReactTrainerPage />} />
             </Route>
           </Routes>
         </HashRouter>
@@ -4876,6 +4886,7 @@ const navItems = [
   { to: "/", label: "Разделы", end: true },
   { to: "/review", label: "Повторение" },
   { to: "/tasks", label: "Задачи" },
+  { to: "/react-trainer", label: "⚛️ Тренажёр" },
 ];
 
 export default function Layout() {
@@ -5074,6 +5085,302 @@ export default function RateButtons({ onRate }) {
   );
 }
 <<<WORKSPACE_EXPORTER_FILE_END>>> path="src/components/RateButtons.jsx"
+<<<WORKSPACE_EXPORTER_FILE_BEGIN>>> path="src/components/ReactTrainer/ReactTrainerPage.jsx"
+// src/components/ReactTrainer/ReactTrainerPage.jsx
+
+import { useState } from "react";
+import { generateTask } from "../../data/reactTrainer/generator";
+import TrainerTask from "./TrainerTask";
+
+const DIFFICULTIES = [
+  { id: "easy", label: "Лёгкая", icon: "🟢", bugs: "1 баг" },
+  { id: "medium", label: "Средняя", icon: "🟡", bugs: "2 бага" },
+  { id: "hard", label: "Сложная", icon: "🔴", bugs: "3 бага" },
+  { id: "mixed", label: "Микс", icon: "🎲", bugs: "2–3 бага" },
+];
+
+export default function ReactTrainerPage() {
+  const [task, setTask] = useState(null);
+  const [difficulty, setDifficulty] = useState("mixed");
+
+  const generate = () => {
+    setTask(generateTask({ difficulty }));
+  };
+
+  return (
+    <div>
+      <div className="card mb-6 p-6">
+        <h1 className="mb-2 font-display text-2xl font-bold text-accent-react">
+          ⚛️ React Code Trainer
+        </h1>
+        <p className="mb-4 text-sm text-mist-400">
+          Найди баги в реальном коде. Исправь их и проверь результат.
+        </p>
+
+        <div className="mb-4">
+          <label className="mb-2 block text-xs text-mist-500">Сложность:</label>
+          <div className="flex flex-wrap gap-2">
+            {DIFFICULTIES.map((d) => (
+              <button
+                key={d.id}
+                onClick={() => setDifficulty(d.id)}
+                className={`rounded-lg border px-4 py-2 text-sm transition ${
+                  difficulty === d.id
+                    ? "border-accent-react bg-accent-react/10 text-accent-react"
+                    : "border-ink-600 text-mist-400 hover:border-mist-400"
+                }`}
+              >
+                {d.icon} {d.label}
+                <span className="ml-2 font-mono text-xs text-mist-500">
+                  {d.bugs}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={generate}
+          className="rounded-lg bg-accent-react px-6 py-3 font-display text-sm font-bold text-ink-950 transition hover:-translate-y-0.5"
+        >
+          {task ? "🔄 Сгенерировать заново" : "🎯 Начать тренировку"}
+        </button>
+      </div>
+
+      {task && (
+        <TrainerTask key={task.id} task={task} onRegenerate={generate} />
+      )}
+    </div>
+  );
+}
+
+<<<WORKSPACE_EXPORTER_FILE_END>>> path="src/components/ReactTrainer/ReactTrainerPage.jsx"
+<<<WORKSPACE_EXPORTER_FILE_BEGIN>>> path="src/components/ReactTrainer/TrainerTask.jsx"
+// src/components/ReactTrainer/TrainerTask.jsx
+
+import { useState, useCallback, useEffect } from "react";
+import CodeEditor from "../CodeEditor";
+import { validateFixes } from "../../data/reactTrainer/generator";
+
+// Мини-подсветка для подсказок
+function MiniCodeBlock({ code }) {
+  return (
+    <pre
+      className="mt-2 overflow-x-auto rounded-lg border border-ink-600 bg-ink-950 p-3 font-mono text-[13px] leading-relaxed text-mist-200"
+      style={{ whiteSpace: "pre-wrap" }}
+    >
+      {code}
+    </pre>
+  );
+}
+
+export default function TrainerTask({ task, onRegenerate }) {
+  const [code, setCode] = useState(task.code);
+  const [validation, setValidation] = useState(null);
+  const [visibleHints, setVisibleHints] = useState(0);
+  const [showSolution, setShowSolution] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+
+  useEffect(() => {
+    setCode(task.code);
+    setValidation(null);
+    setVisibleHints(0);
+    setShowSolution(false);
+    setAttempts(0);
+  }, [task.id, task.code]);
+
+  const checkCode = useCallback(() => {
+    setValidation(validateFixes(code, task.bugs));
+    setAttempts((a) => a + 1);
+  }, [code, task.bugs]);
+
+  const fixedBugs = validation?.fixedCount ?? 0;
+  const totalBugs = task.bugCount;
+
+  return (
+    <div className="space-y-6">
+      {/* Шапка */}
+      <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
+        <div className="flex items-center gap-4">
+          <span className="font-display text-lg font-bold text-accent-react">
+            {task.componentName}
+          </span>
+          <span className="font-mono text-sm text-mist-500">
+            🐛 {totalBugs} баг
+            {totalBugs === 1 ? "" : totalBugs < 5 ? "а" : "ов"}
+          </span>
+          {validation && (
+            <span
+              className={`font-mono text-sm font-bold ${
+                validation.allFixed ? "text-lvl-3" : "text-lvl-1"
+              }`}
+            >
+              ✅ {fixedBugs}/{totalBugs}
+            </span>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={checkCode}
+            className="rounded-lg bg-lvl-3 px-4 py-2 text-sm font-bold text-ink-950"
+          >
+            ▶ Проверить
+          </button>
+          <button
+            onClick={onRegenerate}
+            className="rounded-lg border border-ink-600 px-4 py-2 text-sm text-mist-400"
+          >
+            🔄 Новая задача
+          </button>
+        </div>
+      </div>
+
+      {/* Редактор */}
+      <div className="card overflow-hidden p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-mono text-sm text-mist-400">
+            💻 Найди и исправь {totalBugs} проблем:
+          </h3>
+          <span className="font-mono text-xs text-mist-500">
+            Подсказки: {visibleHints}/{totalBugs}
+          </span>
+        </div>
+        <CodeEditor value={code} onChange={setCode} height="800px" />
+      </div>
+
+      {/* Результаты проверки */}
+      {validation && (
+        <div className="card p-5">
+          <h3 className="mb-3 font-display text-lg font-semibold">
+            Результаты проверки
+          </h3>
+
+          <div className="mb-4 h-3 overflow-hidden rounded-full bg-ink-700">
+            <div
+              className="h-full rounded-full bg-lvl-3 transition-all"
+              style={{ width: `${(fixedBugs / totalBugs) * 100}%` }}
+            />
+          </div>
+
+          <div className="space-y-2">
+            {validation.results.map((result, i) => (
+              <div
+                key={result.bugId}
+                className={`rounded-lg border p-3 ${
+                  result.fixed
+                    ? "border-lvl-3/30 bg-lvl-3/5"
+                    : "border-lvl-0/30 bg-lvl-0/5"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span>{result.fixed ? "✅" : "❌"}</span>
+                  <span className="text-sm font-medium">{result.title}</span>
+                </div>
+                {!result.fixed && (
+                  <p className="mt-1 pl-6 text-xs text-mist-400">
+                    {result.description || task.bugs[i]?.description}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Кнопка подсказки */}
+          {visibleHints < totalBugs && !validation.allFixed && (
+            <button
+              onClick={() => setVisibleHints((v) => v + 1)}
+              className="mt-4 rounded-lg border border-lvl-1/30 bg-lvl-1/10 px-4 py-2 text-sm text-lvl-1 transition hover:bg-lvl-1/20"
+            >
+              💡 Показать подсказку ({visibleHints + 1}/{totalBugs})
+            </button>
+          )}
+
+          {validation.allFixed && (
+            <div className="mt-4 rounded-lg border border-lvl-3/30 bg-lvl-3/10 p-4 text-center">
+              <p className="text-2xl">🎉</p>
+              <p className="font-display font-bold text-lvl-3">
+                Все баги исправлены за {attempts}{" "}
+                {attempts === 1
+                  ? "попытку"
+                  : attempts < 5
+                    ? "попытки"
+                    : "попыток"}
+                !
+              </p>
+              <button
+                onClick={() => setShowSolution(true)}
+                className="mt-2 text-xs text-mist-400 underline hover:text-mist-200"
+              >
+                Показать эталонное решение
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════
+          ПАНЕЛЬ ПОДСКАЗОК С КОДОМ
+         ═══════════════════════════════════════════ */}
+      {visibleHints > 0 && (
+        <div className="card p-5">
+          <h3 className="mb-4 font-display text-lg font-semibold text-lvl-1">
+            💡 Подсказки ({visibleHints}/{totalBugs})
+          </h3>
+          <div className="space-y-4">
+            {task.bugs.slice(0, visibleHints).map((bug, i) => (
+              <div
+                key={bug.id}
+                className="rounded-lg border border-lvl-1/20 bg-lvl-1/5 p-4"
+              >
+                {/* Заголовок подсказки */}
+                <p className="mb-2 text-sm font-semibold text-lvl-1">
+                  Баг #{i + 1}: {bug.title}
+                </p>
+
+                {/* Текстовое описание */}
+                <p className="mb-2 text-sm leading-relaxed text-mist-300">
+                  {bug.hint}
+                </p>
+
+                {/* Пример кода */}
+                {bug.hintCode && (
+                  <div className="mt-3">
+                    <p className="mb-1 font-mono text-[11px] uppercase tracking-wider text-mist-500">
+                      Пример исправления:
+                    </p>
+                    <MiniCodeBlock code={bug.hintCode} />
+                  </div>
+                )}
+
+                {/* Категория */}
+                <p className="mt-2 font-mono text-[11px] text-mist-500">
+                  Категория: {bug.category} · Сложность: {bug.severity}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Эталонное решение */}
+      {showSolution && (
+        <div className="card border-2 border-lvl-3/30 p-5">
+          <h3 className="mb-3 font-display text-lg font-semibold text-lvl-3">
+            📋 Эталонное решение
+          </h3>
+          <CodeEditor
+            value={task.solution}
+            onChange={() => {}}
+            readOnly
+            height="800px"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+<<<WORKSPACE_EXPORTER_FILE_END>>> path="src/components/ReactTrainer/TrainerTask.jsx"
 <<<WORKSPACE_EXPORTER_FILE_BEGIN>>> path="src/components/Register.jsx"
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -11058,6 +11365,1063 @@ export default {
 };
 
 <<<WORKSPACE_EXPORTER_FILE_END>>> path="src/data/questions/ts.js"
+<<<WORKSPACE_EXPORTER_FILE_BEGIN>>> path="src/data/reactTrainer/bugPatterns.js"
+// src/data/reactTrainer/bugPatterns.js
+
+export const BUG_PATTERNS = [
+  // ═══════════════════════════════════════════
+  //  УТЕЧКИ ПАМЯТИ
+  // ═══════════════════════════════════════════
+  {
+    id: "leak-interval",
+    category: "memory-leak",
+    severity: "medium",
+    title: "Интервал без очистки",
+    description:
+      "useEffect создаёт интервал, но не возвращает cleanup. При размонтировании интервал продолжит работать.",
+    hint: "Каждый setInterval внутри useEffect должен быть очищен. Верните функцию из useEffect, которая вызовет clearInterval.",
+    hintCode: `useEffect(() => {
+  const {{TIMER}} = setInterval(() => {
+    setSeconds(prev => prev + 1);
+  }, {{DELAY}});
+
+  return () => clearInterval({{TIMER}});
+}, []);`,
+    fixExplanation:
+      "Без cleanup интервал продолжает тикать после размонтирования компонента. Это утечка памяти.",
+    buggyCode: `useEffect(() => {
+    const {{TIMER}} = setInterval(() => {
+      setSeconds(prev => prev + 1);
+    }, {{DELAY}});
+  }, []);`,
+    fixedCode: `useEffect(() => {
+    const {{TIMER}} = setInterval(() => {
+      setSeconds(prev => prev + 1);
+    }, {{DELAY}});
+    return () => clearInterval({{TIMER}});
+  }, []);`,
+    validation: {
+      mustContain: [/return\s*\(\)\s*=>\s*clearInterval/, /clearInterval\s*\(/],
+      mustNotContain: [],
+    },
+  },
+
+  {
+    id: "leak-listener",
+    category: "memory-leak",
+    severity: "medium",
+    title: "Событие без отписки",
+    description:
+      "Событие подписано, но не отписано при размонтировании компонента.",
+    hint: "Каждый addEventListener должен иметь пару removeEventListener в cleanup-функции useEffect.",
+    hintCode: `useEffect(() => {
+  const {{HANDLER}} = () => setWidth(window.innerWidth);
+  window.addEventListener("resize", {{HANDLER}});
+
+  return () => window.removeEventListener("resize", {{HANDLER}});
+}, []);`,
+    fixExplanation:
+      "Без отписки колбэк остаётся в памяти браузера и вызывается для мёртвого компонента.",
+    buggyCode: `useEffect(() => {
+    const {{HANDLER}} = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", {{HANDLER}});
+  }, []);`,
+    fixedCode: `useEffect(() => {
+    const {{HANDLER}} = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", {{HANDLER}});
+    return () => window.removeEventListener("resize", {{HANDLER}});
+  }, []);`,
+    validation: {
+      mustContain: [/removeEventListener/, /return\s*\(\)\s*=>/],
+      mustNotContain: [],
+    },
+  },
+
+  {
+    id: "leak-fetch",
+    category: "memory-leak",
+    severity: "hard",
+    title: "setState после размонтирования",
+    description:
+      "Асинхронный fetch может завершиться после размонтирования. setState на мёртвом компоненте — утечка.",
+    hint: "Используйте AbortController для отмены запроса при размонтировании. Передайте signal в fetch и очищайте в cleanup.",
+    hintCode: `useEffect(() => {
+  const {{CONTROLLER}} = new AbortController();
+
+  fetch("/api/users", { signal: {{CONTROLLER}}.signal })
+    .then(res => res.json())
+    .then(data => setUsers(data))
+    .catch(err => {
+      if (err.name !== "AbortError") console.error(err);
+    });
+
+  return () => {{CONTROLLER}}.abort();
+}, []);`,
+    fixExplanation:
+      "AbortController позволяет отменить незавершённый fetch. Без него setState может вызваться на мёртвом компоненте.",
+    buggyCode: `useEffect(() => {
+    fetch("/api/users")
+      .then(res => res.json())
+      .then(data => setUsers(data));
+  }, []);`,
+    fixedCode: `useEffect(() => {
+    const {{CONTROLLER}} = new AbortController();
+    fetch("/api/users", { signal: {{CONTROLLER}}.signal })
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(err => {
+        if (err.name !== "AbortError") console.error(err);
+      });
+    return () => {{CONTROLLER}}.abort();
+  }, []);`,
+    validation: {
+      mustContain: [/AbortController|isMounted|return\s*\(\)\s*=>/],
+      mustNotContain: [],
+    },
+  },
+
+  {
+    id: "leak-subscription",
+    category: "memory-leak",
+    severity: "hard",
+    title: "Подписка без отписки",
+    description:
+      "Компонент подписывается на событие, но не отписывается при размонтировании.",
+    hint: "Любая подписка должна быть отменена в cleanup-функции useEffect.",
+    hintCode: `useEffect(() => {
+  const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+    setMessages(prev => [...prev, data]);
+  });
+
+  return () => {{SUBSCRIPTION}}.unsubscribe();
+}, []);`,
+    fixExplanation:
+      "Подписка создаёт ссылку на колбэк. Без отписки сборщик мусора не может освободить компонент.",
+    buggyCode: `useEffect(() => {
+    const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+      setMessages(prev => [...prev, data]);
+    });
+  }, []);`,
+    fixedCode: `useEffect(() => {
+    const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+      setMessages(prev => [...prev, data]);
+    });
+    return () => {{SUBSCRIPTION}}.unsubscribe();
+  }, []);`,
+    validation: {
+      mustContain: [/unsubscribe/, /return\s*\(\)\s*=>/],
+      mustNotContain: [],
+    },
+  },
+
+  // ═══════════════════════════════════════════
+  //  МУТАЦИЯ STATE
+  // ═══════════════════════════════════════════
+  {
+    id: "mutate-push",
+    category: "state-mutation",
+    severity: "medium",
+    title: "push() в массив state",
+    description:
+      "Массив в state мутируется через push. React не увидит изменение.",
+    hint: "Вместо push создайте новый массив через spread: setItems(prev => [...prev, newItem]).",
+    hintCode: `const addItem = (newItem) => {
+  setItems(prev => [...prev, newItem]);
+};`,
+    fixExplanation:
+      "push меняет тот же массив — ссылка та же — ре-рендер не произойдёт.",
+    buggyCode: `const addItem = (newItem) => {
+    items.push(newItem);
+    setItems(items);
+  };`,
+    fixedCode: `const addItem = (newItem) => {
+    setItems(prev => [...prev, newItem]);
+  };`,
+    validation: {
+      mustContain: [/\.\.\./, /setItems/],
+      mustNotContain: [/items\.push/],
+    },
+  },
+
+  {
+    id: "mutate-object-field",
+    category: "state-mutation",
+    severity: "medium",
+    title: "Мутация свойства объекта в state",
+    description:
+      "Объект в state изменяется напрямую. Нужно создать новый объект.",
+    hint: "Используйте spread: setUser(prev => ({ ...prev, name: value })).",
+    hintCode: `const updateName = (value) => {
+  setUser(prev => ({ ...prev, name: value }));
+};`,
+    fixExplanation:
+      "Прямое присваивание меняет существующий объект. React видит ту же ссылку.",
+    buggyCode: `const updateName = (value) => {
+    user.name = value;
+    setUser(user);
+  };`,
+    fixedCode: `const updateName = (value) => {
+    setUser(prev => ({ ...prev, name: value }));
+  };`,
+    validation: {
+      mustContain: [/setUser/, /\.\.\./],
+      mustNotContain: [/user\.name\s*=/],
+    },
+  },
+
+  {
+    id: "mutate-nested",
+    category: "state-mutation",
+    severity: "hard",
+    title: "Мутация вложенного объекта",
+    description:
+      "Изменяется вложенное свойство без создания новых ссылок на каждом уровне.",
+    hint: "Создайте новый объект на каждом уровне вложенности через spread.",
+    hintCode: `const updateCity = (city) => {
+  setForm(prev => ({
+    ...prev,
+    address: { ...prev.address, city },
+  }));
+};`,
+    fixExplanation:
+      "Нужна новая ссылка на каждом уровне: новый form, новый form.address.",
+    buggyCode: `const updateCity = (city) => {
+    form.address.city = city;
+    setForm(form);
+  };`,
+    fixedCode: `const updateCity = (city) => {
+    setForm(prev => ({
+      ...prev,
+      address: { ...prev.address, city },
+    }));
+  };`,
+    validation: {
+      mustContain: [/setForm/, /\.\.\.prev/],
+      mustNotContain: [/form\.address\.city\s*=/],
+    },
+  },
+
+  {
+    id: "mutate-splice",
+    category: "state-mutation",
+    severity: "medium",
+    title: "splice для удаления из state",
+    description: "splice мутирует исходный массив. Для удаления нужен filter.",
+    hint: "Замените splice на setItems(prev => prev.filter(item => item.id !== id)).",
+    hintCode: `const removeItem = (id) => {
+  setItems(prev => prev.filter(item => item.id !== id));
+};`,
+    fixExplanation: "splice изменяет исходный массив. filter создаёт новый.",
+    buggyCode: `const removeItem = (index) => {
+    items.splice(index, 1);
+    setItems(items);
+  };`,
+    fixedCode: `const removeItem = (id) => {
+    setItems(prev => prev.filter(item => item.id !== id));
+  };`,
+    validation: {
+      mustContain: [/filter/, /setItems/],
+      mustNotContain: [/splice/],
+    },
+  },
+
+  // ═══════════════════════════════════════════
+  //  РЕНДЕРИНГ
+  // ═══════════════════════════════════════════
+  {
+    id: "missing-key",
+    category: "rendering",
+    severity: "easy",
+    title: "Отсутствие key в списке",
+    description: "Элементы списка рендерятся без key.",
+    hint: "Добавьте key={item.id} к каждому элементу в map.",
+    hintCode: `{items.map(item => (
+  <li key={item.id} className="list-item">
+    <span>{item.name}</span>
+  </li>
+))}`,
+    fixExplanation: "Без key React не понимает, какой элемент изменился.",
+    buggyCode: `{items.map(item => (
+          <li className="list-item">
+            <span>{item.name}</span>
+            <button onClick={() => removeItem(item.id)}>✕</button>
+          </li>
+        ))}`,
+    fixedCode: `{items.map(item => (
+          <li key={item.id} className="list-item">
+            <span>{item.name}</span>
+            <button onClick={() => removeItem(item.id)}>✕</button>
+          </li>
+        ))}`,
+    validation: {
+      mustContain: [/key=\{/],
+      mustNotContain: [],
+    },
+  },
+
+  {
+    id: "index-key",
+    category: "rendering",
+    severity: "medium",
+    title: "Индекс массива как key",
+    description: "key={index} ломается при сортировке/фильтрации/удалении.",
+    hint: "Замените key={index} на key={item.id}.",
+    hintCode: `{items.map(item => (
+  <li key={item.id} className="list-item">
+    <span>{item.name}</span>
+  </li>
+))}`,
+    fixExplanation:
+      "При удалении элемента индексы сдвигаются. React путает элементы.",
+    buggyCode: `{items.map((item, index) => (
+          <li key={index} className="list-item">
+            <span>{item.name}</span>
+            <button onClick={() => removeItem(item.id)}>✕</button>
+          </li>
+        ))}`,
+    fixedCode: `{items.map(item => (
+          <li key={item.id} className="list-item">
+            <span>{item.name}</span>
+            <button onClick={() => removeItem(item.id)}>✕</button>
+          </li>
+        ))}`,
+    validation: {
+      mustContain: [/key=\{item\.id\}/],
+      mustNotContain: [/key=\{index\}/],
+    },
+  },
+
+  // ═══════════════════════════════════════════
+  //  STALE CLOSURE / ЗАВИСИМОСТИ
+  // ═══════════════════════════════════════════
+  {
+    id: "missing-dep",
+    category: "stale-closure",
+    severity: "medium",
+    title: "Пропущенная зависимость useEffect",
+    description: "Эффект использует переменную, но массив зависимостей пуст.",
+    hint: "Добавьте используемую переменную в массив зависимостей.",
+    hintCode: `useEffect(() => {
+  fetchUser(userId).then(data => setUser(data));
+}, [userId]);`,
+    fixExplanation:
+      "С пустым [] эффект выполнится один раз и запомнит начальное значение.",
+    buggyCode: `useEffect(() => {
+    fetchUser(userId).then(data => setUser(data));
+  }, []);`,
+    fixedCode: `useEffect(() => {
+    fetchUser(userId).then(data => setUser(data));
+  }, [userId]);`,
+    validation: {
+      mustContain: [/\[userId\]/],
+      mustNotContain: [],
+    },
+  },
+
+  {
+    id: "stale-interval",
+    category: "stale-closure",
+    severity: "hard",
+    title: "Stale closure в setInterval",
+    description: "Интервал замкнул начальное значение и всегда видит 0.",
+    hint: "Добавьте переменную в зависимости useEffect или используйте функциональный сеттер.",
+    hintCode: `useEffect(() => {
+  const id = setInterval(() => {
+    console.log("Count:", count);
+  }, 1000);
+  return () => clearInterval(id);
+}, [count]);`,
+    fixExplanation:
+      "С пустым [] колбэк навсегда запоминает начальное значение.",
+    buggyCode: `useEffect(() => {
+    const id = setInterval(() => {
+      console.log("Count:", count);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);`,
+    fixedCode: `useEffect(() => {
+    const id = setInterval(() => {
+      console.log("Count:", count);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [count]);`,
+    validation: {
+      mustContain: [/\[count\]/],
+      mustNotContain: [],
+    },
+  },
+];
+
+export const CATEGORIES = [
+  { id: "memory-leak", label: "Утечки памяти", icon: "💧" },
+  { id: "state-mutation", label: "Мутация state", icon: "🔒" },
+  { id: "stale-closure", label: "Stale closure", icon: "⏰" },
+  { id: "rendering", label: "Рендеринг", icon: "🖥️" },
+];
+
+<<<WORKSPACE_EXPORTER_FILE_END>>> path="src/data/reactTrainer/bugPatterns.js"
+<<<WORKSPACE_EXPORTER_FILE_BEGIN>>> path="src/data/reactTrainer/codeTemplates.js"
+// src/data/reactTrainer/codeTemplates.js
+
+export const CODE_TEMPLATES = [
+  {
+    id: "todo-list",
+    name: "Список задач",
+    template: `import { useState, useEffect } from "react";
+
+function {{COMPONENT_NAME}}() {
+  const [items, setItems] = useState([
+    { id: 1, name: "Изучить React", done: false },
+    { id: 2, name: "Написать тесты", done: false },
+    { id: 3, name: "Деплой на прод", done: true },
+  ]);
+  const [filter, setFilter] = useState("");
+  const [seconds, setSeconds] = useState(0);
+
+  {{SLOT_1}}
+
+  {{SLOT_2}}
+
+  {{SLOT_3}}
+
+  const toggleDone = (id) => {
+    setItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, done: !item.done } : item
+      )
+    );
+  };
+
+  const filtered = items.filter(item =>
+    item.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  return (
+    <div className="todo-app">
+      <h1>Список задач</h1>
+      <p>Время на странице: {seconds} сек.</p>
+
+      <input
+        type="text"
+        placeholder="Поиск задач..."
+        value={filter}
+        onChange={e => setFilter(e.target.value)}
+      />
+
+      <ul>
+        {{SLOT_4}}
+      </ul>
+
+      <button onClick={() => addItem({ id: Date.now(), name: "Новая задача", done: false })}>
+        + Добавить задачу
+      </button>
+    </div>
+  );
+}
+
+export default {{COMPONENT_NAME}};`,
+    slots: {
+      SLOT_1: {
+        default: `useEffect(() => {
+    const {{TIMER}} = setInterval(() => {
+      setSeconds(prev => prev + 1);
+    }, {{DELAY}});
+    return () => clearInterval({{TIMER}});
+  }, []);`,
+      },
+      SLOT_2: {
+        default: `const addItem = (newItem) => {
+    setItems(prev => [...prev, newItem]);
+  };`,
+      },
+      SLOT_3: {
+        default: `const removeItem = (id) => {
+    setItems(prev => prev.filter(item => item.id !== id));
+  };`,
+      },
+      SLOT_4: {
+        default: `{filtered.map(item => (
+          <li key={item.id} className="list-item">
+            <span>{item.name}</span>
+            <button onClick={() => removeItem(item.id)}>✕</button>
+          </li>
+        ))}`,
+      },
+    },
+  },
+
+  {
+    id: "user-profile",
+    name: "Профиль пользователя",
+    template: `import { useState, useEffect } from "react";
+
+function {{COMPONENT_NAME}}() {
+  const [user, setUser] = useState({ name: "", email: "", role: "user" });
+  const [users, setUsers] = useState([]);
+  const [userId, setUserId] = useState(1);
+  const [width, setWidth] = useState(window.innerWidth);
+
+  {{SLOT_1}}
+
+  {{SLOT_2}}
+
+  {{SLOT_3}}
+
+  {{SLOT_4}}
+
+  return (
+    <div className="profile-page">
+      <h1>Профиль: {user.name || "Неизвестный"}</h1>
+      <p>Email: {user.email}</p>
+      <p>Роль: {user.role}</p>
+      <p>Ширина экрана: {width}px</p>
+
+      <div className="actions">
+        <input
+          type="text"
+          value={user.name}
+          onChange={e => updateName(e.target.value)}
+          placeholder="Введите имя"
+        />
+        <button onClick={() => setUserId(prev => prev + 1)}>
+          Следующий пользователь (id: {userId})
+        </button>
+      </div>
+
+      <div className="users-list">
+        <h2>Все пользователи ({users.length})</h2>
+        {users.map(u => (
+          <div key={u.id} className="user-card">
+            <span>{u.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default {{COMPONENT_NAME}};`,
+    slots: {
+      SLOT_1: {
+        default: `useEffect(() => {
+    fetchUser(userId).then(data => setUser(data));
+  }, [userId]);`,
+      },
+      SLOT_2: {
+        default: `useEffect(() => {
+    const {{HANDLER}} = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", {{HANDLER}});
+    return () => window.removeEventListener("resize", {{HANDLER}});
+  }, []);`,
+      },
+      SLOT_3: {
+        default: `const updateName = (value) => {
+    setUser(prev => ({ ...prev, name: value }));
+  };`,
+      },
+      SLOT_4: {
+        default: `useEffect(() => {
+    const {{CONTROLLER}} = new AbortController();
+    fetch("/api/users", { signal: {{CONTROLLER}}.signal })
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(err => {
+        if (err.name !== "AbortError") console.error(err);
+      });
+    return () => {{CONTROLLER}}.abort();
+  }, []);`,
+      },
+    },
+  },
+
+  {
+    id: "settings-form",
+    name: "Форма настроек",
+    template: `import { useState, useEffect } from "react";
+
+function {{COMPONENT_NAME}}() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    address: { city: "", street: "", zip: "" },
+  });
+  const [notifications, setNotifications] = useState([]);
+  const [seconds, setSeconds] = useState(0);
+
+  {{SLOT_1}}
+
+  {{SLOT_2}}
+
+  {{SLOT_3}}
+
+  {{SLOT_4}}
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Отправка формы:", form);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="settings-form">
+      <h1>Настройки профиля</h1>
+
+      <div className="field">
+        <label>Имя</label>
+        <input
+          type="text"
+          value={form.name}
+          onChange={e => updateName(e.target.value)}
+        />
+      </div>
+
+      <div className="field">
+        <label>Email</label>
+        <input
+          type="email"
+          value={form.email}
+          onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))}
+        />
+      </div>
+
+      <div className="field">
+        <label>Город</label>
+        <input
+          type="text"
+          value={form.address.city}
+          onChange={e => updateCity(e.target.value)}
+        />
+      </div>
+
+      <div className="notifications">
+        <h2>Уведомления ({notifications.length})</h2>
+        {notifications.map((n, i) => (
+          <p key={i}>{n.text}</p>
+        ))}
+      </div>
+
+      <p>Автосохранение через: {seconds} сек.</p>
+      <button type="submit">Сохранить</button>
+    </form>
+  );
+}
+
+export default {{COMPONENT_NAME}};`,
+    slots: {
+      SLOT_1: {
+        default: `useEffect(() => {
+    const {{TIMER}} = setInterval(() => {
+      setSeconds(prev => prev + 1);
+    }, {{DELAY}});
+    return () => clearInterval({{TIMER}});
+  }, []);`,
+      },
+      SLOT_2: {
+        default: `const updateName = (value) => {
+    setForm(prev => ({ ...prev, name: value }));
+  };`,
+      },
+      SLOT_3: {
+        default: `const updateCity = (city) => {
+    setForm(prev => ({
+      ...prev,
+      address: { ...prev.address, city },
+    }));
+  };`,
+      },
+      SLOT_4: {
+        default: `useEffect(() => {
+    const {{SUBSCRIPTION}} = eventBus.subscribe("{{EVENT_NAME}}", (data) => {
+      setNotifications(prev => [...prev, data]);
+    });
+    return () => {{SUBSCRIPTION}}.unsubscribe();
+  }, []);`,
+      },
+    },
+  },
+
+  {
+    id: "dashboard",
+    name: "Дашборд аналитики",
+    template: `import { useState, useEffect } from "react";
+
+function {{COMPONENT_NAME}}() {
+  const [stats, setStats] = useState({ views: 0, clicks: 0, conversions: 0 });
+  const [items, setItems] = useState([]);
+  const [count, setCount] = useState(0);
+  const [userId, setUserId] = useState(1);
+
+  {{SLOT_1}}
+
+  {{SLOT_2}}
+
+  {{SLOT_3}}
+
+  {{SLOT_4}}
+
+  return (
+    <div className="dashboard">
+      <h1>Дашборд аналитики</h1>
+
+      <div className="stats-grid">
+        <div className="stat-card">
+          <h3>Просмотры</h3>
+          <p>{stats.views}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Клики</h3>
+          <p>{stats.clicks}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Конверсии</h3>
+          <p>{stats.conversions}</p>
+        </div>
+      </div>
+
+      <div className="counter">
+        <p>Счётчик: {count}</p>
+        <button onClick={() => setCount(c => c + 1)}>+1</button>
+        <button onClick={() => setUserId(prev => prev + 1)}>
+          Пользователь #{userId}
+        </button>
+      </div>
+
+      <ul className="items-list">
+        {items.map(item => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+
+      <button onClick={() => addItem({ id: Date.now(), name: "Новый элемент" })}>
+        Добавить элемент
+      </button>
+    </div>
+  );
+}
+
+export default {{COMPONENT_NAME}};`,
+    slots: {
+      SLOT_1: {
+        default: `useEffect(() => {
+    const {{TIMER}} = setInterval(() => {
+      setStats(prev => ({
+        ...prev,
+        views: prev.views + Math.floor(Math.random() * 10),
+      }));
+    }, 3000);
+    return () => clearInterval({{TIMER}});
+  }, []);`,
+      },
+      SLOT_2: {
+        default: `useEffect(() => {
+    const {{CONTROLLER}} = new AbortController();
+    fetch("/api/dashboard-items", { signal: {{CONTROLLER}}.signal })
+      .then(res => res.json())
+      .then(data => setItems(data))
+      .catch(err => {
+        if (err.name !== "AbortError") console.error(err);
+      });
+    return () => {{CONTROLLER}}.abort();
+  }, []);`,
+      },
+      SLOT_3: {
+        default: `const addItem = (newItem) => {
+    setItems(prev => [...prev, newItem]);
+  };`,
+      },
+      SLOT_4: {
+        default: `useEffect(() => {
+    fetchUser(userId).then(data => {
+      console.log("Загружен пользователь:", data);
+    });
+  }, [userId]);`,
+      },
+    },
+  },
+];
+
+export const COMPONENT_NAMES = [
+  "TodoList",
+  "UserProfile",
+  "SettingsForm",
+  "AnalyticsDashboard",
+  "NotificationPanel",
+  "SearchResults",
+  "OrderTracker",
+  "ProductCatalog",
+  "ChatWidget",
+  "TaskManager",
+  "ActivityFeed",
+  "MetricsView",
+];
+
+<<<WORKSPACE_EXPORTER_FILE_END>>> path="src/data/reactTrainer/codeTemplates.js"
+<<<WORKSPACE_EXPORTER_FILE_BEGIN>>> path="src/data/reactTrainer/generator.js"
+// src/data/reactTrainer/generator.js
+
+import { BUG_PATTERNS } from "./bugPatterns";
+import { CODE_TEMPLATES, COMPONENT_NAMES } from "./codeTemplates";
+
+// ═══════════════════════════════════════════
+//  ПУЛЫ ИМЁН ДЛЯ РАНДОМИЗАЦИИ
+// ═══════════════════════════════════════════
+const VAR_POOLS = {
+  TIMER: [
+    "timerId",
+    "intervalRef",
+    "pollTimer",
+    "tickHandle",
+    "loopId",
+    "cycleRef",
+    "ticker",
+    "pulseId",
+    "beatTimer",
+    "refreshInterval",
+    "syncTimer",
+    "heartbeat",
+  ],
+  HANDLER: [
+    "handleResize",
+    "onWindowChange",
+    "resizeCallback",
+    "viewportHandler",
+    "onLayoutShift",
+    "trackViewport",
+    "onBreakpoint",
+    "screenWatcher",
+    "dimensionTracker",
+  ],
+  SUBSCRIPTION: [
+    "subscription",
+    "listener",
+    "channel",
+    "connection",
+    "stream",
+    "feed",
+    "socket",
+    "pipeline",
+    "observer",
+  ],
+  ARRAY_STATE: [
+    "items",
+    "entries",
+    "records",
+    "collection",
+    "list",
+    "data",
+    "rows",
+    "elements",
+    "nodes",
+    "chunks",
+    "batch",
+  ],
+  OBJECT_STATE: [
+    "config",
+    "settings",
+    "profile",
+    "model",
+    "formData",
+    "draft",
+    "payload",
+    "schema",
+    "entity",
+    "snapshot",
+  ],
+  FETCH_DATA: [
+    "data",
+    "payload",
+    "response",
+    "result",
+    "content",
+    "body",
+    "output",
+    "resource",
+    "bundle",
+  ],
+  USER: [
+    "user",
+    "account",
+    "profile",
+    "member",
+    "client",
+    "operator",
+    "session",
+    "identity",
+  ],
+  COUNT: [
+    "count",
+    "total",
+    "score",
+    "value",
+    "amount",
+    "counter",
+    "tally",
+    "metric",
+    "stat",
+  ],
+  CONTROLLER: [
+    "controller",
+    "abortRef",
+    "cancelToken",
+    "signalRef",
+    "killSwitch",
+    "terminator",
+  ],
+  EVENT_NAME: [
+    "message",
+    "update",
+    "notification",
+    "data_change",
+    "sync",
+    "broadcast",
+    "push",
+    "signal",
+    "event",
+  ],
+  DELAY: [500, 800, 1000, 1200, 1500, 2000, 2500, 3000],
+  INCREMENT: [1, 2, 3, 5, 10],
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// Генерирует уникальные имена для одного экземпляра задачи
+function generateVarMap() {
+  const map = {};
+  for (const [key, pool] of Object.entries(VAR_POOLS)) {
+    if (key === "DELAY" || key === "INCREMENT") {
+      map[key] = pick(pool);
+    } else {
+      map[key] = pick(pool);
+    }
+  }
+  return map;
+}
+
+// Заменяет {{VAR}} на сгенерированные имена
+function applyVarMap(code, varMap) {
+  let result = code;
+  for (const [key, value] of Object.entries(varMap)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
+  }
+  return result;
+}
+
+const BUGS_BY_DIFFICULTY = {
+  easy: { count: 1, severities: ["easy"] },
+  medium: { count: 2, severities: ["easy", "medium"] },
+  hard: { count: 3, severities: ["medium", "hard"] },
+  mixed: { count: () => pick([2, 3]), severities: null },
+};
+
+export function generateTask(options = {}) {
+  const { difficulty = "mixed", categories = [] } = options;
+
+  const cfg = BUGS_BY_DIFFICULTY[difficulty] || BUGS_BY_DIFFICULTY.mixed;
+  const bugCount = typeof cfg.count === "function" ? cfg.count() : cfg.count;
+
+  let pool = [...BUG_PATTERNS];
+  if (categories.length) {
+    pool = pool.filter((p) => categories.includes(p.category));
+  }
+  if (cfg.severities) {
+    pool = pool.filter((p) => cfg.severities.includes(p.severity));
+  }
+
+  const selected = shuffle(pool).slice(0, Math.min(bugCount, pool.length));
+
+  const template = pick(CODE_TEMPLATES);
+  const componentName = pick(COMPONENT_NAMES);
+
+  // ← Генерируем уникальные имена для ЭТОЙ задачи
+  const varMap = generateVarMap();
+
+  let buggyCode = template.template;
+  let fixedCode = template.template;
+
+  buggyCode = buggyCode.replace(/\{\{COMPONENT_NAME\}\}/g, componentName);
+  fixedCode = fixedCode.replace(/\{\{COMPONENT_NAME\}\}/g, componentName);
+
+  const slotNames = Object.keys(template.slots);
+  const shuffledSlots = shuffle(slotNames);
+
+  const bugsPlaced = [];
+
+  slotNames.forEach((slotName) => {
+    const slot = template.slots[slotName];
+    const bugIdx = shuffledSlots.indexOf(slotName);
+
+    if (bugIdx < selected.length) {
+      const bug = selected[bugIdx];
+      // ← Применяем одни и те же имена к баг-коду и фикс-коду
+      const buggySnippet = applyVarMap(bug.buggyCode, varMap);
+      const fixedSnippet = applyVarMap(bug.fixedCode, varMap);
+
+      buggyCode = buggyCode.replace(`{{${slotName}}}`, buggySnippet);
+      fixedCode = fixedCode.replace(`{{${slotName}}}`, fixedSnippet);
+
+      bugsPlaced.push({
+        id: bug.id,
+        category: bug.category,
+        severity: bug.severity,
+        title: bug.title,
+        description: bug.description,
+        hint: bug.hint,
+        hintCode: applyVarMap(bug.hintCode, varMap),
+        fixExplanation: bug.fixExplanation,
+        validation: bug.validation,
+      });
+    } else {
+      const defaultSnippet = applyVarMap(slot.default, varMap);
+      buggyCode = buggyCode.replace(`{{${slotName}}}`, defaultSnippet);
+      fixedCode = fixedCode.replace(`{{${slotName}}}`, defaultSnippet);
+    }
+  });
+
+  return {
+    id: `trainer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    code: buggyCode,
+    solution: fixedCode,
+    bugs: bugsPlaced,
+    bugCount: bugsPlaced.length,
+    componentName,
+    templateName: template.name,
+    difficulty,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+export function validateFixes(userCode, bugs) {
+  const results = bugs.map((bug) => {
+    const { mustContain, mustNotContain } = bug.validation;
+    const containsAll = mustContain.every((p) => p.test(userCode));
+    const containsNone = mustNotContain.every((p) => !p.test(userCode));
+    return {
+      bugId: bug.id,
+      title: bug.title,
+      fixed: containsAll && containsNone,
+    };
+  });
+
+  const fixedCount = results.filter((r) => r.fixed).length;
+  return {
+    allFixed: fixedCount === bugs.length,
+    fixedCount,
+    totalBugs: bugs.length,
+    results,
+  };
+}
+
+<<<WORKSPACE_EXPORTER_FILE_END>>> path="src/data/reactTrainer/generator.js"
 <<<WORKSPACE_EXPORTER_FILE_BEGIN>>> path="src/data/tasks.js"
 const tasks = [
   // ==================== 1. ЗАМЫКАНИЯ И ФУНКЦИИ ====================

@@ -1,8 +1,20 @@
 // src/components/ReactTrainer/TrainerTask.jsx
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import CodeEditor from "../CodeEditor";
 import { validateFixes } from "../../data/reactTrainer/generator";
+
+// Мини-подсветка для подсказок
+function MiniCodeBlock({ code }) {
+  return (
+    <pre
+      className="mt-2 overflow-x-auto rounded-lg border border-ink-600 bg-ink-950 p-3 font-mono text-[13px] leading-relaxed text-mist-200"
+      style={{ whiteSpace: "pre-wrap" }}
+    >
+      {code}
+    </pre>
+  );
+}
 
 export default function TrainerTask({ task, onRegenerate }) {
   const [code, setCode] = useState(task.code);
@@ -11,9 +23,16 @@ export default function TrainerTask({ task, onRegenerate }) {
   const [showSolution, setShowSolution] = useState(false);
   const [attempts, setAttempts] = useState(0);
 
+  useEffect(() => {
+    setCode(task.code);
+    setValidation(null);
+    setVisibleHints(0);
+    setShowSolution(false);
+    setAttempts(0);
+  }, [task.id, task.code]);
+
   const checkCode = useCallback(() => {
-    const result = validateFixes(code, task.bugs);
-    setValidation(result);
+    setValidation(validateFixes(code, task.bugs));
     setAttempts((a) => a + 1);
   }, [code, task.bugs]);
 
@@ -22,8 +41,8 @@ export default function TrainerTask({ task, onRegenerate }) {
 
   return (
     <div className="space-y-6">
-      {/* Шапка задачи */}
-      <div className="card flex items-center justify-between p-4">
+      {/* Шапка */}
+      <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="flex items-center gap-4">
           <span className="font-display text-lg font-bold text-accent-react">
             {task.componentName}
@@ -38,7 +57,7 @@ export default function TrainerTask({ task, onRegenerate }) {
                 validation.allFixed ? "text-lvl-3" : "text-lvl-1"
               }`}
             >
-              ✅ {fixedBugs}/{totalBugs} исправлено
+              ✅ {fixedBugs}/{totalBugs}
             </span>
           )}
         </div>
@@ -58,19 +77,17 @@ export default function TrainerTask({ task, onRegenerate }) {
         </div>
       </div>
 
-      {/* Редактор кода */}
+      {/* Редактор */}
       <div className="card overflow-hidden p-4">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-mono text-sm text-mist-400">
             💻 Найди и исправь {totalBugs} проблем:
           </h3>
-          <div className="flex gap-2 font-mono text-xs text-mist-500">
-            <span>
-              Подсказки: {visibleHints}/{totalBugs}
-            </span>
-          </div>
+          <span className="font-mono text-xs text-mist-500">
+            Подсказки: {visibleHints}/{totalBugs}
+          </span>
         </div>
-        <CodeEditor value={code} onChange={setCode} height="450px" />
+        <CodeEditor value={code} onChange={setCode} height="800px" />
       </div>
 
       {/* Результаты проверки */}
@@ -80,7 +97,6 @@ export default function TrainerTask({ task, onRegenerate }) {
             Результаты проверки
           </h3>
 
-          {/* Прогресс-бар */}
           <div className="mb-4 h-3 overflow-hidden rounded-full bg-ink-700">
             <div
               className="h-full rounded-full bg-lvl-3 transition-all"
@@ -88,7 +104,6 @@ export default function TrainerTask({ task, onRegenerate }) {
             />
           </div>
 
-          {/* Детали по каждому багу */}
           <div className="space-y-2">
             {validation.results.map((result, i) => (
               <div
@@ -103,9 +118,9 @@ export default function TrainerTask({ task, onRegenerate }) {
                   <span>{result.fixed ? "✅" : "❌"}</span>
                   <span className="text-sm font-medium">{result.title}</span>
                 </div>
-                {!result.fixed && visibleHints > i && (
-                  <p className="mt-2 pl-6 text-xs text-mist-400">
-                    💡 {task.bugs[i].fixExplanation}
+                {!result.fixed && (
+                  <p className="mt-1 pl-6 text-xs text-mist-400">
+                    {result.description || task.bugs[i]?.description}
                   </p>
                 )}
               </div>
@@ -116,23 +131,27 @@ export default function TrainerTask({ task, onRegenerate }) {
           {visibleHints < totalBugs && !validation.allFixed && (
             <button
               onClick={() => setVisibleHints((v) => v + 1)}
-              className="mt-4 rounded-lg border border-lvl-1/30 bg-lvl-1/10 px-4 py-2 text-sm text-lvl-1"
+              className="mt-4 rounded-lg border border-lvl-1/30 bg-lvl-1/10 px-4 py-2 text-sm text-lvl-1 transition hover:bg-lvl-1/20"
             >
               💡 Показать подсказку ({visibleHints + 1}/{totalBugs})
             </button>
           )}
 
-          {/* Успех! */}
           {validation.allFixed && (
             <div className="mt-4 rounded-lg border border-lvl-3/30 bg-lvl-3/10 p-4 text-center">
               <p className="text-2xl">🎉</p>
               <p className="font-display font-bold text-lvl-3">
-                Все баги исправлены за {attempts} попыт
-                {attempts === 1 ? "ку" : "ки"}!
+                Все баги исправлены за {attempts}{" "}
+                {attempts === 1
+                  ? "попытку"
+                  : attempts < 5
+                    ? "попытки"
+                    : "попыток"}
+                !
               </p>
               <button
                 onClick={() => setShowSolution(true)}
-                className="mt-2 text-xs text-mist-400 underline"
+                className="mt-2 text-xs text-mist-400 underline hover:text-mist-200"
               >
                 Показать эталонное решение
               </button>
@@ -141,23 +160,42 @@ export default function TrainerTask({ task, onRegenerate }) {
         </div>
       )}
 
-      {/* Панель подсказок (отдельная) */}
+      {/* ═══════════════════════════════════════════
+          ПАНЕЛЬ ПОДСКАЗОК С КОДОМ
+         ═══════════════════════════════════════════ */}
       {visibleHints > 0 && (
         <div className="card p-5">
-          <h3 className="mb-3 font-display text-lg font-semibold text-lvl-1">
+          <h3 className="mb-4 font-display text-lg font-semibold text-lvl-1">
             💡 Подсказки ({visibleHints}/{totalBugs})
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {task.bugs.slice(0, visibleHints).map((bug, i) => (
               <div
                 key={bug.id}
                 className="rounded-lg border border-lvl-1/20 bg-lvl-1/5 p-4"
               >
-                <p className="mb-1 text-sm font-semibold text-lvl-1">
+                {/* Заголовок подсказки */}
+                <p className="mb-2 text-sm font-semibold text-lvl-1">
                   Баг #{i + 1}: {bug.title}
                 </p>
-                <p className="text-sm text-mist-300">{bug.hint}</p>
-                <p className="mt-2 text-xs font-mono text-mist-500">
+
+                {/* Текстовое описание */}
+                <p className="mb-2 text-sm leading-relaxed text-mist-300">
+                  {bug.hint}
+                </p>
+
+                {/* Пример кода */}
+                {bug.hintCode && (
+                  <div className="mt-3">
+                    <p className="mb-1 font-mono text-[11px] uppercase tracking-wider text-mist-500">
+                      Пример исправления:
+                    </p>
+                    <MiniCodeBlock code={bug.hintCode} />
+                  </div>
+                )}
+
+                {/* Категория */}
+                <p className="mt-2 font-mono text-[11px] text-mist-500">
                   Категория: {bug.category} · Сложность: {bug.severity}
                 </p>
               </div>
@@ -176,7 +214,7 @@ export default function TrainerTask({ task, onRegenerate }) {
             value={task.solution}
             onChange={() => {}}
             readOnly
-            height="400px"
+            height="800px"
           />
         </div>
       )}
