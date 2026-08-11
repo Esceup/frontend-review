@@ -8,6 +8,7 @@ const navItems = [
   { to: "/", label: "Разделы", end: true },
   { to: "/review", label: "Повторение" },
   { to: "/tasks", label: "Задачи" },
+  { to: "/react-trainer", label: "⚛️ Тренажёр" },
 ];
 
 export default function Layout() {

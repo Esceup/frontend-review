@@ -10,6 +10,8 @@ import Register from "./components/Register";
 import PrivateRoute from "./components/PrivateRoute";
 import TasksPage from "./components/TasksPage";
 import TaskPage from "./components/TaskPage";
+import ReactTrainerPage from "./components/ReactTrainer/ReactTrainerPage";
+
 
 function App() {
   return (
@@ -38,6 +40,7 @@ function App() {
               <Route path="review/:section/:topic" element={<ReviewPage />} />
               <Route path="tasks" element={<TasksPage />} />
               <Route path="tasks/:taskId" element={<TaskPage />} />
+              <Route path="react-trainer" element={<ReactTrainerPage />} />
             </Route>
           </Routes>
         </HashRouter>
