@@ -101,7 +101,10 @@ export default function ReviewPage() {
   const handleRate = async (lvl) => {
     setShowAnswer(false);
     await rateCard(q.id, lvl);
-    next();
+    if(lvl === 0) {
+      next();
+    }
+    
   };
 
   return (

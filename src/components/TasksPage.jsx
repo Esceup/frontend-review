@@ -4,6 +4,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import allTasks from "../data/tasks";
+import { TOPIC_THEORY } from "../data/topicTheory";
 
 const difficultyConfig = {
   easy: {
@@ -31,6 +32,7 @@ export default function TasksPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [openTheory, setOpenTheory] = useState({});
 
   // ✅ РЕАКТИВНАЯ ПОДПИСКА на все задачи пользователя
   useEffect(() => {
@@ -104,14 +106,15 @@ export default function TasksPage() {
     [progress],
   );
 
-  const groupedTasks = useMemo(() => {
-    const groups = {};
-    filteredTasks.forEach((task) => {
-      if (!groups[task.topicName]) groups[task.topicName] = [];
-      groups[task.topicName].push(task);
-    });
-    return groups;
-  }, [filteredTasks]);
+ const groupedTasks = useMemo(() => {
+   const groups = {};
+   filteredTasks.forEach((task) => {
+     if (!groups[task.topic])
+       groups[task.topic] = { topicName: task.topicName, tasks: [] };
+     groups[task.topic].tasks.push(task);
+   });
+   return groups;
+ }, [filteredTasks]);
 
   if (loading) {
     return (
@@ -233,7 +236,10 @@ export default function TasksPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {Object.entries(groupedTasks).map(([topicName, topicTasks]) => {
+          {Object.entries(groupedTasks).map(([topicId, group]) => {
+            const topicTasks = group.tasks;
+            const theory = TOPIC_THEORY[topicId];
+            const theoryOpen = !!openTheory[topicId];
             const solvedInTopic = topicTasks.filter(
               (t) => progress[t.id],
             ).length;
@@ -241,11 +247,11 @@ export default function TasksPage() {
               (solvedInTopic / topicTasks.length) * 100,
             );
             return (
-              <div key={topicName} className="card overflow-hidden">
+              <div key={topicId} className="card overflow-hidden">
                 <div className="border-b border-ink-600 p-5">
                   <div className="mb-2 flex items-center gap-3">
                     <h2 className="font-display text-lg font-semibold text-mist-100">
-                      {topicName}
+                      {group.topicName}
                     </h2>
                     <span className="font-mono text-xs text-mist-500">
                       {solvedInTopic}/{topicTasks.length}
@@ -257,6 +263,69 @@ export default function TasksPage() {
                       />
                     </div>
                   </div>
+                  {theory && (
+                    <button
+                      onClick={() =>
+                        setOpenTheory((v) => ({ ...v, [topicId]: !v[topicId] }))
+                      }
+                      className="rounded-lg border border-accent-js/30 bg-accent-js/10 px-3 py-1.5 font-mono text-xs text-accent-js transition hover:bg-accent-js/20"
+                    >
+                      {theoryOpen
+                        ? "▲ Скрыть теорию"
+                        : " Теория: как решать такие задачи"}
+                    </button>
+                  )}
+                  {theory && theoryOpen && (
+                    <div className="mt-3 space-y-3 rounded-lg border border-ink-600 bg-ink-850 p-4 text-sm">
+                      <p className="leading-relaxed text-mist-300">
+                        <b className="text-accent-js">💡 Идея:</b> {theory.idea}
+                      </p>
+                      <div>
+                        <p className="mb-1 font-mono text-xs uppercase tracking-wider text-mist-500">
+                          🔍 Когда применять
+                        </p>
+                        <ul className="list-inside list-disc space-y-1 text-mist-300">
+                          {theory.when.map((w, i) => (
+                            <li key={i}>{w}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="mb-1 font-mono text-xs uppercase tracking-wider text-mist-500">
+                          🧩 Алгоритм
+                        </p>
+                        <ol className="list-inside list-decimal space-y-1 text-mist-300">
+                          {theory.algorithm.map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))}
+                        </ol>
+                      </div>
+                      <div>
+                        <p className="mb-1 font-mono text-xs uppercase tracking-wider text-mist-500">
+                          💻 Скелет кода
+                        </p>
+                        <pre
+                          className="overflow-x-auto rounded-lg border border-ink-600 bg-ink-950 p-3 font-mono text-[13px] leading-relaxed text-mist-200"
+                          style={{ whiteSpace: "pre-wrap" }}
+                        >
+                          {theory.skeleton}
+                        </pre>
+                      </div>
+                      <div>
+                        <p className="mb-1 font-mono text-xs uppercase tracking-wider text-mist-500">
+                          ⚠️ Частые ошибки
+                        </p>
+                        <ul className="list-inside list-disc space-y-1 text-mist-300">
+                          {theory.pitfalls.map((p, i) => (
+                            <li key={i}>{p}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <p className="font-mono text-xs text-mist-500">
+                        ⏱ {theory.complexity}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 gap-3 p-5 md:grid-cols-2">
                   {topicTasks.map((task) => {

@@ -56,6 +56,7 @@ export default function TaskPage() {
   const [attempts, setAttempts] = useState(0);
   const [savedSolution, setSavedSolution] = useState(null);
   const [loadingProgress, setLoadingProgress] = useState(true);
+    const [showApproach, setShowApproach] = useState(false);
 
   useEffect(() => {
     if (!user || !task) return;
@@ -66,6 +67,7 @@ export default function TaskPage() {
     if (task) {
       if (savedSolution) setCode(savedSolution);
       else setCode(task.starterCode);
+      setShowApproach(false);
     }
   }, [task, savedSolution]);
 
@@ -213,20 +215,33 @@ export default function TaskPage() {
       <div className="card flex flex-wrap items-center justify-between gap-3 p-5">
         <div>
           <div className="mb-1 flex flex-wrap items-center gap-2">
-            <span className={`rounded border px-2 py-1 font-mono text-xs font-medium ${diff.color}`}>
+            <span
+              className={`rounded border px-2 py-1 font-mono text-xs font-medium ${diff.color}`}
+            >
               {diff.label}
             </span>
+            {task.pattern && (
+              <span className="rounded border border-accent-js/30 bg-accent-js/10 px-2 py-1 font-mono text-xs font-medium text-accent-js">
+                🎯 {task.pattern}
+              </span>
+            )}
             {isCompleted && (
               <span className="rounded border border-lvl-3/30 bg-lvl-3/10 px-2 py-1 font-mono text-xs font-medium text-lvl-3">
                 ✅ Решено
               </span>
             )}
             {attempts > 0 && (
-              <span className="font-mono text-xs text-mist-500">Попыток: {attempts}</span>
+              <span className="font-mono text-xs text-mist-500">
+                Попыток: {attempts}
+              </span>
             )}
           </div>
-          <h1 className="font-display text-2xl font-bold text-mist-100">{task.title}</h1>
-          <p className="mt-1 font-mono text-sm text-mist-400">{task.topicName}</p>
+          <h1 className="font-display text-2xl font-bold text-mist-100">
+            {task.title}
+          </h1>
+          <p className="mt-1 font-mono text-sm text-mist-400">
+            {task.topicName}
+          </p>
         </div>
         <Link
           to="/tasks"
@@ -252,14 +267,21 @@ export default function TaskPage() {
           </h3>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {task.testCases.slice(0, 6).map((tc, i) => (
-              <div key={i} className="rounded-lg border border-ink-600 bg-ink-850 p-3 font-mono text-xs">
+              <div
+                key={i}
+                className="rounded-lg border border-ink-600 bg-ink-850 p-3 font-mono text-xs"
+              >
                 <div>
                   <span className="text-mist-500">Вход: </span>
-                  <span className="text-accent-js">{JSON.stringify(tc.input)}</span>
+                  <span className="text-accent-js">
+                    {JSON.stringify(tc.input)}
+                  </span>
                 </div>
                 <div>
                   <span className="text-mist-500">Выход: </span>
-                  <span className="text-lvl-3">{JSON.stringify(tc.expected)}</span>
+                  <span className="text-lvl-3">
+                    {JSON.stringify(tc.expected)}
+                  </span>
                 </div>
                 <div className="mt-1 text-mist-500">// {tc.description}</div>
               </div>
@@ -272,7 +294,59 @@ export default function TaskPage() {
           )}
         </div>
       </div>
-
+      {task.approach && (
+        <div className="card p-5">
+          <button
+            onClick={() => setShowApproach((v) => !v)}
+            className="flex w-full items-center justify-between font-display text-lg font-semibold text-mist-100"
+          >
+            <span>🧠 Как решать такие задачи</span>
+            <span className="font-mono text-sm text-mist-500">
+              {showApproach ? "▲ скрыть" : "▼ показать"}
+            </span>
+          </button>
+          {showApproach && (
+            <div className="mt-4 space-y-4 text-sm">
+              <p className="rounded-lg border border-accent-js/30 bg-accent-js/5 p-3 leading-relaxed text-mist-300">
+                <b className="text-accent-js">🔍 Распознать паттерн:</b>{" "}
+                {task.approach.recognize}
+              </p>
+              <p className="leading-relaxed text-mist-300">
+                <b className="text-accent-js">💡 Идея:</b> {task.approach.idea}
+              </p>
+              <div>
+                <p className="mb-2 font-mono text-xs font-semibold uppercase tracking-widest text-mist-500">
+                  Алгоритм шагами
+                </p>
+                <ol className="space-y-1.5">
+                  {task.approach.steps.map((s, i) => (
+                    <li key={i} className="flex gap-2 text-mist-300">
+                      <span className="font-mono font-bold text-accent-js">
+                        {i + 1}.
+                      </span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div>
+                <p className="mb-2 font-mono text-xs font-semibold uppercase tracking-widest text-mist-500">
+                  Скелет кода
+                </p>
+                <pre
+                  className="overflow-x-auto rounded-lg border border-ink-600 bg-ink-950 p-4 font-mono text-[13px] leading-relaxed text-mist-200"
+                  style={{ whiteSpace: "pre-wrap" }}
+                >
+                  {task.approach.skeleton}
+                </pre>
+              </div>
+              <p className="font-mono text-xs text-mist-500">
+                ⏱ Сложность: {task.approach.complexity}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
       {/* ===== РЕДАКТОР КОДА (во всю ширину, большой) ===== */}
       <div className="card overflow-hidden p-5">
         <div className="mb-3 flex items-center justify-between">
@@ -280,9 +354,24 @@ export default function TaskPage() {
             💻 Редактор кода
           </h3>
           <div className="flex items-center gap-3 font-mono text-[11px] text-mist-500">
-            <span><kbd className="rounded bg-ink-700 px-1.5 py-0.5 text-mist-300">Tab</kbd> отступ</span>
-            <span><kbd className="rounded bg-ink-700 px-1.5 py-0.5 text-mist-300">Shift+Tab</kbd> убрать</span>
-            <span><kbd className="rounded bg-ink-700 px-1.5 py-0.5 text-mist-300">Enter</kbd> авто-отступ</span>
+            <span>
+              <kbd className="rounded bg-ink-700 px-1.5 py-0.5 text-mist-300">
+                Tab
+              </kbd>{" "}
+              отступ
+            </span>
+            <span>
+              <kbd className="rounded bg-ink-700 px-1.5 py-0.5 text-mist-300">
+                Shift+Tab
+              </kbd>{" "}
+              убрать
+            </span>
+            <span>
+              <kbd className="rounded bg-ink-700 px-1.5 py-0.5 text-mist-300">
+                Enter
+              </kbd>{" "}
+              авто-отступ
+            </span>
           </div>
         </div>
 
@@ -315,7 +404,9 @@ export default function TaskPage() {
             <h2 className="font-display text-lg font-semibold text-mist-100">
               Результаты тестов
             </h2>
-            <span className={`font-mono text-sm font-bold ${passedCount === totalCount ? "text-lvl-3" : "text-lvl-0"}`}>
+            <span
+              className={`font-mono text-sm font-bold ${passedCount === totalCount ? "text-lvl-3" : "text-lvl-0"}`}
+            >
               {passedCount}/{totalCount}
             </span>
           </div>
@@ -330,7 +421,9 @@ export default function TaskPage() {
               <div
                 key={i}
                 className={`rounded-lg border-2 p-3 text-sm ${
-                  result.passed ? "border-lvl-3/30 bg-lvl-3/5" : "border-lvl-0/30 bg-lvl-0/5"
+                  result.passed
+                    ? "border-lvl-3/30 bg-lvl-3/5"
+                    : "border-lvl-0/30 bg-lvl-0/5"
                 }`}
               >
                 <div className="flex items-center gap-2 font-semibold">
@@ -344,10 +437,16 @@ export default function TaskPage() {
                     ) : (
                       <>
                         <div>
-                          Ожидалось: <span className="text-lvl-3">{formatValue(result.expected)}</span>
+                          Ожидалось:{" "}
+                          <span className="text-lvl-3">
+                            {formatValue(result.expected)}
+                          </span>
                         </div>
                         <div>
-                          Получено: <span className="text-lvl-0">{formatValue(result.actual)}</span>
+                          Получено:{" "}
+                          <span className="text-lvl-0">
+                            {formatValue(result.actual)}
+                          </span>
                         </div>
                       </>
                     )}
@@ -383,7 +482,9 @@ export default function TaskPage() {
               </span>
             </h2>
             <button
-              onClick={() => setVisibleHints((v) => Math.min(v + 1, task.hints.length))}
+              onClick={() =>
+                setVisibleHints((v) => Math.min(v + 1, task.hints.length))
+              }
               disabled={visibleHints >= task.hints.length}
               className="rounded-lg border border-lvl-1/30 bg-lvl-1/10 px-3 py-1.5 font-mono text-sm text-lvl-1 transition hover:bg-lvl-1/20 disabled:cursor-not-allowed disabled:opacity-40"
             >
@@ -395,13 +496,28 @@ export default function TaskPage() {
               Застряли? Нажмите кнопку, чтобы получить наводящую подсказку.
             </p>
           ) : (
-            <div className="space-y-2">
-              {task.hints.slice(0, visibleHints).map((hint, i) => (
-                <div key={i} className="rounded-lg border border-lvl-1/30 bg-lvl-1/5 p-3 text-sm text-mist-200">
-                  <span className="mr-2 font-bold text-lvl-1">{i + 1}.</span>
-                  {hint}
-                </div>
-              ))}
+            <div className="space-y-3">
+              {task.hints.slice(0, visibleHints).map((hint, i) => {
+                const text = typeof hint === "string" ? hint : hint.text;
+                const code = typeof hint === "string" ? null : hint.code;
+                return (
+                  <div
+                    key={i}
+                    className="rounded-lg border border-lvl-1/30 bg-lvl-1/5 p-3 text-sm text-mist-200"
+                  >
+                    <span className="mr-2 font-bold text-lvl-1">{i + 1}.</span>
+                    {text}
+                    {code && (
+                      <pre
+                        className="mt-2 overflow-x-auto rounded-lg border border-ink-600 bg-ink-950 p-3 font-mono text-[13px] leading-relaxed text-mist-200"
+                        style={{ whiteSpace: "pre-wrap" }}
+                      >
+                        {code}
+                      </pre>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -413,12 +529,30 @@ export default function TaskPage() {
               🎉 Эталонное решение
             </h2>
             <div className="overflow-auto rounded-lg bg-ink-950 p-4">
-              <pre className="whitespace-pre-wrap font-mono text-sm text-mist-300">{task.solution}</pre>
+              <pre className="whitespace-pre-wrap font-mono text-sm text-mist-300">
+                {task.solution}
+              </pre>
             </div>
             {task.explanation && (
               <div className="mt-4 rounded-lg border border-accent-js/30 bg-accent-js/5 p-4">
-                <h4 className="mb-2 font-semibold text-accent-js">📖 Объяснение</h4>
-                <p className="text-sm leading-relaxed text-mist-300">{task.explanation}</p>
+                <h4 className="mb-2 font-semibold text-accent-js">
+                  📖 Объяснение
+                </h4>
+                <p className="text-sm leading-relaxed text-mist-300">
+                  {task.explanation}
+                </p>
+              </div>
+            )}
+            {task.similar && (
+              <div className="mt-3 rounded-lg border border-ink-600 bg-ink-850 p-3">
+                <p className="mb-1 font-mono text-xs uppercase tracking-wider text-mist-500">
+                  🔗 Похожие задачи (тот же паттерн)
+                </p>
+                <ul className="list-inside list-disc text-sm text-mist-300">
+                  {task.similar.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>

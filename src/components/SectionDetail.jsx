@@ -63,7 +63,7 @@ function QuestionRow({ q, accent }) {
       </button>
       {open && (
         <div className="space-y-4 border-t border-dashed border-ink-600 px-4 pb-4 pt-3">
-          <Answer text={q.a} />
+          <Answer text={q.a} shortAnswer={q.shortAnswer} />
           <RateButtons onRate={(lvl) => rateCard(q.id, lvl)} />
         </div>
       )}

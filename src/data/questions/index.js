@@ -35,7 +35,7 @@ const normalizeQuestion = (q, section, topic) => ({
   question: q.q,
   answer: q.a,
   fullAnswer: q.a,
-  shortAnswer: q.a,
+  shortAnswer: q.shortAnswer || "",
   explanation: q.a,
   // привязка к разделу/теме (для хлебных крошек и «Повторения»)
   section: section.id,
