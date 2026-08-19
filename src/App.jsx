@@ -11,7 +11,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import TasksPage from "./components/TasksPage";
 import TaskPage from "./components/TaskPage";
 import ReactTrainerPage from "./components/ReactTrainer/ReactTrainerPage";
-
+import TsTrainerPage from "./components/TsTrainer/TsTrainerPage";
 
 function App() {
   return (
@@ -41,6 +41,7 @@ function App() {
               <Route path="tasks" element={<TasksPage />} />
               <Route path="tasks/:taskId" element={<TaskPage />} />
               <Route path="react-trainer" element={<ReactTrainerPage />} />
+              <Route path="ts-trainer" element={<TsTrainerPage />} />
             </Route>
           </Routes>
         </HashRouter>
