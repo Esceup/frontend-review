@@ -458,7 +458,41 @@ CSS-переменные работают в браузере.
 - Легко найти где используется класс
 - Не нужно считать специфичность
 
-Альтернативы: CSS Modules, Tailwind, styled-components.`}]},{id:`animation`,title:`Анимации и трансформации`,questions:[{id:`css-14`,hot:!0,q:`Что такое @keyframes и как сделать анимацию?`,a:"`@keyframes` определяет шаги анимации.\n\nПример:\n`@keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }`\n\nПрименение:\n`animation: slide 2s ease-in-out infinite;`\n\nСвойства анимации:\n- `animation-name` - имя keyframes\n- `animation-duration` - длительность\n- `animation-timing-function` - функция времени\n- `animation-delay` - задержка\n- `animation-iteration-count` - количество повторений\n- `animation-fill-mode` - состояние до и после\n\nВ отличие от `transition`, анимации могут иметь\nнесколько ключевых кадров и повторяться."},{id:`css-25`,hot:!0,q:`Как работает transition?`,a:`\`transition\` анимирует изменение свойства.
+Альтернативы: CSS Modules, Tailwind, styled-components.`},{id:`css-43`,hot:!0,q:`Какие бывают CSS-препроцессоры и в чем их главная особенность?`,shortAnswer:`Sass (SCSS), LESS, Stylus. Они добавляют CSS программируемые фичи: переменные, вложенность, миксины, функции и математические операции. Код компилируется в чистый CSS.`,a:`CSS-препроцессоры — это инструменты, которые расширяют возможности обычного CSS с помощью собственного синтаксиса, который затем компилируется в стандартный CSS.
+
+Три основных препроцессора:
+1. Sass (SCSS) — самый популярный. 
+   - Особенности: мощная система миксинов, вложенность, наследование селекторов (\`@extend\`), модули (\`@use\`).
+   - Синтаксис SCSS полностью совместим с CSS (использует фигурные скобки и точки с запятой).
+2. LESS — часто используется в старых проектах и библиотеках (например, Bootstrap 3).
+   - Особенности: переменные через \`@\`, миксины, операции. Менее мощная логика, чем в Sass.
+3. Stylus — создан автором Express.js.
+   - Особенности: позволяет писать вообще без скобок, точек с запятой и двоеточий. Очень гибкий синтаксис.
+
+Главные фичи всех препроцессоров:
+- Переменные (для цветов, шрифтов, брейкпоинтов).
+- Вложенность (можно писать \`.parent { .child {} }\`).
+- Миксины (переиспользуемые блоки кода с аргументами).
+- Математические операции и функции.
+
+Сейчас в индустрии Sass (SCSS) является стандартом де-факто, хотя нативный CSS (с его переменными и \`@layer\`) постепенно перекрывает многие их функции.`},{id:`css-44`,q:`В чем разница между Sass и SCSS?`,shortAnswer:`Sass (Syntactically Awesome Style Sheets) — это сам язык и препроцессор. SCSS (Sassy CSS) — это синтаксис этого языка. SCSS использует привычные фигурные скобки и точки с запятой, в то время как старый синтаксис Sass использует отступы.`,a:`Часто путают Sass и SCSS, но технически:
+- **Sass** — это название препроцессора.
+- **SCSS** — это один из его синтаксисов (расширение \`.scss\`).
+- **Sass (индентированный синтаксис)** — это старый синтаксис (расширение \`.sass\`), который использует отступы вместо фигурных скобок и переносы строк вместо точек с запятой.
+
+Пример SCSS:
+\`.block {
+  color: red;
+  &__element { font-size: 14px; }
+}\`
+
+Пример Sass (индентированный):
+\`.block
+  color: red
+  &__element
+    font-size: 14px\`
+
+В современной разработке 99% проектов используют именно **SCSS**, так как он является надмножеством CSS (любой валидный CSS является валидным SCSS), что облегчает миграцию и чтение кода.`}]},{id:`animation`,title:`Анимации и трансформации`,questions:[{id:`css-14`,hot:!0,q:`Что такое @keyframes и как сделать анимацию?`,a:"`@keyframes` определяет шаги анимации.\n\nПример:\n`@keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }`\n\nПрименение:\n`animation: slide 2s ease-in-out infinite;`\n\nСвойства анимации:\n- `animation-name` - имя keyframes\n- `animation-duration` - длительность\n- `animation-timing-function` - функция времени\n- `animation-delay` - задержка\n- `animation-iteration-count` - количество повторений\n- `animation-fill-mode` - состояние до и после\n\nВ отличие от `transition`, анимации могут иметь\nнесколько ключевых кадров и повторяться."},{id:`css-25`,hot:!0,q:`Как работает transition?`,a:`\`transition\` анимирует изменение свойства.
 
 Пример:
 \`transition: background-color 0.5s ease, transform 0.2s;\`
@@ -1214,7 +1248,40 @@ CommonJS (require/module.exports):
 \`.mjs\` для ESM, \`.cjs\` для CommonJS.
 Или \`type: 'module'\` в package.json.
 
-Бандлеры (Vite, Webpack) работают с обоими.`}]}]},{id:`http`,title:`HTTP и безопасность`,accent:`#3dd68c`,topics:[{id:`basics`,title:`Основы протокола`,questions:[{id:`http-01`,hot:!0,q:`Что такое HTTP и HTTPS?`,shortAnswer:`HTTP — протокол передачи данных без шифрования (порт 80). HTTPS — тот же HTTP поверх TLS/SSL (порт 443), обеспечивающий конфиденциальность, целостность и аутентификацию. HTTPS обязателен: браузеры помечают HTTP как небезопасный, многие Web API доступны только в безопасном контексте, это фактор SEO.`,a:`HTTP (HyperText Transfer Protocol) — это протокол прикладного уровня, по которому браузер и сервер обмениваются данными в интернете. Представьте его как «язык», на котором клиент (браузер, мобильное приложение) и сервер договариваются общаться.
+Бандлеры (Vite, Webpack) работают с обоими.`}]},{id:`web-workers`,title:`Web Workers и многопоточность`,questions:[{id:`js-88`,hot:!0,q:`Что такое Web Workers и зачем они нужны?`,shortAnswer:`Web Workers позволяют запускать JavaScript в фоновых потоках, не блокируя основной поток (Main Thread), который отвечает за рендеринг и UI. Обмен данными происходит через postMessage.`,a:`JavaScript в браузере однопоточный и выполняется в Main Thread. Этот же поток отвечает за парсинг HTML, расчет стилей, отрисовку (Paint) и обработку событий.
+Если выполнить тяжелую задачу (например, парсинг огромного JSON или шифрование), интерфейс «заморозится» до завершения задачи.
+
+Web Workers решают эту проблему, позволяя выполнять код в отдельных фоновых потоках.
+
+Как это работает:
+1. Создаем воркер: \`const worker = new Worker('worker.js');\`
+2. Отправляем данные: \`worker.postMessage({ data: 'heavy' });\`
+3. Воркер обрабатывает данные в фоне.
+4. Воркер возвращает результат: \`self.postMessage(result);\`
+5. Главный поток ловит ответ: \`worker.onmessage = (e) => { ... }\`
+
+Ограничения Web Workers:
+- Нет доступа к DOM (нельзя менять HTML/CSS).
+- Нет доступа к \`window\` или \`document\`.
+- Данные передаются через структурированное клонирование (копируются), что может быть дорого для огромных объектов (решение: Transferable Objects, например, ArrayBuffer).
+- Каждый воркер потребляет дополнительную память и ресурсы CPU.`},{id:`js-89`,q:`Какие виды Web Workers существуют?`,shortAnswer:`Dedicated (выделенный, для одного скрипта), Shared (разделяемый, доступ из нескольких вкладок/iframe), Service Worker (прокси между сетью и приложением, основа PWA).`,a:`Существует три основных типа воркеров:
+
+1. Dedicated Worker (Выделенный)
+- Доступен только для скрипта, который его создал.
+- Живет, пока живет страница/вкладка.
+- Используется для тяжелых вычислений (обработка видео, математика).
+
+2. Shared Worker (Разделяемый)
+- Доступен из нескольких скриптов, вкладок или iframe, если они имеют один Origin.
+- Полезно для поддержания общего состояния (например, одно WebSocket-соединение на все вкладки сайта).
+- Использует \`port\` для коммуникации.
+
+3. Service Worker
+- Работает отдельно от веб-страницы, представляет собой прокси-сервер между браузером и сетью.
+- Не имеет доступа к DOM, но может перехватывать сетевые запросы (\`fetch\`).
+- Живет в фоне, даже если вкладка закрыта.
+- Является фундаментом для PWA (Progressive Web Apps): позволяет кэшировать ресурсы, работать офлайн и отправлять Push-уведомления.
+- Требует HTTPS (кроме localhost).`}]}]},{id:`http`,title:`HTTP и безопасность`,accent:`#3dd68c`,topics:[{id:`basics`,title:`Основы протокола`,questions:[{id:`http-01`,hot:!0,q:`Что такое HTTP и HTTPS?`,shortAnswer:`HTTP — протокол передачи данных без шифрования (порт 80). HTTPS — тот же HTTP поверх TLS/SSL (порт 443), обеспечивающий конфиденциальность, целостность и аутентификацию. HTTPS обязателен: браузеры помечают HTTP как небезопасный, многие Web API доступны только в безопасном контексте, это фактор SEO.`,a:`HTTP (HyperText Transfer Protocol) — это протокол прикладного уровня, по которому браузер и сервер обмениваются данными в интернете. Представьте его как «язык», на котором клиент (браузер, мобильное приложение) и сервер договариваются общаться.
 Как это работает физически:
 1. Клиент открывает TCP-соединение с сервером (по умолчанию на порт 80).
 2. Отправляет текстовый запрос в определенном формате.
@@ -2411,7 +2478,40 @@ React может:
 - не создают wrapper hell
 
 Каждый вызов кастомного хука создает изолированное состояние.
-useMyHook() в компоненте А и Б не поделят данные.`}]}]},{id:`redux`,title:`Redux`,accent:`#b58df2`,topics:[{id:`basics`,title:`Основы Redux`,questions:[{id:`redux-01`,hot:!0,q:`Что такое Redux и зачем он нужен?`,a:`Redux решает проблему prop drilling и хаотичного изменения состояния.
+useMyHook() в компоненте А и Б не поделят данные.`}]},{id:`fiber`,title:`Fiber и Concurrent Mode`,questions:[{id:`react-41`,hot:!0,q:`Что такое React Fiber и какие проблемы он решает?`,shortAnswer:`Fiber — это новый механизм согласования (reconciliation) в React 16+. Он делает рендеринг инкрементным: разбивает работу на небольшие части (задачи), позволяет управлять приоритетами и прерывать рендер, чтобы не блокировать основной поток (Main Thread).`,a:`React Fiber — это полное переосмысление процесса рендеринга и обновления Virtual DOM, появившееся в React 16.
+До Fiber рендеринг был синхронным и рекурсивным: если дерево большое, основной поток браузера «зависал», что ломало анимации и отклик на действия пользователя.
+
+Главные преимущества Fiber:
+1. Инкрементный рендеринг: работа разбивается на небольшие «задачи» (units of work).
+2. Приоритеты: React может ставить задачи с высоким приоритетом (анимации, ввод текста) в начало очереди.
+3. Прерывание и возобновление: React может «поставить на паузу» тяжелый рендер, отдать управление браузеру для отрисовки кадра, а затем продолжить.
+4. Основа для Concurrent Mode: Fiber позволила React работать асинхронно и адаптироваться под текущую загрузку устройства.`},{id:`react-42`,hot:!0,q:`Из каких фаз состоит процесс обновления в React Fiber?`,shortAnswer:`Процесс состоит из двух фаз: Render Phase (Reconciliation) и Commit Phase. Render Phase — асинхронная, может прерываться. Commit Phase — синхронная, применяет изменения к реальному DOM.`,a:`Процесс обновления в Fiber строго разделен на две фазы:
+
+1. Render Phase (Reconciliation) — «Черновая» работа.
+- Инициирование: обновление попадает в очередь (Update Queue).
+- Создание Work In Progress Tree: React обходит дерево Fiber, создавая «черновую» версию Virtual DOM. Вызываются функции компонентов.
+- Diffing: Сравнение новой версии со старой. Учет ключей (key) для списков.
+- Сбор побочных эффектов: Формируется Effect List (список того, что нужно добавить, удалить или изменить).
+- Учет приоритетов: Если появляется задача выше приоритетом (например, клик), текущий рендер может быть прерван.
+Важно: В этой фазе реальный DOM НЕ меняется. Эта фаза может быть прервана.
+
+2. Commit Phase — Применение.
+- React берет Effect List и точечно обновляет реальный DOM.
+- Вызываются хуки и методы жизненного цикла (useEffect, useLayoutEffect, componentDidMount и т.д.).
+- Эта фаза всегда синхронная и выполняется до конца без прерываний.`},{id:`react-43`,hot:!0,q:`Что такое Concurrent Mode и как он связан с Fiber?`,shortAnswer:`Concurrent Mode — это набор фич React, который делает рендеринг прерываемым. Fiber — это внутренняя архитектура, которая делает Concurrent Mode возможным. Это позволяет UI оставаться отзывчивым даже при тяжелых вычислениях.`,a:`Concurrent Mode (Режим конкурентности) — это парадигма, при которой React может одновременно «держать в уме» несколько версий UI и переключаться между ними.
+
+Fiber является фундаментом для Concurrent Mode. Благодаря тому, что Fiber разбивает рендер на чанки, React может:
+- Начать рендерить тяжелый список.
+- «Услышать», что пользователь нажал кнопку (высокий приоритет).
+- Прервать рендер списка, отрисовать реакцию на кнопку.
+- Вернуться к рендеру списка.
+
+Это реализуется через хуки и компоненты:
+- \`useTransition\` и \`startTransition\`: позволяют пометить обновление как «не срочное» (например, фильтрация большого списка).
+- \`useDeferredValue\`: откладывает обновление значения до тех пор, пока браузер не освободится.
+- \`Suspense\`: позволяет «приостановить» компонент, ожидая данные или код, показывая fallback.
+
+Итог: Concurrent Mode делает плавными анимации и переходы, асинхронная обработка не вызывает «подвисаний» интерфейса.`}]}]},{id:`redux`,title:`Redux`,accent:`#b58df2`,topics:[{id:`basics`,title:`Основы Redux`,questions:[{id:`redux-01`,hot:!0,q:`Что такое Redux и зачем он нужен?`,a:`Redux решает проблему prop drilling и хаотичного изменения состояния.
 
 Три принципа:
 1. Единый источник правды - один Store на все приложение
@@ -2591,7 +2691,52 @@ DevTools сохраняет снимок стора после каждого э
 - переиграть историю после изменения кода
 
 Это киллер-фича Redux.
-Ни один другой стейт-менеджер не дает такого уровня отладки.`}]}]}],Dw=(e,t,n)=>({...e,hot:!!e.hot,q:e.q,a:e.a,title:e.q,text:e.q,question:e.q,answer:e.a,fullAnswer:e.a,shortAnswer:e.shortAnswer||``,explanation:e.a,section:t.id,sectionTitle:t.title,topic:n.id,topicTitle:n.title}),Ow=Ew.map(e=>({id:e.id,title:e.title,color:e.color,topics:(e.topics||[]).map(t=>({id:t.id,title:t.title,questions:(t.questions||[]).map(n=>Dw(n,e,t))}))})),kw=Ow.flatMap(e=>e.topics.flatMap(e=>e.questions)),Aw={sections:Ow},jw=864e5,Mw=[{key:0,label:`Не знаю`,days:0,color:`#ff6b6b`},{key:1,label:`Немного знаю`,days:1,color:`#ffc857`},{key:2,label:`Хорошо знаю`,days:3,color:`#43d2ff`},{key:3,label:`Полностью знаю`,days:7,color:`#3dd68c`}],Nw=e=>e<=Date.now()?`сейчас`:new Date(e).toLocaleDateString(`ru-RU`,{day:`numeric`,month:`short`}),Pw=(0,_.createContext)(),Fw=({children:e})=>{let{user:t}=Tw(),[n,r]=(0,_.useState)({}),[i,a]=(0,_.useState)(!0);(0,_.useEffect)(()=>{if(!t){r({}),a(!1);return}let e=K_(vw,`users`,t.uid),n=pw(e,async t=>{if(t.exists()){let n=t.data();if(!n.cards&&(n.learned?.length||n.incorrect?.length)){let t=Date.now(),r={};(n.learned||[]).forEach(e=>{r[e]={lvl:3,next:t+7*jw,seen:1,last:t}}),(n.incorrect||[]).forEach(e=>{r[e]={lvl:0,next:t+jw,seen:1,last:t}}),await fw(e,{cards:r,learned:vv(),incorrect:vv()});return}r(n.cards||{})}else await dw(e,{cards:{}}),r({});a(!1)});return()=>n()},[t]);let o=(0,_.useCallback)(async(e,n)=>{if(!t)return;let r=Date.now();await fw(K_(vw,`users`,t.uid),{[`cards.${e}`]:{lvl:n,next:r+Mw[n].days*jw,seen:yv(1),last:r}})},[t]),s=(0,_.useCallback)(e=>{let t=n[e];return t?t.next<=Date.now()?`due`:`scheduled`:`new`},[n]),c=(0,_.useMemo)(()=>{let e=Date.now(),t=0,r=0,i=0,a=Aw.sections.map(a=>{let o=0,s=0,c=0,l=a.topics.map(t=>{let r=0,i=0,a=0;return t.questions.forEach(t=>{let o=n[t.id];o?o.next<=e?r++:a++:i++}),o+=r,s+=i,c+=a,{id:t.id,title:t.title,total:t.questions.length,due:r,fresh:i,learned:a,hot:t.questions.filter(e=>e.hot).length}});return t+=o,r+=s,i+=c,{id:a.id,title:a.title,accent:a.accent,total:a.topics.reduce((e,t)=>e+t.questions.length,0),due:o,fresh:s,learned:c,topics:l}});return{total:kw.length,due:t,fresh:r,learned:i,sections:a}},[n]);return(0,$.jsx)(Pw.Provider,{value:{cards:n,loading:i,rateCard:o,statusOf:s,stats:c},children:e})},Iw=()=>(0,_.useContext)(Pw),Lw=[{id:`task-debounce`,topic:`closures`,topicName:`Замыкания и функции`,difficulty:`medium`,title:`Реализация Debounce`,description:"Напишите функцию `debounce(func, delay)`, которая задерживает вызов функции до тех пор, пока не пройдёт `delay` миллисекунд с момента последнего вызова.\n**Требования:**\n- Возвращает новую функцию\n- Если вызовы идут чаще, чем `delay`, таймер сбрасывается\n- Функция должна сохранять контекст `this` и принимать аргументы",starterCode:`function debounce(func, delay) {
+Ни один другой стейт-менеджер не дает такого уровня отладки.`}]}]},{id:`next`,title:`Next.js`,accent:`#ffffff`,topics:[{id:`basics`,title:`Основы и рендеринг`,questions:[{id:`next-01`,hot:!0,q:`Что такое Next.js и чем он отличается от React?`,shortAnswer:`Next.js — это React-фреймворк для продакшена. React — это библиотека для UI. Next.js добавляет маршрутизацию (file-system), SSR, SSG, ISR, оптимизацию изображений и серверные функции (API routes).`,a:`React — это библиотека для построения пользовательских интерфейсов. Она не знает про роутинг, SEO, загрузку данных на сервере или сборку бандла.
+Next.js — это фреймворк поверх React, который дает готовые решения для создания полноценных веб-приложений.
+
+Главные отличия и фичи Next.js:
+1. Рендеринг на сервере (SSR) и статическая генерация (SSG) из коробки.
+2. Файловая система роутинга (папка \`pages\` или \`app\` = маршруты).
+3. Встроенная оптимизация (\`next/image\`, \`next/font\`, \`next/script\`).
+4. API Routes / Route Handlers (возможность писать бэкенд прямо в Next.js).
+5. Инкрементальная статическая регенерация (ISR).
+6. Автоматическое разделение кода (Code Splitting) на уровне страниц.
+7. Поддержка React Server Components (в App Router).`},{id:`next-02`,hot:!0,q:`Что такое SSR, SSG и ISR в Next.js?`,shortAnswer:`SSR (Server-Side Rendering) — рендер на сервере при каждом запросе. SSG (Static Site Generation) — рендер на этапе сборки (билда). ISR (Incremental Static Regeneration) — SSG с фоновым обновлением страниц по таймеру.`,a:`Next.js предлагает несколько стратегий рендеринга:
+
+1. SSG (Static Site Generation)
+- Страница генерируется в HTML один раз на этапе \`npm run build\`.
+- Раздается через CDN, работает молниеносно.
+- Идеально для блогов, документации, лендингов.
+- Данные можно подтянуть через \`getStaticProps\` (Pages Router).
+
+2. SSR (Server-Side Rendering)
+- HTML генерируется на сервере при КАЖДОМ запросе пользователя.
+- Данные всегда свежие.
+- Минус: нагрузка на сервер, медленнее чем SSG.
+- Идеально для дашбордов, личных кабинетов.
+- Используется \`getServerSideProps\` (Pages Router).
+
+3. ISR (Incremental Static Regeneration)
+- Гибрид SSG и SSR. Страница отдается из статического кэша (как SSG).
+- Но раз в N секунд (revalidate) Next.js в фоне пересобирает страницу с новыми данными.
+- Пользователь всегда получает мгновенный ответ, а контент обновляется.
+- Идеально для e-commerce, новостных лент.`}]},{id:`app-router`,title:`App Router и Server Components`,questions:[{id:`next-03`,hot:!0,q:`В чем разница между App Router и Pages Router?`,shortAnswer:`Pages Router (старый) — каждая страница это React-компонент, рендерится на клиенте или сервере. App Router (новый, папка app) — поддерживает React Server Components, вложенные макеты (Layouts), Streaming и упрощенную загрузку данных.`,a:"Next.js 13 представил App Router (папка `app/`) как новую архитектуру.\n\nPages Router (`pages/`):\n- Компоненты по умолчанию клиентские (нужно писать `'use client'`, если нужен стейт).\n- Данные подтягиваются через специальные методы (`getStaticProps`, `getServerSideProps`).\n- Макеты (Layouts) перемонтируются при переходе между страницами.\n\nApp Router (`app/`):\n- По умолчанию использует React Server Components (RSC). Компоненты рендерятся на сервере и не отправляют JS-бандл на клиент.\n- Если нужны хуки (useState, useEffect) или браузерные API, нужно явно добавить `'use client'`.\n- Данные подтягиваются напрямую через `async/await` в самом компоненте.\n- Поддерживает вложенные Layouts (они сохраняют состояние при навигации).\n- Поддерживает Streaming (отправка UI по частям с помощью `<Suspense>`).\n- Использует кэширование запросов `fetch` на уровне фреймворка."},{id:`next-04`,hot:!0,q:`Что такое React Server Components (RSC) в Next.js?`,shortAnswer:`RSC — это компоненты, которые выполняются ТОЛЬКО на сервере. Они не увеличивают размер JS-бандла на клиенте, имеют прямой доступ к БД и бэкенду, но не могут использовать хуки состояния (useState) и события браузера.`,a:`React Server Components (RSC) — это новая парадигма рендеринга, которую Next.js (App Router) использует по умолчанию.
+
+Как это работает:
+1. Вы пишете компонент как обычную \`async\` функцию.
+2. Next.js выполняет его на сервере, делает запросы к БД или API.
+3. На клиент отправляется ТОЛЬКО готовый HTML и минимальный JS-сериализованный результат (RSC Payload).
+4. Библиотеки (например, \`moment\`, \`lodash\`), используемые в RSC, НЕ попадают в клиентский бандл.
+
+Плюсы RSC:
+- Нулевой размер бандла для серверной логики.
+- Прямой доступ к базе данных и файловой системе сервера.
+- Автоматический Code Splitting.
+
+Минусы / Ограничения:
+- Нельзя использовать \`useState\`, \`useEffect\`, \`onClick\` и другие интерактивные хуки/события.
+- Если нужна интерактивность, нужно создать дочерний компонент и пометить его директивой \`'use client'\`.
+- Нельзя передавать функции или классы через пропсы от серверного компонента к клиентскому.`}]}]}],Dw=(e,t,n)=>({...e,hot:!!e.hot,q:e.q,a:e.a,title:e.q,text:e.q,question:e.q,answer:e.a,fullAnswer:e.a,shortAnswer:e.shortAnswer||``,explanation:e.a,section:t.id,sectionTitle:t.title,topic:n.id,topicTitle:n.title}),Ow=Ew.map(e=>({id:e.id,title:e.title,color:e.color,topics:(e.topics||[]).map(t=>({id:t.id,title:t.title,questions:(t.questions||[]).map(n=>Dw(n,e,t))}))})),kw=Ow.flatMap(e=>e.topics.flatMap(e=>e.questions)),Aw={sections:Ow},jw=864e5,Mw=[{key:0,label:`Не знаю`,days:0,color:`#ff6b6b`},{key:1,label:`Немного знаю`,days:1,color:`#ffc857`},{key:2,label:`Хорошо знаю`,days:3,color:`#43d2ff`},{key:3,label:`Полностью знаю`,days:7,color:`#3dd68c`}],Nw=e=>e<=Date.now()?`сейчас`:new Date(e).toLocaleDateString(`ru-RU`,{day:`numeric`,month:`short`}),Pw=(0,_.createContext)(),Fw=({children:e})=>{let{user:t}=Tw(),[n,r]=(0,_.useState)({}),[i,a]=(0,_.useState)(!0);(0,_.useEffect)(()=>{if(!t){r({}),a(!1);return}let e=K_(vw,`users`,t.uid),n=pw(e,async t=>{if(t.exists()){let n=t.data();if(!n.cards&&(n.learned?.length||n.incorrect?.length)){let t=Date.now(),r={};(n.learned||[]).forEach(e=>{r[e]={lvl:3,next:t+7*jw,seen:1,last:t}}),(n.incorrect||[]).forEach(e=>{r[e]={lvl:0,next:t+jw,seen:1,last:t}}),await fw(e,{cards:r,learned:vv(),incorrect:vv()});return}r(n.cards||{})}else await dw(e,{cards:{}}),r({});a(!1)});return()=>n()},[t]);let o=(0,_.useCallback)(async(e,n)=>{if(!t)return;let r=Date.now();await fw(K_(vw,`users`,t.uid),{[`cards.${e}`]:{lvl:n,next:r+Mw[n].days*jw,seen:yv(1),last:r}})},[t]),s=(0,_.useCallback)(e=>{let t=n[e];return t?t.next<=Date.now()?`due`:`scheduled`:`new`},[n]),c=(0,_.useMemo)(()=>{let e=Date.now(),t=0,r=0,i=0,a=Aw.sections.map(a=>{let o=0,s=0,c=0,l=a.topics.map(t=>{let r=0,i=0,a=0;return t.questions.forEach(t=>{let o=n[t.id];o?o.next<=e?r++:a++:i++}),o+=r,s+=i,c+=a,{id:t.id,title:t.title,total:t.questions.length,due:r,fresh:i,learned:a,hot:t.questions.filter(e=>e.hot).length}});return t+=o,r+=s,i+=c,{id:a.id,title:a.title,accent:a.accent,total:a.topics.reduce((e,t)=>e+t.questions.length,0),due:o,fresh:s,learned:c,topics:l}});return{total:kw.length,due:t,fresh:r,learned:i,sections:a}},[n]);return(0,$.jsx)(Pw.Provider,{value:{cards:n,loading:i,rateCard:o,statusOf:s,stats:c},children:e})},Iw=()=>(0,_.useContext)(Pw),Lw=[{id:`task-debounce`,topic:`closures`,topicName:`Замыкания и функции`,difficulty:`medium`,title:`Реализация Debounce`,description:"Напишите функцию `debounce(func, delay)`, которая задерживает вызов функции до тех пор, пока не пройдёт `delay` миллисекунд с момента последнего вызова.\n**Требования:**\n- Возвращает новую функцию\n- Если вызовы идут чаще, чем `delay`, таймер сбрасывается\n- Функция должна сохранять контекст `this` и принимать аргументы",starterCode:`function debounce(func, delay) {
   // ваш код здесь
 }`,hints:[`Вам понадобится переменная для хранения ID таймера (setTimeout) в замыкании`,`При каждом вызове возвращаемой функции очищайте предыдущий таймер через clearTimeout`,`Затем устанавливайте новый таймер, который вызовет func через delay мс`,`Используйте apply для сохранения контекста this и передачи аргументов`],testCases:[{input:[()=>`test`,100],expected:`function`,description:`Возвращает функцию`}],solution:`function debounce(func, delay) {
   let timerId;
