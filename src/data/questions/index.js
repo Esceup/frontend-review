@@ -10,6 +10,7 @@ import httpSection from "./http";
 import tsSection from "./ts";
 import reactSection from "./react";
 import reduxSection from "./redux";
+import nextSection from "./next";
 
 
 const rawSections = [
@@ -20,6 +21,7 @@ const rawSections = [
   tsSection,
   reactSection,
   reduxSection,
+  nextSection,
 ];
 
 // Приводим вопрос к единому виду + алиасы, чтобы работало ЛЮБОЕ имя поля в компонентах
