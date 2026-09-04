@@ -2287,6 +2287,1557 @@ interface CatalogResponse {
       },
     ],
   },
+  // ════════════════════════════════════════
+  //  11. JAVASCRIPT CORE
+  // ════════════════════════════════════════
+  {
+    id: "js-core",
+    title: "JavaScript Core",
+    icon: "🟨",
+    accent: "#ffc857",
+    questions: [
+      {
+        id: "js-event-loop",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Как работает Event Loop? Микрозадачи vs макрозадачи",
+        summary:
+          "Call Stack → Microtask Queue (Promise, queueMicrotask, MutationObserver) → Rendering → Macrotask Queue (setTimeout, события, I/O). После каждой макрозадачи ВСЕ микрозадачи выполняются до рендеринга.",
+        details: [
+          {
+            type: "text",
+            content: `JavaScript однопоточный, но неблокирующий благодаря Event Loop.
+
+**Порядок обработки:**
+1. **Call Stack** — выполняет синхронный код
+2. **Microtask Queue** — промисы, \`queueMicrotask\`, \`MutationObserver\`
+3. **Rendering** — браузер отрисовывает изменения
+4. **Macrotask Queue** — \`setTimeout\`, \`setInterval\`, события DOM, I/O
+
+**Критическое правило:** после каждой макрозадачи ВСЕ микрозадачи выполняются до рендеринга. Если микрозадачи рекурсивно создают новые — интерфейс заблокируется.`,
+          },
+          {
+            type: "code",
+            title: "Порядок выполнения",
+            content: `console.log(1);                    // синхронно
+setTimeout(() => console.log(2));  // macrotask
+Promise.resolve().then(() => console.log(3)); // microtask
+console.log(4);                    // синхронно
+
+// Вывод: 1, 4, 3, 2`,
+          },
+          {
+            type: "tip",
+            content:
+              "На собеседовании часто дают код с вложенными промисами и таймерами и просят предсказать порядок вывода. Тренируйся на таких задачах.",
+          },
+        ],
+        followUps: [
+          {
+            question:
+              "Что произойдёт, если в .then() создать бесконечную цепочку микрозадач?",
+            answer: `Интерфейс **заблокируется**. Микрозадачи выполняются до рендеринга, и если они рекурсивно создают новые, браузер никогда не перейдёт к отрисовке. Это классический способ «подвесить» вкладку.`,
+          },
+          {
+            question: "Где выполняется requestAnimationFrame?",
+            answer: `\`requestAnimationFrame\` выполняется **перед рендерингом**, после микрозадач. Это не макрозадача в классическом смысле — он привязан к кадру отрисовки.`,
+          },
+        ],
+        keywords: [
+          "Call Stack",
+          "microtask",
+          "macrotask",
+          "rendering",
+          "queueMicrotask",
+        ],
+      },
+      {
+        id: "js-closures",
+        tag: null,
+        hot: true,
+        question: "Что такое замыкание? Приведи практический пример",
+        summary:
+          "Функция запоминает переменные из области, где была создана, даже после завершения внешней функции. Используется для приватных переменных, фабрик, мемоизации, каррирования.",
+        details: [
+          {
+            type: "code",
+            title: "Счётчик на замыкании",
+            content: `function makeCounter() {
+  let count = 0; // приватная переменная
+  return {
+    increment: () => ++count,
+    getCount: () => count,
+  };
+}
+const counter = makeCounter();
+counter.increment(); // 1
+counter.increment(); // 2
+counter.getCount();  // 2
+// count недоступен снаружи`,
+          },
+          {
+            type: "bullets",
+            items: [
+              "**Приватные переменные** — инкапсуляция без классов",
+              "**Фабрики функций** — \`makeMultiplier(3)\` возвращает \`x => x * 3\`",
+              "**Мемоизация** — кэш в замыкании",
+              "**Обработчики событий** — сохранение контекста",
+              "**Каррирование** — \`curry(a)(b)(c)\`",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "Какая проблема со замыканиями в цикле с var?",
+            answer: `\`for (var i = 0; i < 3; i++) { setTimeout(() => console.log(i)); }\` выведет **3, 3, 3**. \`var\` имеет функциональную область видимости — все колбэки ссылаются на одну переменную. С \`let\` создаётся новая привязка на каждой итерации → **0, 1, 2**.`,
+          },
+          {
+            question: "Может ли замыкание вызвать утечку памяти?",
+            answer: `Да. Если замыкание хранит ссылку на большой объект и живёт долго (например, в обработчике события), сборщик мусора не может освободить этот объект. Решение: удалять обработчики через \`removeEventListener\`, обнулять ссылки.`,
+          },
+        ],
+        keywords: [
+          "лексическое окружение",
+          "приватность",
+          "фабрика",
+          "stale closure",
+        ],
+      },
+      {
+        id: "js-this-bind",
+        tag: null,
+        hot: true,
+        question: "Как определяется this? call, apply, bind",
+        summary:
+          "this определяется при вызове, не при создании. 5 правил: глобальный вызов, метод объекта, new, call/apply/bind, стрелочная функция (лексический this).",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Глобальный вызов** \`fn()\` → \`window\` (или \`undefined\` в strict mode)",
+              "**Метод** \`obj.fn()\` → объект слева от точки",
+              "**Конструктор** \`new Fn()\` → новый созданный объект",
+              "**Явная привязка** \`call/apply/bind\` → переданный контекст",
+              "**Стрелочная функция** → \`this\` из внешней области (лексически)",
+            ],
+          },
+          {
+            type: "code",
+            title: "Потеря контекста",
+            content: `const obj = {
+  name: 'test',
+  say() { console.log(this.name); }
+};
+const fn = obj.say;
+fn();           // undefined — this потерян
+obj.say();      // 'test'
+
+// Стрелочная функция НЕ подходит как метод:
+const obj2 = {
+  name: 'test',
+  say: () => console.log(this.name) // this = window
+};`,
+          },
+        ],
+        followUps: [
+          {
+            question: "В чём разница между call, apply и bind?",
+            answer: `\`call(ctx, a, b)\` — вызывает сразу, аргументы через запятую. \`apply(ctx, [a, b])\` — вызывает сразу, аргументы массивом. \`bind(ctx, a)\` — **не вызывает**, возвращает новую функцию с навсегда привязанным \`this\`.`,
+          },
+        ],
+        keywords: [
+          "call",
+          "apply",
+          "bind",
+          "стрелочная функция",
+          "потеря контекста",
+        ],
+      },
+      {
+        id: "js-promises",
+        tag: null,
+        hot: true,
+        question: "Promise: состояния, цепочки, статические методы",
+        summary:
+          "Три состояния: pending → fulfilled / rejected. Цепочки через .then(). Статические: Promise.all, Promise.race, Promise.allSettled, Promise.any.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Promise.all** — ждёт все, реджект при первой ошибке",
+              "**Promise.race** — первый завершившийся (успех или ошибка)",
+              "**Promise.allSettled** — ждёт все, возвращает статус каждого",
+              "**Promise.any** — первый успешный, AggregateError если все откажут",
+            ],
+          },
+          {
+            type: "code",
+            title: "Обработка ошибок в цепочке",
+            content: `fetch(url)
+  .then(r => r.json())
+  .then(data => process(data))
+  .catch(e => handleError(e))    // ловит ошибку из ЛЮБОГО .then()
+  .finally(() => hideSpinner()); // всегда, не получает аргументов`,
+          },
+        ],
+        followUps: [
+          {
+            question: "Что вернёт Promise.resolve(5).then(x => x + 1)?",
+            answer: `Промис, который резолвится значением **6**. \`.then()\` всегда возвращает **новый промис**. Если колбэк возвращает значение — промис резолвится им. Если бросает ошибку — реджектится.`,
+          },
+          {
+            question: "async/await — это синтаксический сахар над чем?",
+            answer: `Над промисами. \`async\` делает функцию возвращающей промис. \`await\` приостанавливает выполнение до резолва. \`try/catch\` заменяет \`.catch()\`. Под капотом — генераторы + промисы (в ранних реализациях).`,
+          },
+        ],
+        keywords: [
+          "pending",
+          "fulfilled",
+          "rejected",
+          "Promise.all",
+          "allSettled",
+          "any",
+        ],
+      },
+      {
+        id: "js-prototype",
+        tag: null,
+        hot: false,
+        question: "Прототипное наследование. __proto__ vs prototype",
+        summary:
+          "Каждый объект имеет скрытую ссылку на прототип. При обращении к свойству JS идёт по цепочке. prototype — свойство функции-конструктора, __proto__ — геттер к прототипу объекта (устаревший).",
+        details: [
+          {
+            type: "code",
+            title: "Цепочка прототипов",
+            content: `function Animal(name) { this.name = name; }
+Animal.prototype.speak = function() { return this.name; };
+
+const dog = new Animal('Rex');
+dog.speak(); // 'Rex' — найдено в прототипе
+
+// Современный API:
+Object.getPrototypeOf(dog) === Animal.prototype; // true
+Object.setPrototypeOf(obj, proto);               // установка`,
+          },
+          {
+            type: "tip",
+            content:
+              "В классах ES6 методы автоматически попадают в `prototype`. `class User { sayHi() {} }` — метод `sayHi` живёт в `User.prototype`, а не в каждом экземпляре.",
+          },
+        ],
+        keywords: [
+          "prototype chain",
+          "Object.create",
+          "getPrototypeOf",
+          "наследование",
+        ],
+      },
+      {
+        id: "js-es6-features",
+        tag: null,
+        hot: true,
+        question: "Какие ключевые фичи ES6+ ты используешь ежедневно?",
+        summary:
+          "Деструктуризация, spread/rest, optional chaining, nullish coalescing, async/await, модули, прокси, генераторы, structuredClone.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Деструктуризация** — \`const { name, age } = user\`",
+              "**Spread/Rest** — \`[...arr]\`, \`{...obj}\`, \`function(...args)\`",
+              "**Optional Chaining** — \`user?.address?.city\`",
+              "**Nullish Coalescing** — \`value ?? default\` (в отличие от \`||\`, не ловит \`0\` и \`''\`)",
+              "**Динамический импорт** — \`const mod = await import('./heavy.js')\`",
+              "**structuredClone** — глубокое копирование (2022+)",
+              "**Array.at()**, **Object.hasOwn()**, **findLast()**",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "В чём разница между ?? и ||?",
+            answer: `\`||\` возвращает правый операнд для **любого falsy** (\`0\`, \`''\`, \`false\`, \`null\`, \`undefined\`, \`NaN\`). \`??\` — только для \`null\` и \`undefined\`. Если \`0\` — валидное значение, используй \`??\`.`,
+          },
+        ],
+        keywords: [
+          "деструктуризация",
+          "spread",
+          "optional chaining",
+          "nullish",
+          "structuredClone",
+        ],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  12. TYPESCRIPT
+  // ════════════════════════════════════════
+  {
+    id: "typescript",
+    title: "TypeScript",
+    icon: "🔷",
+    accent: "#4a9eff",
+    questions: [
+      {
+        id: "ts-interface-vs-type",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "interface vs type: когда что использовать?",
+        summary:
+          "interface — для объектов и классов, поддерживает extends и declaration merging. type — для union, intersection, примитивов, mapped types. Оба удаляются при компиляции.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**interface**: идеален для API-объектов, поддерживает \`extends\`, declaration merging (можно расширить стороннюю библиотеку)",
+              "**type**: union (\`string | number\`), intersection (\`A & B\`), кортежи, mapped types, условные типы",
+              "Оба удаляются при компиляции — в рантайме их нет",
+              "В проекте: \`interface\` для моделей данных, \`type\` для всего остального",
+            ],
+          },
+          {
+            type: "code",
+            title: "Примеры",
+            content: `// interface — для объектов
+interface User {
+  id: number;
+  name: string;
+}
+interface Admin extends User {
+  permissions: string[];
+}
+
+// type — для union, intersection
+type Status = 'active' | 'inactive' | 'banned';
+type Result<T> = { data: T } | { error: string };
+type UserWithRole = User & { role: string };`,
+          },
+        ],
+        followUps: [
+          {
+            question: "Что такое declaration merging?",
+            answer: `Если объявить \`interface User\` дважды, TypeScript **объединит** их поля. С \`type\` это невозможно — будет ошибка. Это полезно для расширения типов из сторонних библиотек.`,
+          },
+        ],
+        keywords: ["extends", "declaration merging", "union", "intersection"],
+      },
+      {
+        id: "ts-generics",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Что такое дженерики? Приведи пример из практики",
+        summary:
+          "Дженерики позволяют создавать переиспользуемые компоненты, где тип определяется при вызове. Пример: ApiResponse<T>, createSelector, useState<T>.",
+        details: [
+          {
+            type: "code",
+            title: "Дженерик для API-ответа",
+            content: `interface ApiResponse<T> {
+  data: T;
+  error: string | null;
+  isLoading: boolean;
+}
+
+// Использование:
+const userResponse: ApiResponse<User> = await fetchUser();
+const listResponse: ApiResponse<Product[]> = await fetchProducts();`,
+          },
+          {
+            type: "bullets",
+            items: [
+              "**Ограничения**: \`<T extends Comparable>\` — T должен быть сравнимым",
+              "**Значения по умолчанию**: \`<T = string>\`",
+              "**В функциях**: \`function identity<T>(arg: T): T\`",
+              "**В классах**: \`class Store<T> { items: T[] }\`",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "Как ограничить дженерик определёнными полями?",
+            answer: `Используй \`extends\`: \`function getProperty<T, K extends keyof T>(obj: T, key: K): T[K]\`. Здесь \`K\` может быть только ключом \`T\`, а возвращаемый тип — типом этого поля.`,
+          },
+        ],
+        keywords: ["泛型", "extends", "keyof", "ApiResponse", "ограничения"],
+      },
+      {
+        id: "ts-utility-types",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question:
+          "Какие Utility Types используешь? Partial, Pick, Omit, Record",
+        summary:
+          "Partial<T> — все поля опциональны. Pick<T, K> — только указанные поля. Omit<T, K> — все кроме указанных. Record<K, V> — словарь. Readonly<T>, Required<T>, ReturnType<typeof fn>.",
+        details: [
+          {
+            type: "code",
+            title: "Практическое применение",
+            content: `interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+}
+
+// PATCH-запрос — только часть полей
+type UpdateUser = Partial<Pick<User, 'name' | 'email'>>;
+
+// Публичная модель без пароля
+type PublicUser = Omit<User, 'password'>;
+
+// Кэш сущностей: id → User
+type UserCache = Record<number, User>;
+
+// Тип возврата функции
+type Fn = () => Promise<User>;
+type Result = Awaited<ReturnType<Fn>>; // User`,
+          },
+        ],
+        followUps: [
+          {
+            question: "Как реализовать свой Partial?",
+            answer: `\`type MyPartial<T> = { [K in keyof T]?: T[K] }\`. Это **mapped type**: итерируем по ключам \`T\` и делаем каждое поле опциональным через \`?\`.`,
+          },
+        ],
+        keywords: ["Partial", "Pick", "Omit", "Record", "mapped types"],
+      },
+      {
+        id: "ts-type-guards",
+        tag: null,
+        hot: true,
+        question: "Что такое Type Guards? Как сузить тип unknown?",
+        summary:
+          "Type Guard сужает тип внутри блока. Встроенные: typeof, instanceof, in. Пользовательский: `x is Type`. Критично для работы с unknown из API.",
+        details: [
+          {
+            type: "code",
+            title: "Пользовательский type guard",
+            content: `function isUser(x: unknown): x is User {
+  return (
+    typeof x === 'object' && x !== null &&
+    'id' in x && typeof (x as any).id === 'number' &&
+    'name' in x && typeof (x as any).name === 'string'
+  );
+}
+
+// Использование:
+const data: unknown = await response.json();
+if (isUser(data)) {
+  console.log(data.name); // TS знает что это User
+}`,
+          },
+        ],
+        followUps: [
+          {
+            question: "unknown vs any — в чём разница?",
+            answer: `\`any\` отключает все проверки. \`unknown\` — безопасный: TS не даст выполнить операцию, пока не сузишь тип через type guard. Используй \`unknown\` для \`catch\`, \`JSON.parse\`, внешних данных.`,
+          },
+        ],
+        keywords: ["typeof", "instanceof", "x is Type", "unknown", "сужение"],
+      },
+      {
+        id: "ts-discriminated-union",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Что такое Discriminated Union? Как используешь в Redux?",
+        summary:
+          "Union-тип с общим полем-дискриминатором. В Redux: action.type. TS автоматически сужает тип в каждой ветке switch/if.",
+        details: [
+          {
+            type: "code",
+            title: "Discriminated Union для API-статусов",
+            content: `type RequestState<T> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: T }
+  | { status: 'error'; message: string };
+
+function render<T>(state: RequestState<T>) {
+  switch (state.status) {
+    case 'success':
+      return state.data;    // TS знает что есть data
+    case 'error':
+      return state.message; // TS знает что есть message
+  }
+}`,
+          },
+          {
+            type: "tip",
+            content:
+              "В Redux Toolkit `createSlice` автоматически генерирует discriminated union для actions. Поле `type` — дискриминатор. В `extraReducers` TS сужает тип `action.payload`.",
+          },
+        ],
+        keywords: [
+          "дискриминатор",
+          "switch",
+          "exhaustiveness",
+          "Redux actions",
+        ],
+      },
+      {
+        id: "ts-tsconfig",
+        tag: null,
+        hot: false,
+        question: "Какие ключевые опции tsconfig.json ты настраиваешь?",
+        summary:
+          "strict: true (включает все строгие проверки), target, module, paths (алиасы), esModuleInterop. strict обязателен для production.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**strict: true** — включает \`strictNullChecks\`, \`noImplicitAny\`, \`strictFunctionTypes\`",
+              "**target** — ECMAScript-версия вывода (ES2020+ для современных проектов)",
+              "**module** — \`ESNext\` для бандлеров, \`CommonJS\` для Node",
+              "**paths + baseUrl** — алиасы: \`@/components\` → \`src/components\`",
+              "**esModuleInterop** — совместимость CommonJS и ESM",
+              "**noUncheckedIndexedAccess** — \`arr[i]\` может быть \`undefined\`",
+            ],
+          },
+        ],
+        keywords: ["strict", "paths", "target", "esModuleInterop"],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  13. REDUX TOOLKIT
+  // ════════════════════════════════════════
+  {
+    id: "redux-toolkit",
+    title: "Redux Toolkit",
+    icon: "🟣",
+    accent: "#b58df2",
+    questions: [
+      {
+        id: "rtk-why",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Почему Redux Toolkit, а не ванильный Redux?",
+        summary:
+          "RTK решает многословность: configureStore автоматически настраивает Thunk и DevTools, createSlice генерирует экшены и редьюсеры, Immer позволяет мутировать state напрямую.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**configureStore** — автоматически добавляет Thunk, DevTools, сериализуемость",
+              "**createSlice** — экшены + редьюсеры из одного объекта",
+              "**Immer внутри** — \`state.value = 1\` вместо \`return { ...state, value: 1 }\`",
+              "**createAsyncThunk** — для асинхронных операций",
+              "**createEntityAdapter** — нормализация из коробки",
+            ],
+          },
+          {
+            type: "code",
+            title: "createSlice",
+            content: `const counterSlice = createSlice({
+  name: 'counter',
+  initialState: { value: 0 },
+  reducers: {
+    increment(state) {
+      state.value += 1; // Immer: можно "мутировать"
+    },
+    addBy(state, action: PayloadAction<number>) {
+      state.value += action.payload;
+    },
+  },
+});
+// Автоматически:
+// counterSlice.actions.increment
+// counterSlice.actions.addBy
+// counterSlice.reducer`,
+          },
+        ],
+        keywords: ["createSlice", "Immer", "configureStore", "многословность"],
+      },
+      {
+        id: "rtk-normalization",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Как ты нормализовал состояние каталога в Redux?",
+        summary:
+          "Плоская структура: byId (Record) + allIds (массив). Обновление одного товара = O(1). createEntityAdapter из RTK автоматизирует это.",
+        details: [
+          {
+            type: "code",
+            title: "createEntityAdapter",
+            content: `const productsAdapter = createEntityAdapter<Product>({
+  selectId: (product) => product.id,
+  sortComparer: (a, b) => a.name.localeCompare(b.name),
+});
+
+const initialState = productsAdapter.getInitialState({
+  status: 'idle',
+  filters: { category: null },
+});
+
+// Обновление одного товара — O(1)
+updateProduct: (state, action) => {
+  productsAdapter.updateOne(state, {
+    id: action.payload.id,
+    changes: action.payload.changes,
+  });
+},
+
+// Автогенерируемые селекторы
+export const { selectAll, selectById, selectIds } =
+  productsAdapter.getSelectors((s: RootState) => s.catalog);`,
+          },
+          {
+            type: "tip",
+            content:
+              "До нормализации обновление одного товара требовало глубокого клонирования всего массива. После — замена одного объекта в byId. Это снизило лишние re-render'ы на ~70%.",
+          },
+        ],
+        followUps: [
+          {
+            question: "Почему не хранил данные как массив?",
+            answer: `Массив требует **глубокого клонирования** при обновлении одного элемента. \`byId\` + \`allIds\` позволяет обновлять **O(1)** и не создавать новые ссылки на неизменённые элементы. \`useSelector\` сравнивает по ссылке — стабильные ссылки = меньше ре-рендеров.`,
+          },
+        ],
+        keywords: [
+          "createEntityAdapter",
+          "byId",
+          "allIds",
+          "O(1)",
+          "upsertMany",
+        ],
+      },
+      {
+        id: "rtk-selectors",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Как оптимизировал selectors? createSelector",
+        summary:
+          "createSelector из Reselect/RTK кеширует результат. Если входы не изменились — возвращает ту же ссылку. Без него фильтр в useSelector создаёт новый массив при каждом вызове.",
+        details: [
+          {
+            type: "code",
+            title: "Мемоизированный селектор",
+            content: `// ❌ ПЛОХО: filter всегда возвращает новый массив
+const selectFiltered = (state: RootState) =>
+  state.catalog.allIds
+    .map(id => state.catalog.byId[id])
+    .filter(p => matchesFilters(p, state.catalog.filters));
+
+// ✅ ХОРОШО: мемоизация через createSelector
+const selectFiltered = createSelector(
+  [
+    (s: RootState) => s.catalog.byId,
+    (s: RootState) => s.catalog.allIds,
+    (s: RootState) => s.catalog.filters,
+  ],
+  (byId, allIds, filters) =>
+    allIds.map(id => byId[id]).filter(p => matchesFilters(p, filters))
+);`,
+          },
+        ],
+        followUps: [
+          {
+            question: "Что произойдёт без createSelector?",
+            answer: `\`useSelector\` сравнивает результат по ссылке (\`===\`). \`filter()\` **всегда** возвращает новый массив → ссылка меняется → компонент перерендеривается при **любом** изменении стора, даже если данные не менялись.`,
+          },
+        ],
+        keywords: [
+          "createSelector",
+          "мемоизация",
+          "стабильная ссылка",
+          "reselect",
+        ],
+      },
+      {
+        id: "rtk-immer",
+        tag: null,
+        hot: false,
+        question: "Как работает Immer внутри RTK?",
+        summary:
+          "Immer создаёт Proxy вокруг state. Записывает мутации в черновик, затем генерирует новый иммутабельный объект. Ты пишешь мутативный код, получаешь иммутабельный результат.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "Под капотом: **Proxy** перехватывает записи в \`state\`",
+              "Мутации записываются в **черновик** (draft)",
+              "В конце генерируется **новый объект** с применёнными изменениями",
+              "Неизменённые ветки сохраняют **прежние ссылки** (структурное разделение)",
+              "Поэтому \`state.items.push(x)\` безопасно — оригинальный массив не меняется",
+            ],
+          },
+        ],
+        keywords: [
+          "Proxy",
+          "draft",
+          "структурное разделение",
+          "иммутабельность",
+        ],
+      },
+      {
+        id: "rtk-middleware",
+        tag: null,
+        hot: false,
+        question: "Что такое middleware в Redux? Как работает Thunk?",
+        summary:
+          "Middleware встраивается в dispatch: экшен проходит через цепочку перед попаданием в reducer. Thunk позволяет диспатчить функции для асинхронной логики.",
+        details: [
+          {
+            type: "code",
+            title: "createAsyncThunk",
+            content: `const fetchProducts = createAsyncThunk(
+  'catalog/fetchProducts',
+  async (params: CatalogParams) => {
+    const response = await fetch(\`/api/products?\${qs(params)}\`);
+    return response.json();
+  }
+);
+
+// В createSlice:
+extraReducers: (builder) => {
+  builder
+    .addCase(fetchProducts.pending, (state) => {
+      state.status = 'loading';
+    })
+    .addCase(fetchProducts.fulfilled, (state, action) => {
+      state.status = 'succeeded';
+      productsAdapter.setAll(state, action.payload);
+    })
+    .addCase(fetchProducts.rejected, (state) => {
+      state.status = 'failed';
+    });
+}`,
+          },
+        ],
+        keywords: ["dispatch", "thunk", "createAsyncThunk", "extraReducers"],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  14. REACT HOOKS (углублённо)
+  // ════════════════════════════════════════
+  {
+    id: "react-hooks",
+    title: "React Hooks",
+    icon: "🪝",
+    accent: "#61dafb",
+    questions: [
+      {
+        id: "hooks-useeffect",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Как работает useEffect? Когда вызывается cleanup?",
+        summary:
+          "useEffect запускается после обновления DOM. Cleanup вызывается перед повторным запуском и при unmount. Зависимости определяют, когда эффект перезапускается.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Пустой массив \`[]\`** — эффект один раз при mount",
+              "**Массив с переменными** — эффект при их изменении",
+              "**Без массива** — после каждого рендера",
+              "**Cleanup** — отменяет предыдущий эффект: \`clearInterval\`, \`removeEventListener\`, \`abort()\`",
+              "**React 18 Strict Mode** — эффекты монтируются, размонтируются и снова монтируются (проверка на утечки)",
+            ],
+          },
+          {
+            type: "code",
+            title: "Эффект с cleanup и зависимостями",
+            content: `useEffect(() => {
+  const controller = new AbortController();
+
+  fetchUser(userId, { signal: controller.signal })
+    .then(res => res.json())
+    .then(setUser)
+    .catch(err => {
+      if (err.name !== 'AbortError') setError(err);
+    });
+
+  return () => controller.abort(); // cleanup
+}, [userId]); // перезапуск при смене userId`,
+          },
+        ],
+        followUps: [
+          {
+            question: "Почему нельзя делать async колбэк в useEffect?",
+            answer: `\`useEffect\` ожидает функцию или \`undefined\` (cleanup). \`async\`-функция возвращает **промис**, а не функцию очистки. Решение: создать внутреннюю \`async\`-функцию и вызвать её, или использовать \`.then()\`.`,
+          },
+          {
+            question: "Что такое проблема гонки (race condition) в useEffect?",
+            answer: `Быстрые смены \`userId\` → запросы завершаются в непредсказуемом порядке → старый ответ перезаписывает новый. Решение: **AbortController** или флаг \`ignore\` в cleanup.`,
+          },
+        ],
+        keywords: [
+          "cleanup",
+          "зависимости",
+          "AbortController",
+          "race condition",
+          "Strict Mode",
+        ],
+      },
+      {
+        id: "hooks-usememo-usecallback",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "useMemo vs useCallback. Когда использовать?",
+        summary:
+          "useMemo кеширует результат вычисления. useCallback кеширует ссылку на функцию. Нужны для передачи стабильных ссылок в мемоизированные дети и зависимости эффектов.",
+        details: [
+          {
+            type: "code",
+            title: "Разница",
+            content: `// useMemo — кеширует РЕЗУЛЬТАТ
+const filtered = useMemo(
+  () => items.filter(i => i.name.includes(query)),
+  [items, query]
+);
+
+// useCallback — кеширует ССЫЛКУ на функцию
+const handleClick = useCallback(
+  () => dispatch(addItem(id)),
+  [dispatch, id]
+);
+
+// Фактически:
+// useCallback(fn, deps) === useMemo(() => fn, deps)`,
+          },
+          {
+            type: "tip",
+            content:
+              "С React Compiler (2026) ручная мемоизация через useMemo/useCallback часто не нужна — компилятор делает это автоматически. Но понимание принципов остаётся критичным.",
+          },
+        ],
+        followUps: [
+          {
+            question: "Когда useMemo/actually вредит?",
+            answer: `Для **дешёвых вычислений** (сложение, конкатенация строк) накладные расходы на сравнение зависимостей превышают экономию. Не мемоизируй без профилирования.`,
+          },
+        ],
+        keywords: [
+          "мемоизация",
+          "стабильная ссылка",
+          "зависимости",
+          "преждевременная оптимизация",
+        ],
+      },
+      {
+        id: "hooks-custom",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Пример кастомного хука из твоего проекта",
+        summary:
+          "Кастомный хук инкапсулирует переиспользуемую логику. В проекте: хук для подписки на WebSocket, хук для отслеживания размера окна, хук для debounce-поиска.",
+        details: [
+          {
+            type: "code",
+            title: "Хук для подписки на событие",
+            content: `function useEventListener(event: string, handler: () => void) {
+  useEffect(() => {
+    window.addEventListener(event, handler);
+    return () => window.removeEventListener(event, handler);
+  }, [event, handler]);
+}
+
+// Использование в компоненте:
+function Catalog() {
+  const [width, setWidth] = useState(window.innerWidth);
+  useEventListener('resize', () => setWidth(window.innerWidth));
+  // ...
+}`,
+          },
+          {
+            type: "bullets",
+            items: [
+              "Каждый вызов кастомного хука создаёт **изолированное** состояние",
+              "Имя должно начинаться с \`use\` — это требование правил хуков",
+              "В отличие от HOC: не добавляют лишних узлов в дерево",
+              "В отличие от Render Props: нет wrapper hell",
+            ],
+          },
+        ],
+        keywords: ["инкапсуляция", "переиспользование", "изоляция состояния"],
+      },
+      {
+        id: "hooks-rules",
+        tag: null,
+        hot: true,
+        question: "Почему хуки нельзя вызывать внутри условий?",
+        summary:
+          "React хранит хуки в связном списке. Порядок вызовов должен быть одинаковым на каждом рендере. Если один хук пропустится — все последующие сдвинутся и вернут чужие значения.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "Только на **верхнем уровне** компонента",
+              "Не внутри \`if\`, \`for\`, \`while\`, колбэков",
+              "Не в обычных функциях (только компоненты и кастомные хуки)",
+              "ESLint \`eslint-plugin-react-hooks\` ловит нарушения автоматически",
+            ],
+          },
+          {
+            type: "code",
+            title: "Нарушение",
+            content: `// ❌ ПЛОХО:
+if (isLoggedIn) {
+  const [name, setName] = useState(''); // порядок сдвинется
+}
+
+// ✅ ХОРОШО:
+const [name, setName] = useState(isLoggedIn ? '' : undefined);`,
+          },
+        ],
+        keywords: ["связный список", "порядок вызовов", "правила хуков"],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  15. REACT HOOK FORM + ZOD
+  // ════════════════════════════════════════
+  {
+    id: "forms-validation",
+    title: "Формы и валидация",
+    icon: "📝",
+    accent: "#3dd68c",
+    questions: [
+      {
+        id: "rhf-why",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Почему React Hook Form? Чем лучше управляемых компонентов?",
+        summary:
+          "RHF использует неконтролируемые компоненты + ref. Минимум ре-рендеров при вводе. Встроенная валидация, поддержка Zod/Yup. В 2026 дополняется Actions из React 19 для простых форм.",
+        details: [
+          {
+            type: "code",
+            title: "Форма с Zod-валидацией",
+            content: `import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  name: z.string().min(2, 'Минимум 2 символа'),
+  email: z.string().email('Некорректный email'),
+  phone: z.string().regex(/^\\+?[0-9]{10,15}$/, 'Некорректный телефон'),
+});
+
+type FormData = z.infer<typeof schema>;
+
+function OrderForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+
+  const onSubmit = (data: FormData) => {
+    dispatch(submitOrder(data));
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('name')} />
+      {errors.name && <span>{errors.name.message}</span>}
+      <input {...register('email')} />
+      <button type="submit">Оформить</button>
+    </form>
+  );
+}`,
+          },
+          {
+            type: "bullets",
+            items: [
+              "**Неконтролируемые компоненты** — ввод не вызывает ре-рендер всего компонента",
+              "**Валидация при отправке** или \`mode: 'onChange'\`",
+              "**zodResolver** связывает Zod-схему с RHF",
+              "**Для простых форм** в 2026 можно использовать \`<form action={fn}>\` из React 19",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "Когда использовать React 19 Actions вместо RHF?",
+            answer: `Для **простых форм** (2-3 поля, базовая валидация). Для **сложных форм** с множеством полей, условной валидацией, динамическими полями — по-прежнему **React Hook Form**. Они дополняют, а не конкурируют.`,
+          },
+        ],
+        keywords: [
+          "register",
+          "handleSubmit",
+          "zodResolver",
+          "неконтролируемые",
+        ],
+      },
+      {
+        id: "zod-schema",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Что такое Zod? Как используешь для валидации API-данных?",
+        summary:
+          "Zod — TypeScript-first схема валидации. Описываешь схему → получаешь и рантайм-валидацию, и TypeScript-тип через z.infer. Используется для проверки API-ответов и форм.",
+        details: [
+          {
+            type: "code",
+            title: "Валидация API-ответа",
+            content: `import { z } from 'zod';
+
+const ProductSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  price: z.number().positive(),
+  category: z.enum(['sofa', 'chair', 'table']),
+  images: z.array(z.string().url()),
+});
+
+type Product = z.infer<typeof ProductSchema>;
+
+// Валидация при получении данных:
+const response = await fetch('/api/products/1');
+const data = await response.json();
+const product = ProductSchema.parse(data); // бросит ошибку если невалидно`,
+          },
+        ],
+        followUps: [
+          {
+            question: "Zod vs Yup vs Joi?",
+            answer: `**Zod** — TypeScript-first, \`z.infer\` даёт тип без дублирования. **Yup** — старше, но типы приходится писать отдельно. **Joi** — тяжёлый, для браузера не подходит. В 2026 Zod — стандарт для новых проектов.`,
+          },
+        ],
+        keywords: ["z.infer", "parse", "safeParse", "TypeScript-first"],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  16. REST API И HTTP
+  // ════════════════════════════════════════
+  {
+    id: "rest-api",
+    title: "REST API и HTTP",
+    icon: "🌐",
+    accent: "#3dd68c",
+    questions: [
+      {
+        id: "rest-methods",
+        tag: "Оба",
+        hot: true,
+        question: "HTTP-методы: GET, POST, PUT, PATCH, DELETE. Идемпотентность",
+        summary:
+          "GET — получить (безопасный, идемпотентный). POST — создать (не идемпотентный). PUT — полная замена (идемпотентный). PATCH — частичное обновление. DELETE — удаление (идемпотентный).",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Идемпотентность**: повтор запроса даёт тот же эффект. GET, PUT, DELETE — идемпотентны. POST, PATCH — нет",
+              "**Безопасные методы** (не меняют сервер): GET, HEAD, OPTIONS",
+              "**PUT** отправляет ВСЕ поля ресурса. Не прислал поле — обнулится",
+              "**PATCH** отправляет только изменяемые поля",
+              "Ответы: 200, 201 (создано), 204 (нет контента), 400, 401, 403, 404, 429, 500",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "Почему нельзя использовать GET для удаления?",
+            answer: `GET — **безопасный** метод: не должен менять состояние сервера. Браузеры, прокси, кэши могут повторять GET-запросы автоматически (предзагрузка, кеширование). DELETE через GET может быть вызван случайно.`,
+          },
+        ],
+        keywords: [
+          "идемпотентность",
+          "безопасные методы",
+          "PUT vs PATCH",
+          "статусы",
+        ],
+      },
+      {
+        id: "rest-auth",
+        tag: "Оба",
+        hot: true,
+        question: "JWT vs сессионные куки. Как хранишь токен на клиенте?",
+        summary:
+          "JWT — stateless, не нужен сервер для проверки. Куки — HttpOnly защищает от XSS. Лучший компромисс: refresh в HttpOnly-куке, access в памяти. Короткий exp для access.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**JWT**: три части — Header.Payload.Signature. Payload НЕ зашифрован, только Base64",
+              "**Нельзя отозвать** до истечения \`exp\`. Решение: короткие access (5-15 мин) + refresh",
+              "**HttpOnly-куки**: защищены от XSS (JS не может прочитать), но нужна защита от CSRF",
+              "**localStorage**: уязвим к XSS. Не рекомендуется для токенов",
+              "**В памяти**: защищено от XSS, но теряется при F5",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "Как защитить от CSRF при использовании кук?",
+            answer: `\`SameSite=Lax\` на куках (по умолчанию в современных браузерах). Для критичных операций — **CSRF-токен** в форме. Проверка заголовка \`Origin\`.`,
+          },
+        ],
+        keywords: ["JWT", "HttpOnly", "SameSite", "refresh token", "CSRF"],
+      },
+      {
+        id: "rest-cors",
+        tag: null,
+        hot: true,
+        question: "Что такое CORS? Как настроить?",
+        summary:
+          "CORS — ограничение браузера, не сервера. Сервер разрешает кросс-доменные запросы заголовком Access-Control-Allow-Origin. Preflight (OPTIONS) для нестандартных запросов.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Origin** = протокол + домен + порт",
+              "**Preflight** (OPTIONS) отправляется для PUT, DELETE, PATCH, Content-Type: application/json, кастомных заголовков",
+              "\`Access-Control-Allow-Origin: *\` не работает с \`credentials: 'include'\`",
+              "Настраивается **только на сервере**. Клиент ничего не может сделать",
+              "Для разработки — прокси в Vite/Webpack",
+            ],
+          },
+        ],
+        keywords: [
+          "Access-Control-Allow-Origin",
+          "preflight",
+          "OPTIONS",
+          "Same-Origin Policy",
+        ],
+      },
+      {
+        id: "rest-axios-vs-fetch",
+        tag: "amoCRM",
+        hot: false,
+        question: "Axios vs fetch. Что используешь и почему?",
+        summary:
+          "Axios: интерсепторы, автоматический JSON, таймауты, отмена через AbortController. fetch: нативный, без зависимостей. В проектах с RTK Query — fetchBaseQuery, Axios не нужен.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Axios**: интерсепторы (логирование, авто-обновление токена), авто-парсинг JSON, \`timeout\`",
+              "**fetch**: нативный, не нужно устанавливать, но нужно вручную парсить JSON и проверять \`response.ok\`",
+              "**RTK Query**: использует \`fetchBaseQuery\` — Axios не нужен",
+              "В 2026 \`fetch\` поддерживает \`AbortController\`, \`keepalive\`, стриминг",
+            ],
+          },
+        ],
+        keywords: [
+          "интерсепторы",
+          "fetchBaseQuery",
+          "AbortController",
+          "response.ok",
+        ],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  17. HTML / CSS / SCSS
+  // ════════════════════════════════════════
+  {
+    id: "html-css",
+    title: "HTML и CSS",
+    icon: "🎨",
+    accent: "#ff8a3d",
+    questions: [
+      {
+        id: "css-specificity",
+        tag: null,
+        hot: true,
+        question: "Специфичность и каскад. Как решаешь конфликты стилей?",
+        summary:
+          "Специфичность: inline (1000) > ID (100) > классы (10) > теги (1). Каскад: важность → происхождение → специфичность → порядок. @layer для управления приоритетом.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**inline** > **#id** > **.class** > **tag**",
+              "\`!important\` переопределяет всё, кроме другого \`!important\`",
+              "**@layer** (CSS Cascade Layers) — управление приоритетом без специфичности",
+              "**BEM** предотвращает конфликты имён: \`.card__title\`, \`.card--active\`",
+              "В проекте: **CSS Modules** / **Tailwind** — нет глобальных конфликтов",
+            ],
+          },
+        ],
+        keywords: ["специфичность", "@layer", "BEM", "CSS Modules"],
+      },
+      {
+        id: "css-flex-grid",
+        tag: null,
+        hot: true,
+        question: "Flexbox vs Grid. Когда что используешь?",
+        summary:
+          "Flexbox — одномерный (строка или столбец). Grid — двумерный (строки и столбцы одновременно). Они работают вместе: Grid для макета, Flexbox для компонентов.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Flexbox**: навигация, ряд карточек, центрирование, когда контент определяет размер",
+              "**Grid**: сложный макет, галерея, dashboard, когда макет определяет размер",
+              "\`display: grid; place-items: center;\` — самый короткий способ центрирования",
+              "\`repeat(auto-fill, minmax(250px, 1fr))\` — адаптивная сетка без медиазапросов",
+            ],
+          },
+        ],
+        keywords: [
+          "одномерный",
+          "двумерный",
+          "place-items",
+          "auto-fill",
+          "minmax",
+        ],
+      },
+      {
+        id: "css-adaptive",
+        tag: null,
+        hot: true,
+        question: "Как делаешь адаптивный дизайн? Mobile-first",
+        summary:
+          "Mobile-first: стили для мобильных по умолчанию, @media (min-width) для больших. Относительные единицы (rem, %, vw). clamp() для плавного масштабирования. Container queries (2023+).",
+        details: [
+          {
+            type: "code",
+            title: "clamp для плавного шрифта",
+            content: `/* Минимум 16px, идеал 2vw, максимум 24px */
+font-size: clamp(16px, 2vw, 24px);
+
+/* Container queries: адаптация к родителю */
+@container (min-width: 400px) {
+  .card { flex-direction: row; }
+}`,
+          },
+        ],
+        keywords: [
+          "mobile-first",
+          "clamp",
+          "container queries",
+          "rem",
+          "viewport",
+        ],
+      },
+      {
+        id: "css-scss",
+        tag: "amoCRM",
+        hot: false,
+        question: "Зачем использовать SASS/SCSS? Какие фичи применяешь?",
+        summary:
+          "SCSS добавляет переменные, вложенность, миксины, @extend. В 2026 нативный CSS перекрывает многие фичи (@layer, custom properties, nesting), но SCSS остаётся в легаси-проектах.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Переменные**: \`$primary: #3498db;\`",
+              "**Вложенность**: \`.card { &__title { ... } }\`",
+              "**Миксины**: переиспользуемые блоки с аргументами",
+              "**@use / @forward**: модульная система (замена @import)",
+              "В новых проектах часто заменяется **CSS Modules** или **Tailwind**",
+            ],
+          },
+        ],
+        keywords: ["вложенность", "миксины", "@use", "переменные"],
+      },
+      {
+        id: "html-semantic",
+        tag: null,
+        hot: false,
+        question: "Семантическая вёрстка. Зачем и какие теги используешь?",
+        summary:
+          "Семантика: выбор тегов по смыслу (header, nav, main, article, section, footer). Улучшает SEO, доступность (скринридеры), читаемость кода.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**header, nav, main, footer** — каркас страницы",
+              "**article** — самостоятельный контент (пост, карточка товара)",
+              "**section** — тематический раздел",
+              "**strong / em** vs **b / i** — семантика важности",
+              "**alt** у изображений — обязателен для доступности",
+              "**label + input** — связь для скринридеров",
+            ],
+          },
+        ],
+        keywords: ["header", "article", "section", "доступность", "SEO"],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  18. CI/CD И ИНСТРУМЕНТЫ
+  // ════════════════════════════════════════
+  {
+    id: "ci-cd",
+    title: "CI/CD и инструменты",
+    icon: "🔧",
+    accent: "#f38ba8",
+    questions: [
+      {
+        id: "cicd-pipeline",
+        tag: "Оба",
+        hot: true,
+        question: "Как устроен ваш CI/CD пайплайн?",
+        summary:
+          "PR → линтинг (ESLint/oxlint) → тесты (Jest, Playwright) → сборка → деплой на стейджинг → QA → production. В ВИК-ИНДУСТРИ: Playwright E2E в CI сократил регрессии в 2 раза.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**Lint**: ESLint + Prettier (или oxlint в 2026) — проверка стиля и правил",
+              "**Unit-тесты**: Jest / Vitest — критичная логика",
+              "**E2E-тесты**: Playwright — ключевые пользовательские сценарии",
+              "**Сборка**: Vite build — проверка что проект собирается",
+              "**Деплой**: автоматический на стейджинг, ручной/полуавтоматический на production",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "Что происходит, если тесты падают в CI?",
+            answer: `**Merge блокируется**. В GitHub Actions / GitLab CI это настраивается через required status checks. Разработчик исправляет код и пушит заново. Это гарантирует, что в main не попадёт сломанный код.`,
+          },
+        ],
+        keywords: [
+          "pipeline",
+          "lint",
+          "test",
+          "build",
+          "deploy",
+          "required checks",
+        ],
+      },
+      {
+        id: "cicd-eslint",
+        tag: "Оба",
+        hot: true,
+        question: "Как настроил ESLint и Prettier? Что они проверяют?",
+        summary:
+          "ESLint — правила качества кода (no-unused-vars, react-hooks/rules-of-hooks). Prettier — форматирование (отступы, кавычки). В 2026: ESLint 9 с flat config, oxlint как быстрая альтернатива.",
+        details: [
+          {
+            type: "bullets",
+            items: [
+              "**ESLint**: правила качества — хуки, зависимости, неиспользуемые переменные",
+              "**Prettier**: только форматирование — не конфликтует с ESLint",
+              "**В 2026**: \`eslint.config.js\` (flat config) вместо \`.eslintrc\`",
+              "**oxlint**: Rust-линтер, в 50-100 раз быстрее. Для быстрых проверок в CI",
+              "**В проекте**: общая конфигурация + автопроверка в CI перед merge",
+            ],
+          },
+        ],
+        keywords: ["flat config", "rules-of-hooks", "Prettier", "oxlint", "CI"],
+      },
+      {
+        id: "cicd-playwright",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Как автоматизировал E2E через Playwright? Что тестировал?",
+        summary:
+          "Ключевые пользовательские сценарии: поиск, фильтрация, добавление в корзину, оформление заказа. Запуск в CI при каждом PR. data-testid для стабильных селекторов.",
+        details: [
+          {
+            type: "code",
+            title: "E2E тест фильтрации",
+            content: `import { test, expect } from '@playwright/test';
+
+test('фильтрация по категории', async ({ page }) => {
+  await page.goto('/catalog');
+  await expect(page.locator('[data-testid="product-card"]'))
+    .toHaveCount({ minimum: 1 });
+
+  await page.click('[data-testid="filter-category-sofa"]');
+
+  const cards = page.locator('[data-testid="product-card"]');
+  await expect(cards).not.toHaveCount(0);
+});`,
+          },
+          {
+            type: "bullets",
+            items: [
+              "**data-testid** атрибуты — стабильные селекторы, не ломаются при изменении стилей",
+              "**Параллельный запуск** — тесты идут в несколько потоков",
+              "**Запуск в CI** при каждом pull request",
+              "Покрытие **ключевых сценариев**, а не каждой кнопки",
+            ],
+          },
+        ],
+        keywords: ["data-testid", "параллельный запуск", "регрессия", "CI/CD"],
+      },
+      {
+        id: "cicd-jest",
+        tag: "amoCRM",
+        hot: true,
+        question: "Как довёл покрытие Jest до 87%? Что тестировал?",
+        summary:
+          "Фокус на чистых функциях: форматтеры, трансформеры данных, валидаторы. Не тестировал простые UI-компоненты (их покрывает E2E). Покрытие критичной логики, не ради цифры.",
+        details: [
+          {
+            type: "code",
+            title: "Тест трансформера данных",
+            content: `import { transformPayment } from './formatters';
+
+describe('transformPayment', () => {
+  it('преобразует API-ответ в формат таблицы', () => {
+    const apiData = {
+      payment_id: 'p-1',
+      amount_cents: 150000,
+      created_at: '2024-01-15T10:00:00Z',
+      status: 'completed',
+    };
+    const result = transformPayment(apiData);
+    expect(result).toEqual({
+      id: 'p-1',
+      amount: 1500,
+      date: '15.01.2024',
+      status: 'Оплачено',
+    });
+  });
+
+  it('обрабатывает null и undefined', () => {
+    expect(formatCurrency(null)).toBe('0 ₽');
+    expect(formatCurrency(undefined)).toBe('0 ₽');
+  });
+});`,
+          },
+        ],
+        followUps: [
+          {
+            question: "Что ты НЕ тестировал и почему?",
+            answer: `Не тестировал **простые UI-компоненты** (кнопки, лейблы) — их поведение проверяется через E2E. Не тестировал **константы и типы** — там нет логики. Фокус на **чистых функциях**, где баги стоят дороже всего.`,
+          },
+        ],
+        keywords: ["чистые функции", "форматтеры", "покрытие", "регрессия"],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  19. REACT VIRTUALIZED / ВИРТУАЛИЗАЦИЯ
+  // ════════════════════════════════════════
+  {
+    id: "virtualization",
+    title: "Виртуализация",
+    icon: "📜",
+    accent: "#ffc857",
+    questions: [
+      {
+        id: "virt-how",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Как работает виртуализация списков?",
+        summary:
+          "Вместо 5000 карточек в DOM рендерятся только видимые (~20-30) + overscan. Общий контейнер имеет высоту всех элементов, но позиционируются только видимые.",
+        details: [
+          {
+            type: "code",
+            title: "Принцип виртуализации",
+            content: `// Контейнер: высота = общая высота всех элементов
+// Внутри: только видимые элементы с position: absolute
+
+<div style={{ height: totalHeight, overflow: 'auto' }}>
+  <div style={{ height: totalHeight, position: 'relative' }}>
+    {visibleItems.map(item => (
+      <div
+        key={item.id}
+        style={{
+          position: 'absolute',
+          top: 0,
+          transform: \`translateY(\${item.offsetTop}px)\`,
+          height: itemHeight,
+        }}
+      >
+        <ProductCard product={item} />
+      </div>
+    ))}
+  </div>
+</div>`,
+          },
+          {
+            type: "bullets",
+            items: [
+              "**React Virtualized** — использовал в проекте (карточки фиксированной высоты)",
+              "**TanStack Virtual** — рекомендую в 2026: headless, легче, динамическая высота",
+              "**overscan** — рендер нескольких элементов за пределами видимой области",
+              "**Мемоизация карточек** — \`React.memo\` предотвращает ре-рендер при скролле",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "Как виртуализация влияет на SEO?",
+            answer: `Негативно: поисковый бот не видит контент за пределами первого экрана. Решение: **серверный рендеринг** первых 50 карточек или **динамический рендеринг** для ботов.`,
+          },
+          {
+            question: "Что делать с элементами переменной высоты?",
+            answer: `**TanStack Virtual** поддерживает динамическую высоту через \`measureElement\`. Элемент рендерится, измеряется его реальная высота, позиция пересчитывается. **React Virtualized** требует \`CellMeasurer\`.`,
+          },
+        ],
+        keywords: [
+          "DOM-узлы",
+          "overscan",
+          "TanStack Virtual",
+          "translateY",
+          "мемоизация",
+        ],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  20. FEATURE-SLICED DESIGN (углублённо)
+  // ════════════════════════════════════════
+  {
+    id: "fsd-deep",
+    title: "Feature-Sliced Design",
+    icon: "🧩",
+    accent: "#43d2ff",
+    questions: [
+      {
+        id: "fsd-layers",
+        tag: "ВИК-ИНДУСТРИ",
+        hot: true,
+        question: "Расскажи про слои FSD. Какое правило импортов?",
+        summary:
+          "6 слоёв: app → pages → widgets → features → entities → shared. Каждый слой импортирует только из слоёв ниже. В 2026 проверяется через steiger (CLI) или ESLint.",
+        details: [
+          {
+            type: "code",
+            title: "Структура проекта",
+            content: `src/
+├── app/                    # инициализация, провайдеры
+├── pages/
+│   └── catalog/            # страница каталога
+├── widgets/
+│   └── catalog-filters/    # блок фильтров
+├── features/
+│   ├── add-to-cart/        # сценарий добавления
+│   └── catalog-sort/
+├── entities/
+│   ├── product/            # модель товара
+│   └── category/
+└── shared/
+    ├── ui/                 # Button, Input
+    ├── api/                # baseQuery
+    └── lib/                # утилиты`,
+          },
+          {
+            type: "bullets",
+            items: [
+              "**app** не импортируется никем",
+              "**shared** не импортирует из других слоёв",
+              "**Правило**: слой импортирует только из слоёв **ниже**",
+              "**В 2026**: \`steiger\` (CLI) проверяет импорты в CI",
+              "Каждый слайс имеет \`index.ts\` — публичный API",
+            ],
+          },
+        ],
+        followUps: [
+          {
+            question: "Какая проблема была до FSD?",
+            answer: `Код лежал в папках по типу (\`components/\`, \`utils/\`). При росте проекта стало сложно понять, **где бизнес-логика** конкретной фичи. Компоненты тянули зависимости из неожиданных мест. FSD дал понятную структуру и ограничения.`,
+          },
+          {
+            question: "Как enforced правило импортов?",
+            answer: `Через **steiger** (официальный CLI от FSD) или **eslint-plugin-boundaries**. Проверяют импорты и падают в CI, если страница импортирует другую страницу или shared тянет из features.`,
+          },
+        ],
+        keywords: ["слои", "слайсы", "steiger", "импорты", "публичный API"],
+      },
+    ],
+  },
 ];
 
 // Плоский список всех вопросов для поиска
