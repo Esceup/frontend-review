@@ -10,8 +10,8 @@ const navItems = [
   { to: "/tasks", label: "Задачи" },
   { to: "/react-trainer", label: "⚛️ Тренажёр" },
   { to: "/ts-trainer", label: "🔷 TS Тренажёр" },
+  { to: "/interview", label: "🎤 Интервью" },
 ];
-
 export default function Layout() {
   const { user, logout } = useAuth();
   const { stats } = useProgress();

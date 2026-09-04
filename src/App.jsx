@@ -12,6 +12,7 @@ import TasksPage from "./components/TasksPage";
 import TaskPage from "./components/TaskPage";
 import ReactTrainerPage from "./components/ReactTrainer/ReactTrainerPage";
 import TsTrainerPage from "./components/TsTrainer/TsTrainerPage";
+import InterviewPage from "./components/Interview/InterviewPage";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
               <Route path="tasks/:taskId" element={<TaskPage />} />
               <Route path="react-trainer" element={<ReactTrainerPage />} />
               <Route path="ts-trainer" element={<TsTrainerPage />} />
+              <Route path="interview" element={<InterviewPage />} />
             </Route>
           </Routes>
         </HashRouter>
