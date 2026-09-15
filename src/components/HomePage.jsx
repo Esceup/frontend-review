@@ -29,9 +29,9 @@ export default function HomePage() {
             to="/review"
             className="rounded-lg bg-accent-css px-6 py-3 font-display text-sm font-bold text-ink-950 shadow-lg shadow-accent-css/20 transition hover:-translate-y-0.5 hover:shadow-accent-css/40"
           >
-             Повторить вопросы{stats.due > 0 ? ` (${stats.due})` : ""}
+            Повторить вопросы{stats.due > 0 ? ` (${stats.due})` : ""}
           </Link>
-          <div className="flex gap-5 font-mono text-xs text-mist-500">
+          <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs text-mist-500">
             <span>
               <b className="text-lvl-0">{stats.due}</b> созрело
             </span>

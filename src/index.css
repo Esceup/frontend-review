@@ -5,26 +5,48 @@
 @tailwind utilities;
 
 @layer base {
-  html { font-size: 16px; }
+  html {
+    font-size: 16px;
+    /* Запрет произвольного изменения размера шрифта в альбомной ориентации iOS */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-ink-900 font-body text-mist-100 antialiased;
     background-image:
       linear-gradient(rgba(70, 105, 160, 0.06) 1px, transparent 1px),
       linear-gradient(90deg, rgba(70, 105, 160, 0.06) 1px, transparent 1px);
     background-size: 44px 44px;
+    /* Запрет «резинового» скролла и горизонтального переполнения */
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
   }
+
   ::selection { @apply bg-accent-css text-ink-950; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: #0a1120; }
   ::-webkit-scrollbar-thumb { background: #21324f; border-radius: 6px; }
   ::-webkit-scrollbar-thumb:hover { background: #2c4066; }
+
+  /* На мобильных скроллбары тоньше, чтобы не съедать место */
+  @media (max-width: 768px) {
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+  }
 }
 
 @layer components {
   .card { @apply rounded-xl border border-ink-600 bg-ink-800; }
+
   .field {
     @apply w-full rounded-lg border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm
       text-mist-100 placeholder-mist-500 outline-none transition
       focus:border-accent-css focus:ring-2 focus:ring-accent-css/20;
   }
+}
+
+@layer utilities {
+  /* Safe-area для iPhone с чёлкой / жестом домой */
+  .pb-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+  .pt-safe { padding-top: max(0.75rem, env(safe-area-inset-top)); }
 }

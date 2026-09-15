@@ -356,80 +356,65 @@ export default function CodeEditor({
   return (
     <div className="code-editor-container" style={{ height }}>
       <style>{`
+      .code-editor-container {
+        --ce-gutter: 48px;
+        --ce-pad: 16px;
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #1e1e2e;
+        border: 1px solid #313244;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      /* Мобильные: компактнее */
+      @media (max-width: 640px) {
         .code-editor-container {
-          position: relative;
-          border-radius: 12px;
-          overflow: hidden;
-          background: #1e1e2e;
-          border: 1px solid #313244;
-          font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
-          font-size: 14px;
-          line-height: 1.6;
+          --ce-gutter: 36px;
+          --ce-pad: 10px;
+          font-size: 12.5px;
+          border-radius: 8px;
         }
-        .code-editor-container:focus-within {
-          border-color: #89b4fa;
-          box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.15);
-        }
-        .ce-line-numbers {
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 48px;
-          padding: 16px 8px 16px 0;
-          text-align: right;
-          color: #585b70;
-          background: #181825;
-          border-right: 1px solid #313244;
-          overflow: hidden;
-          user-select: none;
-          z-index: 2;
-          font-size: 13px;
-        }
-        .ce-highlight {
-          position: absolute;
-          left: 48px;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          padding: 16px;
-          overflow: hidden;
-          white-space: pre;
-          color: #cdd6f4;
-          pointer-events: none;
-          z-index: 1;
-        }
-        .ce-textarea {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          padding: 16px 16px 16px 64px;
-          background: transparent;
-          color: transparent;
-          caret-color: #f5e0dc;
-          border: none;
-          outline: none;
-          resize: none;
-          font-family: inherit;
-          font-size: inherit;
-          line-height: inherit;
-          white-space: pre;
-          overflow: auto;
-          z-index: 3;
-          tab-size: 3;
-        }
-        .ce-textarea::selection {
-          background: rgba(137, 180, 250, 0.3);
-          color: transparent;
-        }
-        .ce-keyword { color: #cba6f7; font-weight: 600; }
-        .ce-string { color: #a6e3a1; }
-        .ce-number { color: #fab387; }
-        .ce-comment { color: #6c7086; font-style: italic; }
-        .ce-constant { color: #f38ba8; }
-        .ce-builtin { color: #89dceb; }
-        .ce-function { color: #89b4fa; }
-      `}</style>
+      }
+      .code-editor-container:focus-within {
+        border-color: #89b4fa;
+        box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.15);
+      }
+      .ce-line-numbers {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: var(--ce-gutter);
+        padding: var(--ce-pad) 6px var(--ce-pad) 0;
+        text-align: right; color: #585b70;
+        background: #181825; border-right: 1px solid #313244;
+        overflow: hidden; user-select: none; z-index: 2; font-size: 0.9em;
+      }
+      .ce-highlight {
+        position: absolute;
+        left: var(--ce-gutter); top: 0; right: 0; bottom: 0;
+        padding: var(--ce-pad);
+        overflow: hidden; white-space: pre; color: #cdd6f4;
+        pointer-events: none; z-index: 1;
+      }
+      .ce-textarea {
+        position: relative; width: 100%; height: 100%;
+        padding: var(--ce-pad) var(--ce-pad) var(--ce-pad) calc(var(--ce-gutter) + var(--ce-pad));
+        background: transparent; color: transparent;
+        caret-color: #f5e0dc; border: none; outline: none; resize: none;
+        font-family: inherit; font-size: inherit; line-height: inherit;
+        white-space: pre; overflow: auto; z-index: 3; tab-size: 3;
+        /* Мобильные: запрет зума при фокусе на iOS */
+        touch-action: manipulation;
+      }
+      .ce-textarea::selection { background: rgba(137, 180, 250, 0.3); color: transparent; }
+      .ce-keyword { color: #cba6f7; font-weight: 600; }
+      .ce-string { color: #a6e3a1; }
+      .ce-number { color: #fab387; }
+      .ce-comment { color: #6c7086; font-style: italic; }
+      .ce-constant { color: #f38ba8; }
+      .ce-builtin { color: #89dceb; }
+      .ce-function { color: #89b4fa; }
+    `}</style>
 
       <div ref={lineNumbersRef} className="ce-line-numbers">
         {Array.from({ length: Math.max(lines, 15) }, (_, i) => (

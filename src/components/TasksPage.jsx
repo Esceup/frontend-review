@@ -186,7 +186,7 @@ export default function TasksPage() {
           <select
             value={filterTopic}
             onChange={(e) => setFilterTopic(e.target.value)}
-            className="field w-auto"
+            className="field w-full sm:w-auto"
           >
             <option value="all">Все темы</option>
             {topics.map(([key, name]) => (
@@ -198,7 +198,7 @@ export default function TasksPage() {
           <select
             value={filterDifficulty}
             onChange={(e) => setFilterDifficulty(e.target.value)}
-            className="field w-auto"
+            className="field w-full sm:w-auto"
           >
             <option value="all">Все сложности</option>
             <option value="easy">Easy</option>
@@ -208,7 +208,7 @@ export default function TasksPage() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="field w-auto"
+            className="field w-full sm:w-auto"
           >
             <option value="all">Все</option>
             <option value="solved">✅ Решённые</option>
