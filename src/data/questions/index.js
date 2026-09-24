@@ -11,6 +11,10 @@ import tsSection from "./ts";
 import reactSection from "./react";
 import reduxSection from "./redux";
 import nextSection from "./next";
+import techSection from "./tech";
+import performanceSection from "./performance";
+import deepSection from "./deep";
+import architectureSection from "./architecture";
 
 
 const rawSections = [
@@ -22,16 +26,18 @@ const rawSections = [
   reactSection,
   reduxSection,
   nextSection,
+  techSection,
+  performanceSection,
+  deepSection,
+  architectureSection,
 ];
 
-// Приводим вопрос к единому виду + алиасы, чтобы работало ЛЮБОЕ имя поля в компонентах
+
 const normalizeQuestion = (q, section, topic) => ({
   ...q,
   hot: Boolean(q.hot),
-  // основные поля (как в твоём js.js)
   q: q.q,
   a: q.a,
-  // алиасы для совместимости с компонентами
   title: q.q,
   text: q.q,
   question: q.q,
@@ -39,7 +45,6 @@ const normalizeQuestion = (q, section, topic) => ({
   fullAnswer: q.a,
   shortAnswer: q.shortAnswer || "",
   explanation: q.a,
-  // привязка к разделу/теме (для хлебных крошек и «Повторения»)
   section: section.id,
   sectionTitle: section.title,
   topic: topic.id,
@@ -49,7 +54,8 @@ const normalizeQuestion = (q, section, topic) => ({
 export const SECTIONS = rawSections.map((s) => ({
   id: s.id,
   title: s.title,
-  color: s.color,
+  color: s.color ?? s.accent,
+  accent: s.accent ?? s.color,
   topics: (s.topics || []).map((t) => ({
     id: t.id,
     title: t.title,
