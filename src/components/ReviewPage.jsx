@@ -14,22 +14,79 @@ const ACCENT_TEXT = {
   redux: "text-accent-redux",
 };
 
-export default function ReviewPage() {
-  const { statusOf, rateCard } = useProgress();
-  
-  // Режим "учить вперёд" (включает запланированные вопросы)
-  const [reviewScheduled, setReviewScheduled] = useState(false);
+// Блок «Удалённые вопросы» внизу страницы
+function DismissedBlock({
+  dismissedQuestions,
+  showDismissed,
+  setShowDismissed,
+  restoreCard,
+}) {
+  return (
+    <div className="mt-6 rounded-xl border border-ink-600 bg-ink-850 p-4">
+      <button
+        onClick={() => setShowDismissed(!showDismissed)}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <span className="font-mono text-xs text-mist-400">
+          🗑️ Удалённые вопросы ({dismissedQuestions.length})
+        </span>
+        <span className="text-mist-500 transition-transform">
+          {showDismissed ? "▲" : "▼"}
+        </span>
+      </button>
+      {showDismissed && (
+        <div className="mt-3 space-y-2">
+          <p className="font-mono text-[11px] text-mist-500">
+            Эти вопросы скрыты из повторения. Вы можете восстановить любой из
+            них.
+          </p>
+          {dismissedQuestions.map((q) => (
+            <div
+              key={q.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-ink-600 bg-ink-900 p-3"
+            >
+              <span className="min-w-0 flex-1 truncate text-sm text-mist-400">
+                {q.q ?? q.title}
+              </span>
+              <button
+                onClick={() => restoreCard(q.id)}
+                className="shrink-0 rounded-lg border border-lvl-3/30 bg-lvl-3/10 px-3 py-1 font-mono text-xs text-lvl-3 transition hover:bg-lvl-3/20"
+              >
+                Восстановить
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
-  // Фильтруем вопросы: всегда берём "due", а "scheduled" только если включён режим
+export default function ReviewPage() {
+  const { statusOf, rateCard, dismissCard, restoreCard, dismissed } =
+    useProgress();
+  const [reviewScheduled, setReviewScheduled] = useState(false);
+  const [showDismissed, setShowDismissed] = useState(false);
+
+  // Исключаем удалённые вопросы (dismissed)
   const questions = useMemo(
-    () => allQuestions.filter((item) => {
-      const status = statusOf(item.id);
-      return status === "due" || (reviewScheduled && status === "scheduled");
-    }),
+    () =>
+      allQuestions.filter((item) => {
+        const status = statusOf(item.id);
+        return (
+          status !== "dismissed" &&
+          (status === "due" || (reviewScheduled && status === "scheduled"))
+        );
+      }),
     [allQuestions, statusOf, reviewScheduled],
   );
 
-  // Считаем статистику для UI
+  // Список удалённых вопросов для восстановления
+  const dismissedQuestions = useMemo(
+    () => allQuestions.filter((item) => dismissed[item.id]),
+    [dismissed],
+  );
+
   const stats = useMemo(() => {
     let due = 0;
     let scheduled = 0;
@@ -44,45 +101,63 @@ export default function ReviewPage() {
   const [index, setIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
 
-  // Если нет ни созревших, ни запланированных вопросов
   if (stats.due === 0 && stats.scheduled === 0) {
     return (
-      <div className="card mx-auto max-w-2xl p-10 text-center">
-        <div className="mb-4 text-5xl">🎉</div>
-        <h2 className="font-display text-xl font-semibold text-mist-100">
-          Все вопросы выучены!
-        </h2>
-        <p className="mt-2 text-sm text-mist-400">
-          Вы прошли всю базу. Отличная работа!
-        </p>
+      <div className="mx-auto max-w-2xl">
+        <div className="card p-10 text-center">
+          <div className="mb-4 text-5xl">🎉</div>
+          <h2 className="font-display text-xl font-semibold text-mist-100">
+            Все вопросы выучены!
+          </h2>
+          <p className="mt-2 text-sm text-mist-400">
+            Вы прошли всю базу. Отличная работа!
+          </p>
+        </div>
+        {dismissedQuestions.length > 0 && (
+          <DismissedBlock
+            dismissedQuestions={dismissedQuestions}
+            showDismissed={showDismissed}
+            setShowDismissed={setShowDismissed}
+            restoreCard={restoreCard}
+          />
+        )}
       </div>
     );
   }
 
-  // Если нет созревших, но есть запланированные
   if (stats.due === 0 && !reviewScheduled)
     return (
-      <div className="card mx-auto max-w-2xl p-10 text-center">
-        <div className="mb-4 text-5xl">📅</div>
-        <h2 className="font-display text-xl font-semibold text-mist-100">
-          На сегодня вопросов нет
-        </h2>
-        <p className="mt-2 text-sm text-mist-400">
-          Вы ответили на все созревшие вопросы. 
-          Но у вас есть <b className="text-accent-js">{stats.scheduled}</b> вопросов, запланированных на будущее.
-        </p>
-        <button
-          onClick={() => setReviewScheduled(true)}
-          className="mt-6 rounded-lg bg-accent-js px-6 py-3 font-display text-sm font-bold text-ink-950 shadow-lg shadow-accent-js/20 transition hover:-translate-y-0.5 hover:shadow-accent-js/40"
-        >
-          🚀 Учить запланированные вперёд
-        </button>
+      <div className="mx-auto max-w-2xl">
+        <div className="card p-10 text-center">
+          <div className="mb-4 text-5xl">📅</div>
+          <h2 className="font-display text-xl font-semibold text-mist-100">
+            На сегодня вопросов нет
+          </h2>
+          <p className="mt-2 text-sm text-mist-400">
+            Вы ответили на все созревшие вопросы. Но у вас есть{" "}
+            <b className="text-accent-js">{stats.scheduled}</b> вопросов,
+            запланированных на будущее.
+          </p>
+          <button
+            onClick={() => setReviewScheduled(true)}
+            className="mt-6 rounded-lg bg-accent-js px-6 py-3 font-display text-sm font-bold text-ink-950 shadow-lg shadow-accent-js/20 transition hover:-translate-y-0.5 hover:shadow-accent-js/40"
+          >
+            🚀 Учить запланированные вперёд
+          </button>
+        </div>
+        {dismissedQuestions.length > 0 && (
+          <DismissedBlock
+            dismissedQuestions={dismissedQuestions}
+            showDismissed={showDismissed}
+            setShowDismissed={setShowDismissed}
+            restoreCard={restoreCard}
+          />
+        )}
       </div>
     );
 
   const safeIndex = Math.min(index, questions.length - 1);
   const q = questions[safeIndex];
-
   const title = q.q ?? q.question ?? q.title ?? "";
   const full = q.a ?? q.fullAnswer ?? q.answer ?? "";
   const accent = ACCENT_TEXT[q.section] ?? "text-accent-css";
@@ -101,10 +176,20 @@ export default function ReviewPage() {
   const handleRate = async (lvl) => {
     setShowAnswer(false);
     await rateCard(q.id, lvl);
-    if(lvl === 0) {
+    if (lvl === 0) {
       next();
     }
-    
+  };
+
+  const handleDismiss = () => {
+    if (
+      confirm(
+        "Удалить этот вопрос из повторения навсегда?\n\nЕго можно будет восстановить внизу страницы.",
+      )
+    ) {
+      dismissCard(q.id);
+      next();
+    }
   };
 
   return (
@@ -122,13 +207,11 @@ export default function ReviewPage() {
             </span>
           )}
         </span>
-
-        {/* Кнопка переключения режима, если есть запланированные */}
         {stats.scheduled > 0 && (
           <button
             onClick={() => {
               setReviewScheduled(!reviewScheduled);
-              setIndex(0); // Сбрасываем индекс при смене режима
+              setIndex(0);
               setShowAnswer(false);
             }}
             className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
@@ -146,21 +229,34 @@ export default function ReviewPage() {
 
       {/* Карточка вопроса */}
       <div className="card overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setShowAnswer((v) => !v)}
-          className="block w-full p-5 text-left transition-colors hover:bg-ink-750"
-        >
-          <h2 className="font-display text-lg font-semibold leading-snug text-mist-100">
-            {title}
-          </h2>
-          <p className="mt-3 font-mono text-xs text-mist-500">
-            {showAnswer ? "▲ скрыть ответ" : "▼ показать ответ"}
-            {isScheduled && !showAnswer && (
-              <span className="ml-2 text-accent-js">(запланировано)</span>
-            )}
-          </p>
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowAnswer((v) => !v)}
+            className="block w-full p-5 pr-12 text-left transition-colors hover:bg-ink-750"
+          >
+            <h2 className="font-display text-lg font-semibold leading-snug text-mist-100">
+              {title}
+            </h2>
+            <p className="mt-3 font-mono text-xs text-mist-500">
+              {showAnswer ? "▲ скрыть ответ" : "▼ показать ответ"}
+              {isScheduled && !showAnswer && (
+                <span className="ml-2 text-accent-js">(запланировано)</span>
+              )}
+            </p>
+          </button>
+          {/* Кнопка удаления */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDismiss();
+            }}
+            className="absolute right-3 top-3 rounded-lg p-1.5 text-mist-500 transition hover:bg-lvl-0/10 hover:text-lvl-0"
+            title="Удалить вопрос навсегда"
+          >
+            🗑️
+          </button>
+        </div>
         <div className="mt-4 flex justify-between">
           <button
             type="button"
@@ -169,7 +265,6 @@ export default function ReviewPage() {
           >
             ← Назад
           </button>
-          .
           <button
             type="button"
             onClick={next}
@@ -185,8 +280,6 @@ export default function ReviewPage() {
                 {full}
               </p>
             )}
-
-            {/* Кнопки оценки (4 уровня) */}
             <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {[
                 { lvl: 0, label: "Не знаю", color: "#ff6b6b" },
@@ -216,10 +309,19 @@ export default function ReviewPage() {
           </div>
         )}
       </div>
-
       <p className="mt-6 font-mono text-xs text-mist-500">
         // отвечай вслух → сверяйся → оценивай себя честно
       </p>
+
+      {/* Блок удалённых вопросов */}
+      {dismissedQuestions.length > 0 && (
+        <DismissedBlock
+          dismissedQuestions={dismissedQuestions}
+          showDismissed={showDismissed}
+          setShowDismissed={setShowDismissed}
+          restoreCard={restoreCard}
+        />
+      )}
     </div>
   );
 }

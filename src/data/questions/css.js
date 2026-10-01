@@ -535,7 +535,7 @@ export default {
           hot: true,
           q: "Что такое @keyframes и как сделать анимацию?",
           a:
-            "`@keyframes` определяет шаги анимации.\n\n" +
+            "@keyframes определяет шаги анимации.\n\n" +
             "Пример:\n" +
             "`@keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }`\n\n" +
             "Применение:\n" +
@@ -617,6 +617,120 @@ export default {
             "- нельзя анимировать\n\n" +
             "Для анимаций используйте opacity.\n" +
             "Для полного скрытия - display: none.",
+        },
+      ],
+    },
+    // ═══════════════════════════════════════════
+    //  НОВАЯ ТЕМА: ИНСТРУМЕНТЫ И ПОДХОДЫ
+    // ═══════════════════════════════════════════
+    {
+      id: "tooling",
+      title: "Инструменты и подходы",
+      questions: [
+        {
+          id: "css-35",
+          hot: true,
+          q: "Что такое PostCSS и Autoprefixer, как их подключить?",
+          shortAnswer:
+            "PostCSS — платформа для трансформации CSS через JS-плагины. Autoprefixer — плагин PostCSS, автоматически добавляющий вендорные префиксы (-webkit-, -moz-, -ms-) по статистике Can I Use и конфигу browserslist.",
+          a:
+            "**PostCSS** — это не препроцессор вроде Sass или Less, а платформа для трансформации CSS через плагины на JavaScript. Сам по себе PostCSS ничего не делает — он парсит CSS в AST и прогоняет его через цепочку плагинов.\n\n" +
+            "Популярные плагины:\n" +
+            "- **autoprefixer** — добавляет вендорные префиксы\n" +
+            "- **postcss-preset-env** — использует современные фичи CSS с фоллбэками\n" +
+            "- **cssnano** — минификация CSS для продакшена\n" +
+            "- **postcss-import** — импорт CSS-файлов через @import\n" +
+            "- **postcss-nested** — вложенность как в Sass\n\n" +
+            "**Autoprefixer** — самый известный плагин PostCSS. Он:\n" +
+            "1. Смотрит на конфигурацию `browserslist` (какие браузеры вы поддерживаете)\n" +
+            "2. Проверяет по базе Can I Use, какие CSS-свойства требуют префиксов\n" +
+            "3. Добавляет только нужные префиксы (-webkit-, -moz-, -ms-, -o-)\n\n" +
+            "**Подключение в Vite проекте:**\n\n" +
+            "1. Установка:\n" +
+            "```bash\nnpm install -D postcss autoprefixer\n```\n\n" +
+            "2. Создаём `postcss.config.js` в корне проекта:\n" +
+            "```js\nexport default {\n  plugins: {\n    autoprefixer: {},\n    // или с настройками:\n    // autoprefixer: { grid: true }\n  },\n};\n```\n\n" +
+            "3. Указываем целевые браузеры в `package.json` (или в `.browserslistrc`):\n" +
+            '```json\n{\n  "browserslist": [\n    "> 1%",\n    "last 2 versions",\n    "not dead"\n  ]\n}\n```\n\n' +
+            "**Пример работы:**\n\n" +
+            "До (ваш CSS):\n" +
+            "```css\n.flex-container {\n  display: flex;\n  user-select: none;\n  backdrop-filter: blur(10px);\n}\n```\n\n" +
+            "После Autoprefixer:\n" +
+            "```css\n.flex-container {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  -webkit-backdrop-filter: blur(10px);\n  backdrop-filter: blur(10px);\n}\n```\n\n" +
+            "**Почему это важно:**\n" +
+            "- Без Autoprefixer ваш CSS может не работать в старых Safari, Firefox, Edge\n" +
+            "- Не нужно вручную писать префиксы — это рутинная и ошибкоопасная работа\n" +
+            "- Можно гибко настраивать целевые браузеры через browserslist\n" +
+            "- В Vite, Webpack, Next.js PostCSS работает из коробки, нужен только конфиг\n\n" +
+            "**Совет:** Autoprefixer должен быть в **каждом** современном проекте — это стандарт индустрии. Также рекомендуется `postcss-preset-env` для использования современных CSS-фич (например, CSS Nesting, :is(), :where()) с автоматическими фоллбэками.",
+        },
+        {
+          id: "css-36",
+          hot: true,
+          q: "CSS-in-JS vs CSS Modules vs обычный CSS vs zero-runtime: что выбрать?",
+          shortAnswer:
+            "4 основных подхода к стилизации в React. Обычный CSS — прост, но без изоляции. CSS Modules — изоляция через автогенерацию имён, статический. Runtime CSS-in-JS (styled-components) — удобство и динамика, но рантайм-оверхед. Zero-runtime CSS-in-JS (vanilla-extract, panda-css) — лучшее из обоих миров, но требует сборщик.",
+          a:
+            "**Эволюция подходов к CSS в React:**\n\n" +
+            "1. **Обычный CSS** — классические .css файлы\n" +
+            "2. **CSS Modules** — изоляция через автогенерацию имён\n" +
+            "3. **Runtime CSS-in-JS** — styled-components, emotion (стили в JS с рантаймом)\n" +
+            "4. **Zero-runtime CSS-in-JS** — vanilla-extract, panda-css, stylex (извлечение в CSS на этапе сборки)\n\n" +
+            "**Сравнительная таблица:**\n\n" +
+            "| Критерий | Обычный CSS | CSS Modules | Runtime CSS-in-JS | Zero-runtime CSS-in-JS |\n" +
+            "|---|---|---|---|---|\n" +
+            "| **Изоляция стилей** | ❌ Нет — конфликты имён | ✅ Автогенерация (`Button_hash123`) | ✅ Скоупинг по компоненту | ✅ Скоупинг + хэши на сборке |\n" +
+            "| **Производительность** | ⭐⭐⭐ Нулевой оверхед | ⭐⭐⭐ Статический CSS | ⭐ Рантайм: парсинг, генерация | ⭐⭐⭐ Статический CSS |\n" +
+            "| **Динамические стили** | ⚠️ Inline или CSS-переменные | ⚠️ Только inline + className-логика | ✅ Через props легко | ⚠️ CSS variables или «рецепты» |\n" +
+            "| **Типизация** | ❌ | ⚠️ Через .d.ts | ⚠️ Зависит от библиотеки | ✅ Полная из коробки |\n" +
+            "| **Colocation** | ❌ Стили отдельно | ❌ .module.css отдельно | ✅ В компоненте | ✅ В компоненте |\n" +
+            "| **Размер бандла** | 0 | 0 | +15-50 KB (либа) | 0 (извлекается в CSS) |\n" +
+            "| **SSR / RSC** | ✅ | ✅ | ⚠️ Сложно, несовместимо с RSC | ✅ |\n" +
+            "| **Порог входа** | ⭐⭐⭐ Низкий | ⭐⭐ Средний | ⭐⭐ Средний | ⭐ Высокий |\n" +
+            "| **Dead code elimination** | ❌ Сложно | ⚠️ Зависит от сборщика | ❌ Практически нет | ✅ Только используемое |\n" +
+            "| **Инструменты** | Любой | Любой сборщик | Любой | Нужен сборщик (Vite/Webpack) |\n\n" +
+            "**Представители каждого подхода:**\n\n" +
+            "**Обычный CSS:**\n" +
+            "- Просто `.css` файлы + `<link>`\n" +
+            "- Tailwind CSS (utility-first, тоже обычный CSS под капотом)\n\n" +
+            "**CSS Modules:**\n" +
+            '- `Button.module.css` — импортируется как объект `{ primary: "Button_primary_abc123" }`\n' +
+            "- Встроен в Next.js, Vite, Create React App\n\n" +
+            "**Runtime CSS-in-JS:**\n" +
+            "- styled-components\n" +
+            "- @emotion/styled, @emotion/react\n" +
+            "- stitches\n\n" +
+            "**Zero-runtime CSS-in-JS:**\n" +
+            "- **vanilla-extract** — TS-файлы, извлекаются в .css\n" +
+            "- **panda-css** — от команды Chakra UI, utility-first + type-safe\n" +
+            "- **stylex** — от Meta (Facebook), используется в Instagram, Facebook\n" +
+            "- **linaria** — гибридный подход\n\n" +
+            "**Подробный разбор каждого подхода:**\n\n" +
+            "**1. Обычный CSS**\n" +
+            "```css\n/* styles.css */\n.button { background: blue; color: white; }\n.button-primary { background: red; }\n```\n" +
+            "- ✅ Прост, работает везде, нулевой оверхед\n" +
+            "- ❌ Конфликты имён (два `.button` из разных файлов), нет dead-code elimination, нет типизации\n\n" +
+            "**2. CSS Modules**\n" +
+            "```css\n/* Button.module.css */\n.button { background: blue; }\n.primary { background: red; }\n```\n" +
+            "```jsx\nimport s from './Button.module.css';\n<button className={`${s.button} ${s.primary}`}>Click</button>\n```\n" +
+            "- ✅ Изоляция из коробки, статический анализ, нет рантайма\n" +
+            "- ❌ Нет динамических стилей без inline, стили отдельно от компонента\n\n" +
+            "**3. Runtime CSS-in-JS**\n" +
+            "```jsx\nimport styled from 'styled-components';\nconst Button = styled.button`\n  background: ${p => p.primary ? 'red' : 'blue'};\n  color: white;\n`;\n<Button primary>Click</Button>\n```\n" +
+            "- ✅ Динамика через props, темизация, colocated стили\n" +
+            "- ❌ Рантайм-оверхед (парсинг на каждом рендере), большой бандл, **несовместимо с React Server Components**\n\n" +
+            "**4. Zero-runtime CSS-in-JS**\n" +
+            "```ts\n// Button.css.ts (vanilla-extract)\nimport { style } from '@vanilla-extract/css';\nexport const button = style({\n  background: 'blue',\n  color: 'white',\n});\n```\n" +
+            "```jsx\nimport { button } from './Button.css';\n<button className={button}>Click</button>\n```\n" +
+            "- ✅ Типизация, colocated, нет рантайма, извлечение в статический CSS\n" +
+            "- ❌ Нужен сборщик, сложнее настроить, ограниченные динамические возможности\n\n" +
+            "**Когда что использовать (2024+):**\n\n" +
+            "1. **Обычный CSS / Tailwind** — лендинги, маленькие проекты, когда важна максимальная производительность и простота\n" +
+            "2. **CSS Modules** — проекты на Next.js (работает из коробки), большие команды, где нужна изоляция без рантайма\n" +
+            "3. **Runtime CSS-in-JS** — legacy-проекты, где уже используется. **Не рекомендуется для новых проектов 2024+** из-за React Server Components\n" +
+            "4. **Zero-runtime CSS-in-JS** — новые проекты, где хочется типизацию, colocated стили и производительность. **Тренд индустрии**\n\n" +
+            "**Главный тренд 2024-2026:**\n\n" +
+            "С приходом **React Server Components** runtime CSS-in-JS (styled-components, emotion) стал проблематичным — серверные компоненты не могут выполнять JS на сервере для генерации классов. Meta, Vercel и другие крупные игроки переходят на zero-runtime решения (stylex, vanilla-extract). Для новых проектов выбирайте CSS Modules, Tailwind или zero-runtime CSS-in-JS.",
         },
       ],
     },
