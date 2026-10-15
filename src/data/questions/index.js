@@ -17,6 +17,9 @@ import deepSection from "./deep";
 import architectureSection from "./architecture";
 import kasperskySection from "./kaspersky";
 
+import rtkDeepSection from "./rtk-deep";
+import nextDeepSection from "./next-deep";
+import node from "./node";
 
 const rawSections = [
   htmlSection,
@@ -32,6 +35,10 @@ const rawSections = [
   deepSection,
   architectureSection,
   kasperskySection,
+  node,
+  rtkDeepSection,
+  nextDeepSection,
+
 ];
 
 
