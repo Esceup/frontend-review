@@ -15,6 +15,7 @@ import techSection from "./tech";
 import performanceSection from "./performance";
 import deepSection from "./deep";
 import architectureSection from "./architecture";
+import kasperskySection from "./kaspersky";
 
 
 const rawSections = [
@@ -30,6 +31,7 @@ const rawSections = [
   performanceSection,
   deepSection,
   architectureSection,
+  kasperskySection,
 ];
 
 

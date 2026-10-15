@@ -6211,22 +6211,79 @@ const ACCENT_TEXT = {
   redux: "text-accent-redux",
 };
 
-export default function ReviewPage() {
-  const { statusOf, rateCard } = useProgress();
-  
-  // Режим "учить вперёд" (включает запланированные вопросы)
-  const [reviewScheduled, setReviewScheduled] = useState(false);
+// Блок «Удалённые вопросы» внизу страницы
+function DismissedBlock({
+  dismissedQuestions,
+  showDismissed,
+  setShowDismissed,
+  restoreCard,
+}) {
+  return (
+    <div className="mt-6 rounded-xl border border-ink-600 bg-ink-850 p-4">
+      <button
+        onClick={() => setShowDismissed(!showDismissed)}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <span className="font-mono text-xs text-mist-400">
+          🗑️ Удалённые вопросы ({dismissedQuestions.length})
+        </span>
+        <span className="text-mist-500 transition-transform">
+          {showDismissed ? "▲" : "▼"}
+        </span>
+      </button>
+      {showDismissed && (
+        <div className="mt-3 space-y-2">
+          <p className="font-mono text-[11px] text-mist-500">
+            Эти вопросы скрыты из повторения. Вы можете восстановить любой из
+            них.
+          </p>
+          {dismissedQuestions.map((q) => (
+            <div
+              key={q.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-ink-600 bg-ink-900 p-3"
+            >
+              <span className="min-w-0 flex-1 truncate text-sm text-mist-400">
+                {q.q ?? q.title}
+              </span>
+              <button
+                onClick={() => restoreCard(q.id)}
+                className="shrink-0 rounded-lg border border-lvl-3/30 bg-lvl-3/10 px-3 py-1 font-mono text-xs text-lvl-3 transition hover:bg-lvl-3/20"
+              >
+                Восстановить
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
-  // Фильтруем вопросы: всегда берём "due", а "scheduled" только если включён режим
+export default function ReviewPage() {
+  const { statusOf, rateCard, dismissCard, restoreCard, dismissed } =
+    useProgress();
+  const [reviewScheduled, setReviewScheduled] = useState(false);
+  const [showDismissed, setShowDismissed] = useState(false);
+
+  // Исключаем удалённые вопросы (dismissed)
   const questions = useMemo(
-    () => allQuestions.filter((item) => {
-      const status = statusOf(item.id);
-      return status === "due" || (reviewScheduled && status === "scheduled");
-    }),
+    () =>
+      allQuestions.filter((item) => {
+        const status = statusOf(item.id);
+        return (
+          status !== "dismissed" &&
+          (status === "due" || (reviewScheduled && status === "scheduled"))
+        );
+      }),
     [allQuestions, statusOf, reviewScheduled],
   );
 
-  // Считаем статистику для UI
+  // Список удалённых вопросов для восстановления
+  const dismissedQuestions = useMemo(
+    () => allQuestions.filter((item) => dismissed[item.id]),
+    [dismissed],
+  );
+
   const stats = useMemo(() => {
     let due = 0;
     let scheduled = 0;
@@ -6241,45 +6298,63 @@ export default function ReviewPage() {
   const [index, setIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
 
-  // Если нет ни созревших, ни запланированных вопросов
   if (stats.due === 0 && stats.scheduled === 0) {
     return (
-      <div className="card mx-auto max-w-2xl p-10 text-center">
-        <div className="mb-4 text-5xl">🎉</div>
-        <h2 className="font-display text-xl font-semibold text-mist-100">
-          Все вопросы выучены!
-        </h2>
-        <p className="mt-2 text-sm text-mist-400">
-          Вы прошли всю базу. Отличная работа!
-        </p>
+      <div className="mx-auto max-w-2xl">
+        <div className="card p-10 text-center">
+          <div className="mb-4 text-5xl">🎉</div>
+          <h2 className="font-display text-xl font-semibold text-mist-100">
+            Все вопросы выучены!
+          </h2>
+          <p className="mt-2 text-sm text-mist-400">
+            Вы прошли всю базу. Отличная работа!
+          </p>
+        </div>
+        {dismissedQuestions.length > 0 && (
+          <DismissedBlock
+            dismissedQuestions={dismissedQuestions}
+            showDismissed={showDismissed}
+            setShowDismissed={setShowDismissed}
+            restoreCard={restoreCard}
+          />
+        )}
       </div>
     );
   }
 
-  // Если нет созревших, но есть запланированные
   if (stats.due === 0 && !reviewScheduled)
     return (
-      <div className="card mx-auto max-w-2xl p-10 text-center">
-        <div className="mb-4 text-5xl">📅</div>
-        <h2 className="font-display text-xl font-semibold text-mist-100">
-          На сегодня вопросов нет
-        </h2>
-        <p className="mt-2 text-sm text-mist-400">
-          Вы ответили на все созревшие вопросы. 
-          Но у вас есть <b className="text-accent-js">{stats.scheduled}</b> вопросов, запланированных на будущее.
-        </p>
-        <button
-          onClick={() => setReviewScheduled(true)}
-          className="mt-6 rounded-lg bg-accent-js px-6 py-3 font-display text-sm font-bold text-ink-950 shadow-lg shadow-accent-js/20 transition hover:-translate-y-0.5 hover:shadow-accent-js/40"
-        >
-          🚀 Учить запланированные вперёд
-        </button>
+      <div className="mx-auto max-w-2xl">
+        <div className="card p-10 text-center">
+          <div className="mb-4 text-5xl">📅</div>
+          <h2 className="font-display text-xl font-semibold text-mist-100">
+            На сегодня вопросов нет
+          </h2>
+          <p className="mt-2 text-sm text-mist-400">
+            Вы ответили на все созревшие вопросы. Но у вас есть{" "}
+            <b className="text-accent-js">{stats.scheduled}</b> вопросов,
+            запланированных на будущее.
+          </p>
+          <button
+            onClick={() => setReviewScheduled(true)}
+            className="mt-6 rounded-lg bg-accent-js px-6 py-3 font-display text-sm font-bold text-ink-950 shadow-lg shadow-accent-js/20 transition hover:-translate-y-0.5 hover:shadow-accent-js/40"
+          >
+            🚀 Учить запланированные вперёд
+          </button>
+        </div>
+        {dismissedQuestions.length > 0 && (
+          <DismissedBlock
+            dismissedQuestions={dismissedQuestions}
+            showDismissed={showDismissed}
+            setShowDismissed={setShowDismissed}
+            restoreCard={restoreCard}
+          />
+        )}
       </div>
     );
 
   const safeIndex = Math.min(index, questions.length - 1);
   const q = questions[safeIndex];
-
   const title = q.q ?? q.question ?? q.title ?? "";
   const full = q.a ?? q.fullAnswer ?? q.answer ?? "";
   const accent = ACCENT_TEXT[q.section] ?? "text-accent-css";
@@ -6298,10 +6373,20 @@ export default function ReviewPage() {
   const handleRate = async (lvl) => {
     setShowAnswer(false);
     await rateCard(q.id, lvl);
-    if(lvl === 0) {
+    if (lvl === 0) {
       next();
     }
-    
+  };
+
+  const handleDismiss = () => {
+    if (
+      confirm(
+        "Удалить этот вопрос из повторения навсегда?\n\nЕго можно будет восстановить внизу страницы.",
+      )
+    ) {
+      dismissCard(q.id);
+      next();
+    }
   };
 
   return (
@@ -6319,13 +6404,11 @@ export default function ReviewPage() {
             </span>
           )}
         </span>
-
-        {/* Кнопка переключения режима, если есть запланированные */}
         {stats.scheduled > 0 && (
           <button
             onClick={() => {
               setReviewScheduled(!reviewScheduled);
-              setIndex(0); // Сбрасываем индекс при смене режима
+              setIndex(0);
               setShowAnswer(false);
             }}
             className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
@@ -6343,21 +6426,34 @@ export default function ReviewPage() {
 
       {/* Карточка вопроса */}
       <div className="card overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setShowAnswer((v) => !v)}
-          className="block w-full p-5 text-left transition-colors hover:bg-ink-750"
-        >
-          <h2 className="font-display text-lg font-semibold leading-snug text-mist-100">
-            {title}
-          </h2>
-          <p className="mt-3 font-mono text-xs text-mist-500">
-            {showAnswer ? "▲ скрыть ответ" : "▼ показать ответ"}
-            {isScheduled && !showAnswer && (
-              <span className="ml-2 text-accent-js">(запланировано)</span>
-            )}
-          </p>
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowAnswer((v) => !v)}
+            className="block w-full p-5 pr-12 text-left transition-colors hover:bg-ink-750"
+          >
+            <h2 className="font-display text-lg font-semibold leading-snug text-mist-100">
+              {title}
+            </h2>
+            <p className="mt-3 font-mono text-xs text-mist-500">
+              {showAnswer ? "▲ скрыть ответ" : "▼ показать ответ"}
+              {isScheduled && !showAnswer && (
+                <span className="ml-2 text-accent-js">(запланировано)</span>
+              )}
+            </p>
+          </button>
+          {/* Кнопка удаления */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDismiss();
+            }}
+            className="absolute right-3 top-3 rounded-lg p-1.5 text-mist-500 transition hover:bg-lvl-0/10 hover:text-lvl-0"
+            title="Удалить вопрос навсегда"
+          >
+            🗑️
+          </button>
+        </div>
         <div className="mt-4 flex justify-between">
           <button
             type="button"
@@ -6366,7 +6462,6 @@ export default function ReviewPage() {
           >
             ← Назад
           </button>
-          .
           <button
             type="button"
             onClick={next}
@@ -6382,8 +6477,6 @@ export default function ReviewPage() {
                 {full}
               </p>
             )}
-
-            {/* Кнопки оценки (4 уровня) */}
             <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {[
                 { lvl: 0, label: "Не знаю", color: "#ff6b6b" },
@@ -6413,13 +6506,23 @@ export default function ReviewPage() {
           </div>
         )}
       </div>
-
       <p className="mt-6 font-mono text-xs text-mist-500">
         // отвечай вслух → сверяйся → оценивай себя честно
       </p>
+
+      {/* Блок удалённых вопросов */}
+      {dismissedQuestions.length > 0 && (
+        <DismissedBlock
+          dismissedQuestions={dismissedQuestions}
+          showDismissed={showDismissed}
+          setShowDismissed={setShowDismissed}
+          restoreCard={restoreCard}
+        />
+      )}
     </div>
   );
 }
+
 <<<WORKSPACE_EXPORTER_FILE_END>>> path="src/components/ReviewPage.jsx"
 <<<WORKSPACE_EXPORTER_FILE_BEGIN>>> path="src/components/SectionDetail.jsx"
 // src/components/SectionDetail.jsx
@@ -8003,13 +8106,13 @@ import {
   allQuestions,
   getSection,
   getTopic,
-  DATA 
+  DATA,
 } from "../data/questions/index";
 
 const DAY = 86_400_000;
 
 export const LEVELS = [
-  { key: 0, label: "Не знаю", days: 0, color: "#ff6b6b" }, 
+  { key: 0, label: "Не знаю", days: 0, color: "#ff6b6b" },
   { key: 1, label: "Немного знаю", days: 1, color: "#ffc857" },
   { key: 2, label: "Хорошо знаю", days: 3, color: "#43d2ff" },
   { key: 3, label: "Полностью знаю", days: 7, color: "#3dd68c" },
@@ -8028,20 +8131,21 @@ const ProgressContext = createContext();
 export const ProgressProvider = ({ children }) => {
   const { user } = useAuth();
   const [cards, setCards] = useState({});
+  const [dismissed, setDismissed] = useState({}); // ← НОВОЕ
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       setCards({});
+      setDismissed({});
       setLoading(false);
       return;
     }
+
     const ref = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(ref, async (snap) => {
       if (snap.exists()) {
         const data = snap.data();
-        // Одноразовая миграция со старого формата (learned/incorrect)
-        // Одноразовая миграция со старого формата (learned/incorrect)
         if (!data.cards && (data.learned?.length || data.incorrect?.length)) {
           const now = Date.now();
           const migrated = {};
@@ -8053,22 +8157,25 @@ export const ProgressProvider = ({ children }) => {
           });
           await updateDoc(ref, {
             cards: migrated,
+            dismissed: {},
             learned: deleteField(),
             incorrect: deleteField(),
           });
           return;
         }
         setCards(data.cards || {});
+        setDismissed(data.dismissed || {}); // ← НОВОЕ
       } else {
-        await setDoc(ref, { cards: {} });
+        await setDoc(ref, { cards: {}, dismissed: {} }); // ← НОВОЕ
         setCards({});
+        setDismissed({});
       }
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, [user]);
 
-  // Оценить карточку — точечная запись в Firestore, синхронизируется на всех ПК
   const rateCard = useCallback(
     async (questionId, lvl) => {
       if (!user) return;
@@ -8085,31 +8192,60 @@ export const ProgressProvider = ({ children }) => {
     [user],
   );
 
+  // ← НОВОЕ: Удалить вопрос навсегда
+  const dismissCard = useCallback(
+    async (questionId) => {
+      if (!user) return;
+      await updateDoc(doc(db, "users", user.uid), {
+        [`dismissed.${questionId}`]: Date.now(),
+        [`cards.${questionId}`]: deleteField(),
+      });
+    },
+    [user],
+  );
+
+  // ← НОВОЕ: Восстановить удалённый вопрос
+  const restoreCard = useCallback(
+    async (questionId) => {
+      if (!user) return;
+      await updateDoc(doc(db, "users", user.uid), {
+        [`dismissed.${questionId}`]: deleteField(),
+      });
+    },
+    [user],
+  );
+
   const statusOf = useCallback(
     (qId) => {
+      if (dismissed[qId]) return "dismissed"; // ← НОВОЕ
       const c = cards[qId];
       if (!c) return "new";
       return c.next <= Date.now() ? "due" : "scheduled";
     },
-    [cards],
+    [cards, dismissed],
   );
 
-  // Статистика по секциям и темам
   const stats = useMemo(() => {
     const now = Date.now();
     let due = 0;
     let fresh = 0;
     let learned = 0;
-
+    let dismissedCount = 0;
     const sections = DATA.sections.map((s) => {
       let sDue = 0,
         sFresh = 0,
-        sLearned = 0;
+        sLearned = 0,
+        sDismissed = 0;
       const topics = s.topics.map((t) => {
         let tDue = 0,
           tFresh = 0,
-          tLearned = 0;
+          tLearned = 0,
+          tDismissed = 0;
         t.questions.forEach((q) => {
+          if (dismissed[q.id]) {
+            tDismissed++;
+            return;
+          }
           const c = cards[q.id];
           if (!c) tFresh++;
           else if (c.next <= now) tDue++;
@@ -8118,37 +8254,59 @@ export const ProgressProvider = ({ children }) => {
         sDue += tDue;
         sFresh += tFresh;
         sLearned += tLearned;
+        sDismissed += tDismissed;
         return {
           id: t.id,
           title: t.title,
           total: t.questions.length,
+          active: t.questions.length - tDismissed,
           due: tDue,
           fresh: tFresh,
           learned: tLearned,
-          hot: t.questions.filter((q) => q.hot).length,
+          dismissed: tDismissed,
+          hot: t.questions.filter((q) => q.hot && !dismissed[q.id]).length,
         };
       });
       due += sDue;
       fresh += sFresh;
       learned += sLearned;
+      dismissedCount += sDismissed;
       return {
         id: s.id,
         title: s.title,
         accent: s.accent,
-        total: s.topics.reduce((n, t) => n + t.questions.length, 0),
+        total: topics.reduce((n, t) => n + t.total, 0),
+        active: topics.reduce((n, t) => n + t.active, 0),
         due: sDue,
         fresh: sFresh,
         learned: sLearned,
+        dismissed: sDismissed,
         topics,
       };
     });
-
-    return { total: allQuestions.length, due, fresh, learned, sections };
-  }, [cards]);
+    return {
+      total: allQuestions.length,
+      active: allQuestions.length - dismissedCount,
+      due,
+      fresh,
+      learned,
+      dismissed: dismissedCount,
+      sections,
+    };
+  }, [cards, dismissed]);
 
   return (
     <ProgressContext.Provider
-      value={{ cards, loading, rateCard, statusOf, stats }}
+      value={{
+        cards,
+        dismissed,
+        loading,
+        rateCard,
+        dismissCard,
+        restoreCard,
+        statusOf,
+        stats,
+      }}
     >
       {children}
     </ProgressContext.Provider>
@@ -8194,8 +8352,8 @@ export const INTERVIEW_SECTIONS = [
           {
             type: "text",
             content:
-              "Я фронтенд-разработчик, более трёх лет в коммерческой разработке. Успел поработать со сложными интерфейсами, где много данных, высокая нагрузка и важна производительность.\n" +
-              "Последние два с лишним года развиваю фронтенд крупной e-commerce платформы мебельного ритейлера. Отвечаю за каталог на **5 000+ SKU**, фильтрацию, карточки товара, оформление заказа и часть платёжного флоу. Проект работает на **Next.js** и **TypeScript**.\n" +
+              "Я фронтенд-разработчик, более пять лет в коммерческой разработке. Успел поработать со сложными интерфейсами, где много данных, высокая нагрузка и важна производительность.\n" +
+              "Последние три с лишним года развиваю фронтенд крупной e-commerce платформы мебельного ритейлера. Отвечаю за каталог на **5 000+ SKU**, фильтрацию, карточки товара, оформление заказа и часть платёжного флоу. Проект работает на **Next.js** и **TypeScript**.\n" +
               "Самый показательный кейс: переработка архитектуры каталога после перехода на серверный рендеринг. Нужно было объединить **SSR** для SEO и клиентскую интерактивность **RTK Query** в единую модель. Я разделил состояние на три слоя — серверное для SEO, кэшируемый server state и UI-состояние, — настроил единый слой работы с API, дедупликацию и предзагрузку. В итоге время загрузки категорий снизилось примерно на **45%**, повторных запросов к API стало меньше на **35–40%**, а **LCP** улучшился примерно на **30%**.\n" +
               "До этого работал над CRM-системой для строительного бизнеса на **React**: дашборды с агрегацией показателей, финансовые таблицы с виртуализацией, оптимизация больших списков.\n" +
               "В команде я обычно беру на себя не только фичи, но и технические вопросы: архитектуру, производительность, ревью, декомпозицию и помощь коллегам. Сейчас ищу роль, где смогу приносить пользу в сложных продуктовых задачах и развиваться в сторону архитектуры и менторства.",
@@ -8475,7 +8633,7 @@ export const INTERVIEW_SECTIONS = [
           {
             type: "text",
             content:
-              "За время работы в компании я прошёл полный цикл: пришёл на этапе роста ассортимента и тормозящего каталога, а ухожу с оптимизированной платформой — миграция на Next с SSR, единый data flow на RTK Query, интеграция платежей, E2E-тесты в CI, FSD-архитектура.\n" +
+              "За три с половиной года в компании я прошёл полный цикл: пришёл на этапе роста ассортимента и тормозящего каталога, а ухожу с оптимизированной платформой — миграция на Next с SSR, единый data flow на RTK Query, интеграция платежей, E2E-тесты в CI, FSD-архитектура.\n" +
               "Проект перешёл в фазу **поддержки и планомерного развития**. Основные архитектурные вызовы закрыты, и я понял, что упираюсь в масштаб: один ритейлер, одна платформа, одна доменная область.\n" +
               "Мне хочется **нового уровня сложности**: более высокой нагрузки, мультипродуктовой среды, возможности влиять на продуктовые решения на уровне архитектуры и расти в сторону **техлида**. Внутри компании таких вызовов сейчас нет — поэтому ищу их снаружи.",
           },
@@ -11372,7 +11530,7 @@ export default {
           hot: true,
           q: "Что такое @keyframes и как сделать анимацию?",
           a:
-            "`@keyframes` определяет шаги анимации.\n\n" +
+            "@keyframes определяет шаги анимации.\n\n" +
             "Пример:\n" +
             "`@keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }`\n\n" +
             "Применение:\n" +
@@ -11454,6 +11612,120 @@ export default {
             "- нельзя анимировать\n\n" +
             "Для анимаций используйте opacity.\n" +
             "Для полного скрытия - display: none.",
+        },
+      ],
+    },
+    // ═══════════════════════════════════════════
+    //  НОВАЯ ТЕМА: ИНСТРУМЕНТЫ И ПОДХОДЫ
+    // ═══════════════════════════════════════════
+    {
+      id: "tooling",
+      title: "Инструменты и подходы",
+      questions: [
+        {
+          id: "css-35",
+          hot: true,
+          q: "Что такое PostCSS и Autoprefixer, как их подключить?",
+          shortAnswer:
+            "PostCSS — платформа для трансформации CSS через JS-плагины. Autoprefixer — плагин PostCSS, автоматически добавляющий вендорные префиксы (-webkit-, -moz-, -ms-) по статистике Can I Use и конфигу browserslist.",
+          a:
+            "**PostCSS** — это не препроцессор вроде Sass или Less, а платформа для трансформации CSS через плагины на JavaScript. Сам по себе PostCSS ничего не делает — он парсит CSS в AST и прогоняет его через цепочку плагинов.\n\n" +
+            "Популярные плагины:\n" +
+            "- **autoprefixer** — добавляет вендорные префиксы\n" +
+            "- **postcss-preset-env** — использует современные фичи CSS с фоллбэками\n" +
+            "- **cssnano** — минификация CSS для продакшена\n" +
+            "- **postcss-import** — импорт CSS-файлов через @import\n" +
+            "- **postcss-nested** — вложенность как в Sass\n\n" +
+            "**Autoprefixer** — самый известный плагин PostCSS. Он:\n" +
+            "1. Смотрит на конфигурацию `browserslist` (какие браузеры вы поддерживаете)\n" +
+            "2. Проверяет по базе Can I Use, какие CSS-свойства требуют префиксов\n" +
+            "3. Добавляет только нужные префиксы (-webkit-, -moz-, -ms-, -o-)\n\n" +
+            "**Подключение в Vite проекте:**\n\n" +
+            "1. Установка:\n" +
+            "```bash\nnpm install -D postcss autoprefixer\n```\n\n" +
+            "2. Создаём `postcss.config.js` в корне проекта:\n" +
+            "```js\nexport default {\n  plugins: {\n    autoprefixer: {},\n    // или с настройками:\n    // autoprefixer: { grid: true }\n  },\n};\n```\n\n" +
+            "3. Указываем целевые браузеры в `package.json` (или в `.browserslistrc`):\n" +
+            '```json\n{\n  "browserslist": [\n    "> 1%",\n    "last 2 versions",\n    "not dead"\n  ]\n}\n```\n\n' +
+            "**Пример работы:**\n\n" +
+            "До (ваш CSS):\n" +
+            "```css\n.flex-container {\n  display: flex;\n  user-select: none;\n  backdrop-filter: blur(10px);\n}\n```\n\n" +
+            "После Autoprefixer:\n" +
+            "```css\n.flex-container {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  -webkit-backdrop-filter: blur(10px);\n  backdrop-filter: blur(10px);\n}\n```\n\n" +
+            "**Почему это важно:**\n" +
+            "- Без Autoprefixer ваш CSS может не работать в старых Safari, Firefox, Edge\n" +
+            "- Не нужно вручную писать префиксы — это рутинная и ошибкоопасная работа\n" +
+            "- Можно гибко настраивать целевые браузеры через browserslist\n" +
+            "- В Vite, Webpack, Next.js PostCSS работает из коробки, нужен только конфиг\n\n" +
+            "**Совет:** Autoprefixer должен быть в **каждом** современном проекте — это стандарт индустрии. Также рекомендуется `postcss-preset-env` для использования современных CSS-фич (например, CSS Nesting, :is(), :where()) с автоматическими фоллбэками.",
+        },
+        {
+          id: "css-36",
+          hot: true,
+          q: "CSS-in-JS vs CSS Modules vs обычный CSS vs zero-runtime: что выбрать?",
+          shortAnswer:
+            "4 основных подхода к стилизации в React. Обычный CSS — прост, но без изоляции. CSS Modules — изоляция через автогенерацию имён, статический. Runtime CSS-in-JS (styled-components) — удобство и динамика, но рантайм-оверхед. Zero-runtime CSS-in-JS (vanilla-extract, panda-css) — лучшее из обоих миров, но требует сборщик.",
+          a:
+            "**Эволюция подходов к CSS в React:**\n\n" +
+            "1. **Обычный CSS** — классические .css файлы\n" +
+            "2. **CSS Modules** — изоляция через автогенерацию имён\n" +
+            "3. **Runtime CSS-in-JS** — styled-components, emotion (стили в JS с рантаймом)\n" +
+            "4. **Zero-runtime CSS-in-JS** — vanilla-extract, panda-css, stylex (извлечение в CSS на этапе сборки)\n\n" +
+            "**Сравнительная таблица:**\n\n" +
+            "| Критерий | Обычный CSS | CSS Modules | Runtime CSS-in-JS | Zero-runtime CSS-in-JS |\n" +
+            "|---|---|---|---|---|\n" +
+            "| **Изоляция стилей** | ❌ Нет — конфликты имён | ✅ Автогенерация (`Button_hash123`) | ✅ Скоупинг по компоненту | ✅ Скоупинг + хэши на сборке |\n" +
+            "| **Производительность** | ⭐⭐⭐ Нулевой оверхед | ⭐⭐⭐ Статический CSS | ⭐ Рантайм: парсинг, генерация | ⭐⭐⭐ Статический CSS |\n" +
+            "| **Динамические стили** | ⚠️ Inline или CSS-переменные | ⚠️ Только inline + className-логика | ✅ Через props легко | ⚠️ CSS variables или «рецепты» |\n" +
+            "| **Типизация** | ❌ | ⚠️ Через .d.ts | ⚠️ Зависит от библиотеки | ✅ Полная из коробки |\n" +
+            "| **Colocation** | ❌ Стили отдельно | ❌ .module.css отдельно | ✅ В компоненте | ✅ В компоненте |\n" +
+            "| **Размер бандла** | 0 | 0 | +15-50 KB (либа) | 0 (извлекается в CSS) |\n" +
+            "| **SSR / RSC** | ✅ | ✅ | ⚠️ Сложно, несовместимо с RSC | ✅ |\n" +
+            "| **Порог входа** | ⭐⭐⭐ Низкий | ⭐⭐ Средний | ⭐⭐ Средний | ⭐ Высокий |\n" +
+            "| **Dead code elimination** | ❌ Сложно | ⚠️ Зависит от сборщика | ❌ Практически нет | ✅ Только используемое |\n" +
+            "| **Инструменты** | Любой | Любой сборщик | Любой | Нужен сборщик (Vite/Webpack) |\n\n" +
+            "**Представители каждого подхода:**\n\n" +
+            "**Обычный CSS:**\n" +
+            "- Просто `.css` файлы + `<link>`\n" +
+            "- Tailwind CSS (utility-first, тоже обычный CSS под капотом)\n\n" +
+            "**CSS Modules:**\n" +
+            '- `Button.module.css` — импортируется как объект `{ primary: "Button_primary_abc123" }`\n' +
+            "- Встроен в Next.js, Vite, Create React App\n\n" +
+            "**Runtime CSS-in-JS:**\n" +
+            "- styled-components\n" +
+            "- @emotion/styled, @emotion/react\n" +
+            "- stitches\n\n" +
+            "**Zero-runtime CSS-in-JS:**\n" +
+            "- **vanilla-extract** — TS-файлы, извлекаются в .css\n" +
+            "- **panda-css** — от команды Chakra UI, utility-first + type-safe\n" +
+            "- **stylex** — от Meta (Facebook), используется в Instagram, Facebook\n" +
+            "- **linaria** — гибридный подход\n\n" +
+            "**Подробный разбор каждого подхода:**\n\n" +
+            "**1. Обычный CSS**\n" +
+            "```css\n/* styles.css */\n.button { background: blue; color: white; }\n.button-primary { background: red; }\n```\n" +
+            "- ✅ Прост, работает везде, нулевой оверхед\n" +
+            "- ❌ Конфликты имён (два `.button` из разных файлов), нет dead-code elimination, нет типизации\n\n" +
+            "**2. CSS Modules**\n" +
+            "```css\n/* Button.module.css */\n.button { background: blue; }\n.primary { background: red; }\n```\n" +
+            "```jsx\nimport s from './Button.module.css';\n<button className={`${s.button} ${s.primary}`}>Click</button>\n```\n" +
+            "- ✅ Изоляция из коробки, статический анализ, нет рантайма\n" +
+            "- ❌ Нет динамических стилей без inline, стили отдельно от компонента\n\n" +
+            "**3. Runtime CSS-in-JS**\n" +
+            "```jsx\nimport styled from 'styled-components';\nconst Button = styled.button`\n  background: ${p => p.primary ? 'red' : 'blue'};\n  color: white;\n`;\n<Button primary>Click</Button>\n```\n" +
+            "- ✅ Динамика через props, темизация, colocated стили\n" +
+            "- ❌ Рантайм-оверхед (парсинг на каждом рендере), большой бандл, **несовместимо с React Server Components**\n\n" +
+            "**4. Zero-runtime CSS-in-JS**\n" +
+            "```ts\n// Button.css.ts (vanilla-extract)\nimport { style } from '@vanilla-extract/css';\nexport const button = style({\n  background: 'blue',\n  color: 'white',\n});\n```\n" +
+            "```jsx\nimport { button } from './Button.css';\n<button className={button}>Click</button>\n```\n" +
+            "- ✅ Типизация, colocated, нет рантайма, извлечение в статический CSS\n" +
+            "- ❌ Нужен сборщик, сложнее настроить, ограниченные динамические возможности\n\n" +
+            "**Когда что использовать (2024+):**\n\n" +
+            "1. **Обычный CSS / Tailwind** — лендинги, маленькие проекты, когда важна максимальная производительность и простота\n" +
+            "2. **CSS Modules** — проекты на Next.js (работает из коробки), большие команды, где нужна изоляция без рантайма\n" +
+            "3. **Runtime CSS-in-JS** — legacy-проекты, где уже используется. **Не рекомендуется для новых проектов 2024+** из-за React Server Components\n" +
+            "4. **Zero-runtime CSS-in-JS** — новые проекты, где хочется типизацию, colocated стили и производительность. **Тренд индустрии**\n\n" +
+            "**Главный тренд 2024-2026:**\n\n" +
+            "С приходом **React Server Components** runtime CSS-in-JS (styled-components, emotion) стал проблематичным — серверные компоненты не могут выполнять JS на сервере для генерации классов. Meta, Vercel и другие крупные игроки переходят на zero-runtime решения (stylex, vanilla-extract). Для новых проектов выбирайте CSS Modules, Tailwind или zero-runtime CSS-in-JS.",
         },
       ],
     },
