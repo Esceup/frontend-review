@@ -182,15 +182,21 @@ export default function ReviewPage() {
   };
 
   const handleDismiss = () => {
-    if (
-      confirm(
-        "Удалить этот вопрос из повторения навсегда?\n\nЕго можно будет восстановить внизу страницы.",
-      )
-    ) {
-      dismissCard(q.id);
-      
+  if (
+    confirm(
+      "Удалить этот вопрос из повторения навсегда?\nЕго можно будет восстановить внизу страницы.",
+    )
+  ) {
+    dismissCard(q.id);
+    setShowAnswer(false);
+    // Не вызываем next() — после удаления следующий вопрос
+    // сам занимает текущую позицию в массиве questions.
+    // Индекс оставляем прежним, но корректируем, если удаляем последний.
+    if (safeIndex >= questions.length - 1) {
+      setIndex(Math.max(0, questions.length - 2));
     }
-  };
+  }
+};
 
   return (
     <div className="mx-auto max-w-2xl">
