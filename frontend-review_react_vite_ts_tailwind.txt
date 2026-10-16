@@ -6383,15 +6383,21 @@ export default function ReviewPage() {
   };
 
   const handleDismiss = () => {
-    if (
-      confirm(
-        "Удалить этот вопрос из повторения навсегда?\n\nЕго можно будет восстановить внизу страницы.",
-      )
-    ) {
-      dismissCard(q.id);
-      next();
+  if (
+    confirm(
+      "Удалить этот вопрос из повторения навсегда?\nЕго можно будет восстановить внизу страницы.",
+    )
+  ) {
+    dismissCard(q.id);
+    setShowAnswer(false);
+    // Не вызываем next() — после удаления следующий вопрос
+    // сам занимает текущую позицию в массиве questions.
+    // Индекс оставляем прежним, но корректируем, если удаляем последний.
+    if (safeIndex >= questions.length - 1) {
+      setIndex(Math.max(0, questions.length - 2));
     }
-  };
+  }
+};
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -6548,6 +6554,7 @@ const STATUS = {
   new: { label: "новая", cls: "border-ink-600 text-mist-400" },
   due: { label: "созрела", cls: "border-lvl-0/50 text-lvl-0" },
   scheduled: { label: "в очереди", cls: "border-lvl-2/40 text-lvl-2" },
+  dismissed: { label: "скрыта", cls: "border-ink-700 text-mist-500 opacity-60 line-through" },
 };
 
 function QuestionRow({ q, accent }) {
