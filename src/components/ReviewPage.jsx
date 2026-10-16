@@ -188,7 +188,7 @@ export default function ReviewPage() {
       )
     ) {
       dismissCard(q.id);
-      next();
+      
     }
   };
 
