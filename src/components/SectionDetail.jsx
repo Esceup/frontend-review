@@ -17,6 +17,7 @@ const STATUS = {
   new: { label: "новая", cls: "border-ink-600 text-mist-400" },
   due: { label: "созрела", cls: "border-lvl-0/50 text-lvl-0" },
   scheduled: { label: "в очереди", cls: "border-lvl-2/40 text-lvl-2" },
+  dismissed: { label: "скрыта", cls: "border-ink-700 text-mist-500 opacity-60 line-through" },
 };
 
 function QuestionRow({ q, accent }) {
